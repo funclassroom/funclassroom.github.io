@@ -163,7 +163,44 @@ def gamemonetize(limit_pages=4, num=4000, pause=20):
     return games
 
 
-PORTALS = [madkidgames, gamemonetize]
+def htmlgames(limit=0):
+    """HTMLGames publishes a JSON index and invites sites to embed for free.
+
+    Each entry carries the game's own URL on cdn.htmlgames.com, which is a
+    different CDN from every other portal here — exactly what a fallback
+    needs when one host is blocked on a network.
+    """
+    payload = get("https://www.htmlgames.com/rss/games.php?json", timeout=60)
+    match = re.search(r"\[.*\]", payload, re.S)
+    if not match:
+        return []
+    try:
+        rows = json.loads(match.group(0))
+    except ValueError:
+        return []
+
+    games = []
+    for row in rows[: limit or None]:
+        name = (row.get("name") or "").strip()
+        url = (row.get("url") or "").strip()
+        if not name or not url.startswith("https://cdn.htmlgames.com/"):
+            continue
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        thumb = (row.get("thumb5") or row.get("thumb3") or "").strip()
+        games.append({
+            "portal": "htmlgames.com",
+            "title": name,
+            "url": url,
+            "thumb": thumb,
+            "slug": "hg-" + slug,
+            "rating": 0.0,
+            "plays": 0,
+            "embed": True,
+        })
+    return games
+
+
+PORTALS = [madkidgames, gamemonetize, htmlgames]
 
 
 # ---------------------------------------------------------------- titles

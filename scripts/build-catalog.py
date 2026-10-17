@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sys
+import urllib.parse
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -124,6 +125,35 @@ def load_dead():
         return set()
 
 
+def domain_of(url):
+    """The domain a block would have to name: gamemonetize.co, htmlgames.com."""
+    host = urllib.parse.urlparse(url).netloc.lower()
+    parts = host.split(".")
+    return ".".join(parts[-2:]) if len(parts) >= 2 else host
+
+
+def pick(sources, limit=3):
+    """Keep the routes that are actually different, one per domain.
+
+    Two URLs on the same domain are not a fallback: a block that kills one
+    kills both. The list is taken in priority order, but a second copy on a
+    domain already used is skipped.
+    """
+    chosen = []
+    used = set()
+    for source in sources:
+        key = domain_of(source["url"])
+        if key in used:
+            continue
+        used.add(key)
+        chosen.append(source)
+        if len(chosen) >= limit:
+            break
+    if not chosen and sources:
+        chosen = sources[:1]
+    return chosen
+
+
 def js(value):
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
@@ -203,7 +233,7 @@ def main():
     for key in order:
         bucket = groups[key]
         meta = sorted(bucket, key=meta_rank)[0]
-        sources = sorted(bucket, key=play_rank)[:3]
+        sources = pick(sorted(bucket, key=play_rank))
         primary = meta
         entries.append({
             "id": primary.get("slug") or key.replace(" ", "-"),
