@@ -1,0 +1,58 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm init -y >/dev/null 2>&1; npm i playwright@1.47.2 --no-audit --no-fund >/dev/null 2>&1
+      - run: npx playwright install chromium --with-deps >/dev/null 2>&1
+      - name: Walk the fallback chain
+        run: |
+          cat > probe.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "node:fs";
+          const out = { cases: [] };
+          const browser = await chromium.launch();
+          const p = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+          await p.goto("https://socks275.github.io/ClassroomGames/?v=11", { waitUntil: "domcontentloaded", timeout: 90000 });
+          await p.waitForTimeout(2500);
+
+          for (const query of ["geometry dash", "stick war", "subway"]) {
+            await p.fill("#q", query);
+            await p.waitForTimeout(1200);
+            const tile = p.locator('.tile[data-playable="1"]').first();
+            if (!(await tile.count())) { out.cases.push({ query, none: true }); continue; }
+            const title = await tile.locator(".tile-title").textContent();
+            await tile.locator(".tile-open").click();
+            const seen = [];
+            for (let i = 0; i < 24; i += 1) {
+              await p.waitForTimeout(1000);
+              const s = await p.evaluate(() => ({
+                source: document.querySelector("[data-source]")?.textContent || "",
+                blocked: !document.querySelector("[data-blocked]")?.hidden,
+                loading: !document.querySelector("[data-loading]")?.hidden,
+                frame: document.querySelector("iframe")?.src || "",
+              }));
+              if (!seen.length || seen[seen.length - 1].source !== s.source) seen.push(s);
+              if (s.blocked || (!s.loading && s.frame && i > 8)) break;
+            }
+            await p.screenshot({ path: `probe-${query.replace(/ /g, "-")}.png` });
+            out.cases.push({ query, title, trail: seen });
+            await p.keyboard.press("Escape");
+            await p.waitForTimeout(500);
+          }
+          await browser.close();
+          fs.writeFileSync("probe-out.json", JSON.stringify(out, null, 1));
+          JS
+          node probe.mjs
+      - name: Save
+        if: always()
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.json probe-*.png .github/workflows/probe.yml
+          git commit -q -m "probe: fallback walk" || true
+          git push || true
