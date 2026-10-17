@@ -98,15 +98,6 @@ device or another browser, and a private window throws them away when it closes.
 If a title only keeps state in memory, nothing can save it — that is down to the
 game.
 
-## The studio
-
-The card at the top of the wall opens `veo.html`: type a scene and the page
-renders a seven-second clip of it. Every frame is canvas geometry seeded from
-the prompt — sky, parallax, weather, a small character, and the prompt typing
-itself out as a caption. There is no model, no upload and no request; the page
-works with the network switched off. It exists because the MadKid "Veo 3 AI
-Video" tie-in was delisted upstream and cannot be restored.
-
 ## The page
 
 - Search (multi-word: "car park" finds "Car Parking"), plus Popular / Top rated / A–Z
@@ -130,12 +121,10 @@ recents; nothing is sent anywhere.
 
 ```
 index.html               the page
-veo.html                 the in-house AI video studio
 404.html                 not-found page
 assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,557 rows)
 assets/js/app.js         search, sort, saves, recents, player
-assets/js/veo.js         the studio's canvas scene renderer
 scripts/build-catalog.py catalogue generator
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
@@ -156,9 +145,7 @@ Push, and Pages rebuilds.
 ## On images and AI
 
 No image file is generated or hosted here: every thumbnail is the publisher's
-own file, and the only artwork in the repo is the hand-written SVG tab icon and
-the studio tile, which is a data-URI drawing. The studio paints its frames
-procedurally in canvas rather than shipping pictures.
+own file, and the only artwork in the repo is the hand-written SVG tab icon.
 
 AI-titled titles are no longer filtered — the old blocklist was removed when it
 turned out to be hiding the one Veo title the feeds still carried.

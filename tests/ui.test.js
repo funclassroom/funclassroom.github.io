@@ -105,14 +105,6 @@ function titles(document) {
       /rel="icon"[^>]+data:image\/svg\+xml[^"]*0F9D58/.test(document.head.innerHTML)
     );
     check("logo is present", document.querySelector(".logo").textContent.trim().length > 0);
-    check(
-      "the studio is offered on the wall",
-      document.querySelector(".feature-card").getAttribute("href") === "veo.html"
-    );
-    check(
-      "the studio card names itself",
-      /Veo 3 AI Video/.test(document.querySelector(".feature-title").textContent)
-    );
     check("count matches the catalogue", document.querySelector("[data-count]").textContent === String(total));
     check("the whole catalogue is loaded", total === dom.window.CATALOG.length, String(total));
     check(
