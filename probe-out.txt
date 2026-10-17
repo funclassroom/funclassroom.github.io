@@ -1,0 +1,5 @@
+gamepix	status=403	err=net::ERR_BLOCKED_BY_RESPONSE	subs=1	canvas=0	text=""
+gamesnacks2	status=301	err=null	subs=1	canvas=0	text=""
+htmlgames-other	status=200	err=null	subs=3	canvas=0	text="Halloween Treats\n\nSwap 2 items to match 3 or more of the same items in a row. Re"
+htmlgames-edge	status=200	err=null	subs=4	canvas=0	text="Mahjong Line Connect\n\nConnect 3 of the same tiles horizontally, vertically or di"
+htmlgames index: 1245 rows, 1245 direct cdn urls
