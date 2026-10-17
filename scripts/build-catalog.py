@@ -192,10 +192,17 @@ def main():
     # Hand-picked titles that no feed carries. They go through the same
     # grouping and sorting as everything else, so they cannot be counted
     # twice and a portal carrying one later just adds a route.
-    collected.extend(dict(game) for game in getattr(extras, "EXTRAS", []))
-    if extras.EXTRAS:
-        print("%-14s %d games" % ("by hand", len(extras.EXTRAS)))
-        fetched["by hand"] = len(extras.EXTRAS)
+    extras_games = [dict(game) for game in getattr(extras, "EXTRAS", [])]
+    for game in extras_games:
+        game["by_hand"] = True
+    collected.extend(extras_games)
+    if extras_games:
+        print("%-14s %d games" % ("by hand", len(extras_games)))
+        fetched["by hand"] = len(extras_games)
+
+    # A hand-added tile marked exclusive must not pick up a feed copy: the
+    # title matches, the game does not.
+    exclusive = {portals.norm(game["title"]) for game in extras_games if game.get("exclusive")}
 
     if not collected:
         print("no portal returned anything; leaving the catalogue alone", file=sys.stderr)
@@ -207,6 +214,8 @@ def main():
     for game in collected:
         key = portals.norm(game["title"])
         if not key:
+            continue
+        if key in exclusive and not game.get("by_hand"):
             continue
         game["title"] = clean_title(game["title"])
         if not game["title"]:

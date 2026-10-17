@@ -7,7 +7,7 @@
   "use strict";
 
   var RAW = [
-    ["minecraft", "Minecraft", 0.0, 0, "assets/img/minecraft.png", [["eymenwsmc.site", "https://eymenwsmc.site/262/index.html?v=u2", 1], ["eymenwsmc.site", "https://eaglercraft-26-2-u1-cdn.u2471966200.workers.dev/eaglercraft-26.2-u2.html?v=u2-20261017", 1], ["gamemonetize.com", "https://html5.gamemonetize.co/cjuftfessx0di02doxcwbzfsom0dd3v7/", 1]], 1],
+    ["minecraft", "Minecraft", 0.0, 0, "assets/img/minecraft.png", [["eymenwsmc.site", "https://eymenwsmc.site/262/index.html?v=u2", 1], ["eymenwsmc.site", "https://eaglercraft-26-2-u1-cdn.u2471966200.workers.dev/eaglercraft-26.2-u2.html?v=u2-20261017", 1]], 1],
     ["stick-war-legacy", "Stick War Legacy", 4.3, 266801, "https://www.madkidgames.com/games/stick-war-legacy/thumb_2.jpg", [["madkidgames.com", "https://www.madkidgames.com/full/stick-war-legacy", 1]]],
     ["subway-surfers", "Subway Surfers", 4.0, 200880, "https://www.madkidgames.com/games/subway-surfers/thumb_2.jpg", [["madkidgames.com", "https://www.madkidgames.com/full/subway-surfers", 1]]],
     ["angry-birds-2", "Angry Birds 2", 4.5, 102391, "https://www.madkidgames.com/games/angry-birds-2/thumb_2.jpg", [["madkidgames.com", "https://www.madkidgames.com/full/angry-birds-2", 1]]],

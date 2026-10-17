@@ -3,8 +3,10 @@
 
 A game here is the same dict a portal returns, plus two optional keys:
 
-  pin   keep the tile at the top of the wall, above the most-played
-  id    the slug for the tile; without it the title is slugged
+  pin        keep the tile at the top of the wall, above the most-played
+  id         the slug for the tile; without it the title is slugged
+  exclusive  a feed copy of this title is a different game, so do not merge it
+             in as a fallback route
 
 The builder merges these in before it groups by title, so an extra can never
 be counted twice and a feed that later carries the same game simply becomes a
@@ -30,5 +32,8 @@ EXTRAS = [
         # in a real browser, both directly and inside an iframe.
         "embed": True,
         "pin": True,
+        # GameMonetize has a browser title called "Minecraft" that is not
+        # this game; it must not be offered as a fallback for Eaglercraft.
+        "exclusive": True,
     },
 ]

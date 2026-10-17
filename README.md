@@ -47,8 +47,9 @@ the build cannot verify them; the browser can.
 `scripts/extras.py` is a list of games added by hand. They go through the same
 grouping and sorting as a feed, so an extra can never appear twice and a portal
 that later starts carrying the same title just becomes a second route on the
-same tile. Two keys are special: `id` names the tile slug, and `pin` keeps it
-above the most-played, on every sort.
+same tile. Three keys are special: `id` names the tile slug, `pin` keeps it
+above the most-played on every sort, and `exclusive` refuses a feed copy — a
+different game that happens to own the same title is not a fallback.
 
 The one entry is **Minecraft** — Eaglercraft 26.2, the WebAssembly port of
 Minecraft Java Edition, served from [eymenwsmc.site](https://eymenwsmc.site/262/index.html?v=u2)
@@ -141,7 +142,7 @@ recents; nothing is sent anywhere.
 index.html               the page
 404.html                 not-found page
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,558 rows)
+assets/js/catalog.js     generated catalogue (17,557 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft)
