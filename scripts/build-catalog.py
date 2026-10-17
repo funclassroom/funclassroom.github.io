@@ -20,6 +20,41 @@ from concurrent.futures import ThreadPoolExecutor
 import portals
 
 OUT = "assets/js/catalog.js"
+
+
+def read_existing():
+    """Keep real titles, ratings and play counts between rebuilds.
+
+    Each catalogue row is a JSON array with a trailing comma, so it parses
+    as-is once that comma is gone. No regex to get wrong.
+    """
+    try:
+        with open(OUT, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except FileNotFoundError:
+        return {}
+
+    rows = {}
+    for line in lines:
+        line = line.strip()
+        if not line.startswith('["'):
+            continue
+        line = line.rstrip(",")
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if len(row) < 5 or not isinstance(row[0], str):
+            continue
+        rows[row[0]] = {
+            "title": row[1],
+            "rating": float(row[2] or 0),
+            "plays": int(row[3] or 0),
+            "thumb": row[4],
+        }
+    return rows
+
+
 def clean_title(text):
     """Feeds carry HTML entities and zero-width joiners; browsers should not."""
     text = html.unescape(text or "")
