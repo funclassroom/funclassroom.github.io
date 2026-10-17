@@ -1,22 +1,28 @@
 name: probe
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   p:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Probe portals
         run: |
           set +e
+          exec > probe-out.txt 2>&1
           hdr () { echo "=== HEAD $1"; curl -sS -o /dev/null -D - --max-time 20 "$1" | grep -iE '^(HTTP/|x-frame-options|content-security-policy|location)' | head -6; }
-          page () { echo "=== BODY $1"; curl -sS --max-time 25 -A "Mozilla/5.0" "$1" | grep -oiE '<iframe[^>]*>|embedding unavailable|/embed/[^"'"'"' ]*|html5\.gamemonetize\.[a-z]+/[a-z0-9]+/?' | sort -u | head -12; }
-
+          page () { echo "=== BODY $1"; curl -sS --max-time 25 -A "Mozilla/5.0" "$1" | grep -oiE '<iframe[^>]*>|embedding unavailable|src="[^"]*(embed|player)[^"]*"' | sort -u | head -10; }
           hdr https://www.madkidgames.com/full/subway-surfers
           hdr https://www.madkidgames.com/full/stick-war-legacy
           page https://www.madkidgames.com/game/stick-war-legacy
           page https://www.madkidgames.com/full/stick-war-legacy
-
           hdr https://html5.gamemonetize.com/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
           hdr https://html5.gamemonetize.co/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
-
           hdr https://kbhgames.com/game/stick-war-legacy
           page https://kbhgames.com/game/stick-war-legacy
+          echo "=== done"
+      - name: Save
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.txt && git commit -q -m "probe results" && git push
