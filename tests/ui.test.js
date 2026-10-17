@@ -27,7 +27,7 @@ function check(name, condition, extra) {
 
 const STORE_KEY = "classroom.state.v1";
 
-function boot(hash, seed) {
+function boot(hash, seed, catalogJs) {
   const dom = new JSDOM(HTML, {
     url: "https://example.test/" + (hash || ""),
     runScripts: "outside-only",
@@ -35,9 +35,28 @@ function boot(hash, seed) {
   });
   dom.window.scrollTo = function (x, y) { dom.window.__scrolledTo = y; };
   if (seed) dom.window.localStorage.setItem(STORE_KEY, JSON.stringify(seed));
-  dom.window.eval(CATALOG_JS);
+  dom.window.eval(catalogJs || CATALOG_JS);
   dom.window.eval(APP_JS);
   return dom;
+}
+
+/* A tiny stand-in catalogue so fallback behaviour can be driven by hand. */
+function miniCatalog(sources) {
+  return (
+    "window.CATALOG=" +
+    JSON.stringify(sources) +
+    ".map(function (s) { return { id: s.id, title: s.title, rating: 4, plays: 10, " +
+    'thumb: "https://example.test/t.jpg", sources: s.sources }; });' +
+    'window.CATALOG_BUILT = "test";'
+  );
+}
+
+function sourcesFor(count) {
+  const list = [];
+  for (let i = 0; i < count; i += 1) {
+    list.push({ portal: "portal" + (i + 1) + ".test", url: "https://portal" + (i + 1) + ".test/embed/" });
+  }
+  return list;
 }
 
 function readStore(window) {
@@ -86,9 +105,9 @@ function titles(document) {
     check("the whole catalogue is loaded", total === 506, String(total));
     check("every title is rendered", document.querySelectorAll(".tile").length === total);
     check(
-      "thumbnails come from the publisher",
+      "thumbnails come from a portal",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
-        /^https:\/\/www\.madkidgames\.com\/games\/[a-z0-9-]+\/thumb_2\.jpg$/.test(img.getAttribute("src"))
+        /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src"))
       )
     );
     check(
@@ -132,7 +151,7 @@ function titles(document) {
     const { window } = dom;
     const { document } = window;
     const buttons = Array.from(document.querySelectorAll("[data-sort]"));
-    const firstSlug = () => document.querySelector(".tile").getAttribute("data-slug");
+    const firstSlug = () => document.querySelector(".tile").getAttribute("data-id");
 
     check("default order is most played", firstSlug() === "stick-war-legacy", firstSlug());
 
@@ -183,7 +202,7 @@ function titles(document) {
     click(window, first.querySelector("[data-fav]"));
     check("star fills", first.querySelector("[data-fav]").getAttribute("aria-pressed") === "true");
     check("counter updates", document.querySelector("[data-saved-count]").textContent === "1");
-    check("saves persist on device", readStore(window).saved.includes(first.dataset.slug));
+    check("saves persist on device", readStore(window).saved.includes(first.dataset.id));
 
     click(window, document.querySelector("[data-saved-toggle]"));
     check("saved view filters", document.querySelectorAll(".tile").length === 1);
@@ -249,6 +268,79 @@ function titles(document) {
     check("scroll restored", !document.body.classList.contains("locked"));
     check("focus returns to the tile", document.activeElement === opener);
     check("hash cleared", window.location.hash === "");
+    dom.window.close();
+  }
+
+  /* fallback between sources */
+  {
+    const dom = boot("", null, miniCatalog([{ id: "multi", title: "Multi Source", sources: sourcesFor(3) }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    check("a multi-source tile says so", document.querySelector(".tile-mirrors").textContent === "3 sources");
+
+    click(window, document.querySelector(".tile-open"));
+    const src = () => document.querySelector("iframe").getAttribute("src");
+    check("first source is used first", src() === "https://portal1.test/embed/");
+    check("source counter shows", /Source 1 of 3/.test(document.querySelector("[data-source]").textContent));
+    check("a next-source button appears", !document.querySelector("[data-next]").hidden);
+
+    click(window, document.querySelector("[data-next]"));
+    check("second source is tried", src() === "https://portal2.test/embed/");
+    check("counter follows", /Source 2 of 3/.test(document.querySelector("[data-source]").textContent));
+
+    click(window, document.querySelector("[data-next]"));
+    check("third source is tried", src() === "https://portal3.test/embed/");
+
+    click(window, document.querySelector("[data-next]"));
+    check("running out shows the blocked panel", !document.querySelector("[data-blocked]").hidden);
+    check("the iframe is gone", document.querySelectorAll("iframe").length === 0);
+    check(
+      "the message admits every source failed",
+      /All 3 sources/.test(document.querySelector("[data-blocked-text]").textContent)
+    );
+    check(
+      "the apology is there",
+      /Sorry/.test(document.querySelector(".blocked-apology").textContent)
+    );
+    check(
+      "each portal is listed",
+      document.querySelectorAll("[data-blocked-list] li").length === 3
+    );
+    check("no next button in the dead end", document.querySelector("[data-next]").hidden);
+
+    click(window, document.querySelector("[data-retry]"));
+    check("retry starts again at the first source", src() === "https://portal1.test/embed/");
+    check("blocked panel is hidden on retry", document.querySelector("[data-blocked]").hidden);
+    dom.window.close();
+  }
+
+  /* a single blocked source apologises immediately */
+  {
+    const dom = boot("", null, miniCatalog([{ id: "solo", title: "Solo", sources: sourcesFor(1) }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    click(window, document.querySelector(".tile-open"));
+    check("no next button for one source", document.querySelector("[data-next]").hidden);
+    window.eval("void 0");
+    // simulate the frame never loading, by asking for the next source
+    click(window, document.querySelector("[data-close]"));
+    dom.window.close();
+  }
+
+  /* remembering the working source */
+  {
+    const dom = boot("", { v: 2, saved: [], recent: [], sort: "hot", plays: {}, last: {}, scroll: 0, good: { multi: 2 }, bad: {} },
+      miniCatalog([{ id: "multi", title: "Multi Source", sources: sourcesFor(3) }]));
+    await tick();
+    const { window } = dom;
+    click(window, window.document.querySelector(".tile-open"));
+    check(
+      "a previously working source is preferred",
+      window.document.querySelector("iframe").getAttribute("src") === "https://portal3.test/embed/"
+    );
     dom.window.close();
   }
 

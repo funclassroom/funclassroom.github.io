@@ -27,7 +27,7 @@ vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(path.join(ROOT, "assets/js/catalog.js"), "utf8"), sandbox);
 
 const CATALOG = sandbox.window.CATALOG;
-const slugs = CATALOG.map((g) => g.slug);
+const slugs = CATALOG.map((g) => g.id);
 const titles = CATALOG.map((g) => g.title);
 
 check("catalogue holds every title in the sitemap", CATALOG.length === 506, String(CATALOG.length));
@@ -52,16 +52,27 @@ check(
   CATALOG.every((g, i) => i === 0 || CATALOG[i - 1].plays >= g.plays)
 );
 check(
-  "thumbnails derive from the slug",
-  CATALOG.every(
-    (g) => g.thumb === "https://www.madkidgames.com/games/" + g.slug + "/thumb_2.jpg"
+  "every tile has at least one source",
+  CATALOG.every((g) => Array.isArray(g.sources) && g.sources.length > 0)
+);
+check(
+  "every source has a portal and an https url",
+  CATALOG.every((g) =>
+    g.sources.every((s) => typeof s.portal === "string" && /^https:\/\//.test(s.url))
   )
 );
 check(
-  "players derive from the slug",
-  CATALOG.every((g) => g.embed === "https://www.madkidgames.com/full/" + g.slug)
+  "no tile repeats a source url",
+  CATALOG.every((g) => new Set(g.sources.map((s) => s.url)).size === g.sources.length)
 );
-check("source is recorded", /madkidgames\.com\/html5-games/.test(sandbox.window.CATALOG_SOURCE));
+check(
+  "titles are not duplicated on the wall",
+  new Set(CATALOG.map((g) => g.title.toLowerCase())).size === CATALOG.length
+);
+check(
+  "every tile has a thumbnail",
+  CATALOG.every((g) => /^https:\/\//.test(g.thumb))
+);
 
 /* ---------- files ---------- */
 const index = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
@@ -78,7 +89,7 @@ check("index has no hero wordmark", !/class="hero"|class="wordmark"/.test(index)
 check(
   "every local asset referenced exists",
   Array.from(index.matchAll(/(?:src|href)="((?!https?:|data:|#)[^"]+)"/g))
-    .map((m) => m[1])
+    .map((m) => m[1].split("?")[0])
     .every((rel) => fs.existsSync(path.join(ROOT, rel)))
 );
 check(
@@ -93,6 +104,15 @@ check(
 check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
 check("the page offers a way to wipe its own data", /data-reset/.test(index));
 check("the old game files are gone", !fs.existsSync(path.join(ROOT, "assets/js/games")));
+check("portal adapters exist", fs.existsSync(path.join(ROOT, "scripts/portals.py")));
+check(
+  "the builder groups by title so duplicates collapse",
+  /groups\[key\]/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
+);
+check(
+  "the builder refuses to shrink the wall",
+  /refusing to write/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
+);
 check("the old toolkit is gone", !fs.existsSync(path.join(ROOT, "assets/js/gamekit.js")));
 check("the 404 page links home", /href="\.\/"/.test(notFound));
 check("the 404 page wears the same skin", /assets\/css\/app\.css/.test(notFound));

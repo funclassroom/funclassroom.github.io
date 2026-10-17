@@ -1,15 +1,18 @@
 name: Refresh catalogue
 
-# Runs on GitHub's runners because the dev sandbox cannot reach madkidgames.com.
-# Pulls the full sitemap, merges new titles into assets/js/catalog.js and
-# commits the result back to this branch.
+# Runs on GitHub's runners because the dev sandbox cannot reach the portals.
+# Pulls every portal in scripts/portals.py, groups duplicates by title, probes
+# each embed for framing headers, and commits the result to this branch.
 
 on:
   workflow_dispatch:
   push:
     paths:
+      - scripts/portals.py
       - scripts/build-catalog.py
       - .github/workflows/catalog.yml
+  schedule:
+    - cron: "17 4 * * 1"
 
 permissions:
   contents: write
@@ -21,11 +24,27 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: Rebuild catalog.js from the sitemap
+      - name: Build the catalogue
         run: python3 scripts/build-catalog.py
+        working-directory: ${{ github.workspace }}
+
+      - name: Report
+        if: always()
+        run: |
+          node -e '
+            global.window = {};
+            require("./assets/js/catalog.js");
+            const c = window.CATALOG || [];
+            const multi = c.filter((g) => g.sources.length > 1).length;
+            const portals = {};
+            c.forEach((g) => g.sources.forEach((s) => { portals[s.portal] = (portals[s.portal] || 0) + 1; }));
+            console.log("tiles:", c.length, "| with fallback:", multi);
+            console.log("sources per portal:", portals);
+          '
 
       - name: Commit if the catalogue changed
         run: |
@@ -36,5 +55,5 @@ jobs:
             echo "No change."
             exit 0
           fi
-          git commit -m "Refresh catalogue from madkidgames.com sitemap"
+          git commit -m "Refresh catalogue from the portal feeds"
           git push

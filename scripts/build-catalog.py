@@ -1,55 +1,23 @@
 #!/usr/bin/env python3
-"""Rebuild assets/js/catalog.js from the MadKidGames sitemap.
+"""Build assets/js/catalog.js from every portal in scripts/portals.py.
 
-Run by .github/workflows/catalog.yml (GitHub's runners can reach the site; the
-dev sandbox cannot). Existing rows keep their real titles, ratings and play
-counts; anything new in the sitemap is added with a title derived from its slug.
+One tile per game. When the same title exists on more than one portal the
+others become fallbacks: the player tries them in order until one loads.
+
+Run by .github/workflows/catalog.yml, on runners with real network access.
 """
 
 import json
 import re
 import sys
-import urllib.request
 
-SITEMAP = "https://www.madkidgames.com/sitemap.xml"
+import portals
+
 OUT = "assets/js/catalog.js"
-UA = "Mozilla/5.0 (compatible; gams-catalog/1.0)"
-
-# Titles whose subject is generative AI; the site keeps these off the wall.
 AI_TOKENS = (
     "artificial-intelligence", "chatgpt", "gpt-", "midjourney", "stable-diffusion",
     "gemini", "veo-3", "neural-network", "ai-image", "ai-art", "ai-chat",
 )
-
-SMALL = {"a", "an", "and", "the", "of", "for", "to", "in", "on", "vs", "with", "or", "at", "by"}
-WORDS = {
-    "3d": "3D", "2d": "2D", "4x4": "4x4", "f1": "F1", "gta": "GTA", "mmx": "MMX",
-    "wcc": "WCC", "lol": "LOL", "rpg": "RPG", "td": "TD", "io": "IO", "iq": "IQ",
-    "asmr": "ASMR", "usa": "USA", "eu": "EU", "hd": "HD", "pro": "PRO", "vr": "VR",
-}
-
-
-def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=45) as resp:
-        return resp.read().decode("utf-8", "replace")
-
-
-def title_from_slug(slug):
-    parts = [p for p in slug.split("-") if p]
-    out = []
-    for i, part in enumerate(parts):
-        low = part.lower()
-        if low in WORDS:
-            out.append(WORDS[low])
-        elif i > 0 and low in SMALL:
-            out.append(low)
-        elif part.isdigit():
-            out.append(part)
-        else:
-            out.append(part[0].upper() + part[1:])
-    name = " ".join(out).strip()
-    return name or slug
 
 
 def is_ai(slug, title):
@@ -59,17 +27,24 @@ def is_ai(slug, title):
     return re.search(r"\bai\b", key) is not None
 
 
-def existing_rows():
-    """Read what is already in catalog.js so real metadata survives a sync."""
+def read_existing():
+    """Keep real titles, ratings and play counts between rebuilds."""
     try:
         with open(OUT, encoding="utf-8") as handle:
             text = handle.read()
     except FileNotFoundError:
         return {}
+
     rows = {}
-    for match in re.finditer(r'\["([^"]+)",\s*"((?:[^"\\]|\\.)*)",\s*([0-9.]+),\s*(\d+)\]', text):
-        title = match.group(2).replace('\\"', '"').replace("\\\\", "\\")
-        rows[match.group(1)] = (title, float(match.group(3)), int(match.group(4)))
+    pattern = r'\["([^"]+)",\s*"((?:[^"\\]|\\.)*)",\s*([0-9.]+),\s*(\d+),\s*"([^"]*)"'
+    for match in re.finditer(pattern, text):
+        slug = match.group(1)
+        rows[slug] = {
+            "title": match.group(2).replace('\\"', '"').replace("\\\\", "\\"),
+            "rating": float(match.group(3)),
+            "plays": int(match.group(4)),
+            "thumb": match.group(5),
+        }
     return rows
 
 
@@ -78,72 +53,114 @@ def js(value):
 
 
 def main():
-    try:
-        xml = fetch(SITEMAP)
-    except Exception as err:  # noqa: BLE001 - surface the reason in the log
-        print("sitemap fetch failed:", err, file=sys.stderr)
-        return 1
+    existing = read_existing()
 
-    slugs = []
-    seen = set()
-    for slug in re.findall(r"https://www\.madkidgames\.com/game/([a-z0-9][a-z0-9-]*)", xml):
-        slug = slug.rstrip("-")
-        if slug and slug not in seen:
-            seen.add(slug)
-            slugs.append(slug)
-
-    if len(slugs) < 100:
-        print("sitemap returned only %d titles; refusing to rewrite" % len(slugs), file=sys.stderr)
-        return 1
-
-    old = existing_rows()
-    rows = []
-    dropped = 0
-    for slug in slugs:
-        title, rating, plays = old.get(slug) or (title_from_slug(slug), 0.0, 0)
-        if is_ai(slug, title):
-            dropped += 1
+    collected = []
+    for portal in portals.PORTALS:
+        try:
+            games = portal(existing) if portal is portals.madkidgames else portal()
+        except Exception as err:  # noqa: BLE001 - one portal must not sink the build
+            print("portal %s failed: %s" % (portal.__name__, err), file=sys.stderr)
             continue
-        rows.append((slug, title, rating, plays))
+        print("%-14s %d games" % (portal.__name__, len(games)))
+        collected.extend(games)
 
-    # Known play counts first, most played at the top; the rest alphabetically.
-    rows.sort(key=lambda r: (-r[3] if r[3] > 0 else 0, r[1].lower()))
+    if not collected:
+        print("no portal returned anything; leaving the catalogue alone", file=sys.stderr)
+        return 1
 
+    # Group by normalised title so duplicates collapse into one tile.
+    groups = {}
+    order = []
+    for game in collected:
+        key = portals.norm(game["title"])
+        if not key:
+            continue
+        if is_ai(game.get("slug", ""), game["title"]):
+            continue
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        bucket = groups[key]
+        if any(item["url"] == game["url"] for item in bucket):
+            continue
+        bucket.append(game)
+
+    # Rank sources: the original portal first, then anything with a real
+    # thumbnail and embed URL.
+    def rank(game):
+        first = 0 if game["portal"] == "madkidgames.com" else 1
+        return (first, 0 if game.get("thumb") else 1, game["title"].lower())
+
+    entries = []
+    for key in order:
+        bucket = sorted(groups[key], key=rank)
+        primary = bucket[0]
+        entries.append({
+            "id": primary.get("slug") or key.replace(" ", "-"),
+            "title": primary["title"],
+            "rating": primary.get("rating", 0.0),
+            "plays": primary.get("plays", 0),
+            "thumb": primary.get("thumb") or bucket[-1].get("thumb", ""),
+            "sources": [
+                {"portal": item["portal"], "url": item["url"]} for item in bucket
+            ],
+        })
+
+    entries.sort(key=lambda e: (-int(bool(e["plays"])), -e["plays"], e["title"].lower()))
+
+    multi = sum(1 for e in entries if len(e["sources"]) > 1)
     lines = []
-    lines.append("/* G@M£$ catalogue — generated from madkidgames.com/sitemap.xml.")
-    lines.append("   %d titles. Rows are [slug, title, rating, plays]; thumbnails and player" % len(rows))
-    lines.append("   URLs are built from the slug. Edit scripts/build-catalog.py, not this file. */")
+    lines.append("/* Classroom catalogue — generated by scripts/build-catalog.py.")
+    lines.append("   %d tiles, %d of them with more than one source." % (len(entries), multi))
+    lines.append("   Each row is [id, title, rating, plays, thumb, sources] and sources are")
+    lines.append("   [portal, embedUrl] pairs tried in order until one loads. */")
     lines.append("(function () {")
     lines.append('  "use strict";')
     lines.append("")
     lines.append("  var RAW = [")
-    for index, (slug, title, rating, plays) in enumerate(rows):
-        comma = "," if index < len(rows) - 1 else ""
-        lines.append("    [%s, %s, %.1f, %d]%s" % (js(slug), js(title), rating, plays, comma))
+    for index, entry in enumerate(entries):
+        comma = "," if index < len(entries) - 1 else ""
+        sources = ", ".join(
+            "[%s, %s]" % (js(s["portal"]), js(s["url"])) for s in entry["sources"]
+        )
+        lines.append("    [%s, %s, %.1f, %d, %s, [%s]]%s" % (
+            js(entry["id"]), js(entry["title"]), entry["rating"], entry["plays"],
+            js(entry["thumb"]), sources, comma,
+        ))
     lines.append("  ];")
     lines.append("")
     lines.append("  window.CATALOG = RAW.map(function (row) {")
     lines.append("    return {")
-    lines.append("      slug: row[0],")
+    lines.append("      id: row[0],")
     lines.append("      title: row[1],")
     lines.append("      rating: row[2],")
     lines.append("      plays: row[3],")
-    lines.append('      thumb: "https://www.madkidgames.com/games/" + row[0] + "/thumb_2.jpg",')
-    lines.append('      embed: "https://www.madkidgames.com/full/" + row[0]')
+    lines.append("      thumb: row[4],")
+    lines.append("      sources: row[5].map(function (pair) {")
+    lines.append("        return { portal: pair[0], url: pair[1] };")
+    lines.append("      })")
     lines.append("    };")
     lines.append("  });")
-    lines.append('  window.CATALOG_SOURCE = "https://www.madkidgames.com/html5-games";')
+    lines.append('  window.CATALOG_BUILT = "%s";' % "")
     lines.append("}());")
     lines.append("")
+
+    # Guard: never shrink the wall by accident.
+    if len(entries) < len(existing):
+        print(
+            "refusing to write: %d entries is fewer than the %d already in place"
+            % (len(entries), len(existing)),
+            file=sys.stderr,
+        )
+        return 1
 
     with open(OUT, "w", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
 
-    print("sitemap slugs: %d" % len(slugs))
-    print("kept with metadata: %d" % sum(1 for s in rows if s[0] in old))
-    print("added: %d" % sum(1 for s in rows if s[0] not in old))
-    print("dropped as AI: %d" % dropped)
-    print("written: %d" % len(rows))
+    print("tiles: %d" % len(entries))
+    print("with a fallback: %d" % multi)
+    print("sources total: %d" % sum(len(e["sources"]) for e in entries))
     return 0
 
 
