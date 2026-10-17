@@ -5,22 +5,57 @@ permissions:
 jobs:
   p:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          cat > u.txt <<'TXT'
-          https://img.gamemonetize.com/awue2vxolgollll5aop6wlbdfgizj7e0/512x384.jpg
-          https://img.gamemonetize.com/m0f68pr59l5jbq3e4mgsi3dlq83c0wgs/512x384.jpg
-          https://img.gamemonetize.com/jqnh1iqo7lo3cpi99z37h1u24w00h8j2/512x384.jpg
-          https://img.gamemonetize.com/h0yn15shfo0centrh5lpm45c2iun248s/512x384.jpg
-          https://img.gamemonetize.com/jrztyk0wdnq6wuoczlby4t8iv7h9de8r/512x384.jpg
-          https://img.gamemonetize.com/sunivbgaw98s2nmvao60lhqyhjh0es3f/512x384.jpg
-          https://img.gamemonetize.com/l0t4l08q7wex6y2l01cpdr0at0cudyap/512x384.jpg
-          https://img.gamemonetize.com/1pdxy0j95mvsrtonv49i7xi4doevxhaq/512x384.jpg
-          https://www.madkidgames.com/games/geometry-dash/thumb_2.jpg
-          TXT
-          while read -r u; do [ -z "$u" ] && continue; echo "$(curl -s -o /dev/null -w '%{http_code} %{size_download}' --max-time 20 "$u") $u"; done < u.txt | tee probe-out.txt
+      - run: npm init -y >/dev/null 2>&1; npm i playwright@1.47.2 --no-audit --no-fund >/dev/null 2>&1
+      - run: npx playwright install chromium --with-deps >/dev/null 2>&1
+      - name: Look at the live wall
+        run: |
+          cat > probe.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "node:fs";
+          const out = {};
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+          await page.goto("https://socks275.github.io/ClassroomGames/", { waitUntil: "networkidle", timeout: 90000 });
+          await page.fill("#q", "geometry dash");
+          await page.waitForTimeout(6000);
+          out.tiles = await page.$$eval(".tile", (nodes) =>
+            nodes.map((n) => {
+              const img = n.querySelector("img");
+              return {
+                title: n.querySelector(".tile-title").textContent,
+                hasImg: !!img,
+                complete: img ? img.complete : null,
+                w: img ? img.naturalWidth : 0,
+                broken: n.querySelector(".tile-thumb").classList.contains("is-broken"),
+              };
+            })
+          );
+          await page.screenshot({ path: "probe-wall.png", fullPage: false });
+
+          // click the plain one
+          const plain = page.locator('.tile', { has: page.locator(".tile-title", { hasText: /^Geometry Dash$/ }) });
+          out.foundPlain = (await plain.count()) > 0;
+          if (out.foundPlain) {
+            await plain.first().locator(".tile-open").click();
+            await page.waitForTimeout(12000);
+            out.player = await page.evaluate(() => ({
+              blocked: !document.querySelector("[data-blocked]")?.hidden,
+              src: document.querySelector("iframe")?.src,
+              source: document.querySelector("[data-source]")?.textContent,
+            }));
+            await page.screenshot({ path: "probe-plain.png" });
+          }
+          await browser.close();
+          fs.writeFileSync("probe-out.json", JSON.stringify(out, null, 1));
+          JS
+          node probe.mjs
       - name: Save
+        if: always()
         run: |
           git config user.name probe && git config user.email probe@users.noreply.github.com
-          git add -f probe-out.txt && git commit -q -m "probe thumbs" && git push
+          git add -f probe-out.json probe-wall.png probe-plain.png .github/workflows/probe.yml
+          git commit -q -m "probe: live wall in a real browser" || true
+          git push || true
