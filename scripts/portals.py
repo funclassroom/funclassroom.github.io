@@ -102,13 +102,13 @@ def madkidgames(existing):
     return games
 
 
-def gamemonetize(limit_pages=260, num=50, pause=1.1):
+def gamemonetize(limit_pages=4, num=4000, pause=20):
     """GameMonetize publishes a paginated JSON feed meant for embedding.
 
     Every game is served from html5.gamemonetize.co/<id>/ which answers 200
     with no X-Frame-Options, so these are the tiles that actually play.
-    The feed rate-limits hard (Cloudflare 1015), hence the pacing and the
-    stop-after-three-failures rule.
+    The feed returns thousands per request and rate-limits hard (Cloudflare
+    1015) after about five calls, so it asks for a big page and pauses.
     """
     games = []
     failures = 0

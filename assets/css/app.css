@@ -415,6 +415,8 @@ a { color: inherit; }
 }
 
 .tile {
+  content-visibility: auto;
+  contain-intrinsic-size: 210px;
   position: relative;
   min-width: 0;
   content-visibility: auto;
