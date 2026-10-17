@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classes</title>
+<meta name="description" content="HTML5 game library.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body data-mode="classroom">
+
+<!-- ==========================================================
+     CLASSROOM MODE  (the disguise)
+     ========================================================== -->
+<div id="mode-classroom" class="mode">
+
+  <header class="gc-header">
+    <button class="gc-icon-btn" id="gc-menu" aria-label="Open menu"><span class="mi">menu</span></button>
+
+    <a class="gc-logo" href="#" data-go-home>
+      <span class="gc-logo-mark"><span class="mi">school</span></span>
+      <span class="gc-logo-text">Classroom</span>
+    </a>
+
+    <!-- the switch: labelled to look like a Google Workspace control -->
+    <button class="panic-btn" data-toggle-mode title="Switch view">
+      <span class="mi" style="font-size:18px">apps</span> Apps
+    </button>
+
+    <button class="gc-icon-btn" id="gc-add" aria-label="Add"><span class="mi">add</span></button>
+    <button class="gc-avatar" id="gc-account" aria-label="Account">S</button>
+  </header>
+
+  <!-- ---------- LEVEL 1: classes grid ---------- -->
+  <main id="view-classes">
+    <div class="gc-main">
+      <p class="gc-section-title">Your classes</p>
+      <div class="gc-grid" id="class-grid"></div>
+    </div>
+  </main>
+
+  <!-- ---------- LEVEL 2: inside a class ---------- -->
+  <main id="view-class" hidden>
+    <div class="gc-hero" id="class-hero"></div>
+
+    <nav class="gc-tabs" aria-label="Class sections">
+      <button class="gc-tab active" data-tab="stream">Stream</button>
+      <button class="gc-tab" data-tab="classwork">Classwork</button>
+      <button class="gc-tab" data-tab="people">People</button>
+    </nav>
+
+    <div class="gc-main">
+      <section id="panel-stream">
+        <div class="stream-wrap">
+          <div id="stream-feed"></div>
+          <aside id="stream-side"></aside>
+        </div>
+      </section>
+
+      <section id="panel-classwork" hidden>
+        <div id="classwork-rows"></div>
+      </section>
+
+      <section id="panel-people" hidden>
+        <div id="people-rows"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ---------- LEVEL 3: the assignment (game runs here) ---------- -->
+  <main id="player-classroom" class="player-root" hidden></main>
+</div>
+
+
+<!-- ==========================================================
+     GAMES MODE  (the real library)
+     ========================================================== -->
+<div id="mode-games" class="mode">
+
+  <header class="mk-header">
+    <div class="mk-logo">
+      <span class="mk-logo-mark"><span class="mi">sports_esports</span></span>
+      <span>MadKid<b>Games</b></span>
+    </div>
+
+    <input id="mk-search" class="mk-search" type="search" placeholder="Search games…" autocomplete="off">
+    <div class="spacer"></div>
+
+    <button class="mk-btn accent" id="mk-add"><span class="mi" style="font-size:16px;vertical-align:-3px">add</span> Add game</button>
+    <button class="mk-btn" data-toggle-mode title="Ctrl+Shift+K">
+      <span class="mi" style="font-size:16px;vertical-align:-3px">visibility_off</span> Classroom mode
+    </button>
+  </header>
+
+  <main class="mk-main">
+
+    <!-- ---------- browse ---------- -->
+    <div id="games-browse">
+      <div class="mk-hero">
+        <h1>HTML5 Games</h1>
+        <p>Every game below is playable right here — no downloads.</p>
+        <p class="kbd-hint">
+          Panic switch: <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">K</span>
+          &nbsp;or&nbsp; <span class="kbd">`</span> — instantly turns this page into Google Classroom,
+          tab title and favicon included.
+        </p>
+      </div>
+
+      <div class="mk-notice">
+        <h3>⚖ Notice to network filtering software</h3>
+        <p>
+          If a filtering product — including but not limited to <b>Securly</b> — blocks, flags, or otherwise
+          interferes with access to this website, its operator hereby owes the site owner <b>one (1) unpaid
+          debt</b>, payable immediately, and may be subject to legal action, stern emails, and/or a strongly
+          worded letter from a parent. Damages accrue per blocked minute and compound.
+        </p>
+        <p class="fine">
+          Satire. Not legal advice, not an actual legal threat, and it will not stop a filter.
+          A real dispute with a school's filtering vendor would need an actual lawyer — and usually a parent
+          or guardian to sign things.
+        </p>
+      </div>
+
+      <div class="chips" id="chips"></div>
+      <div class="mk-grid" id="game-grid"></div>
+    </div>
+
+    <!-- ---------- player ---------- -->
+    <div id="player-games" class="player-root" hidden></div>
+  </main>
+</div>
+
+
+<!-- ==========================================================
+     SHARED: player host, drawer, modal, toast
+     ========================================================== -->
+
+<div id="drawer-back" class="modal-back">
+  <aside class="drawer" role="dialog" aria-label="Menu">
+    <div class="drawer-head">
+      <span class="gc-logo-mark"><span class="mi">school</span></span>
+      <strong>Classroom</strong>
+    </div>
+    <button class="drawer-item" data-drawer-home><span class="mi">home</span> Classes</button>
+    <button class="drawer-item" data-drawer-home><span class="mi">event</span> Calendar</button>
+    <button class="drawer-item" data-drawer-home><span class="mi">check_circle</span> To-do</button>
+    <div class="drawer-sep"></div>
+    <button class="drawer-item" data-toggle-mode><span class="mi">sports_esports</span> Games view</button>
+  </aside>
+</div>
+
+<div id="modal-back" class="modal-back">
+  <div class="modal" role="dialog" aria-label="Add a game">
+    <h2>Add a game</h2>
+    <p class="sub">
+      Paste any embeddable game URL — for example a page from
+      <a href="https://www.madkidgames.com/html5-games" target="_blank" rel="noopener" style="color:#ffcc00">madkidgames.com/html5-games</a>.
+      It is saved in this browser only (localStorage). The “disguise” fields decide what it looks like in
+      Classroom mode.
+    </p>
+
+    <label for="f-url">Game URL *</label>
+    <input id="f-url" type="url" placeholder="https://www.madkidgames.com/html5-games/my-game/">
+
+    <label for="f-title">Game name</label>
+    <input id="f-title" type="text" placeholder="Auto-detected from the URL if left blank">
+
+    <label for="f-thumb">Thumbnail image URL (optional)</label>
+    <input id="f-thumb" type="url" placeholder="https://…/thumb.jpg">
+
+    <label for="f-cat">Category</label>
+    <select id="f-cat">
+      <option>Arcade</option><option>Puzzle</option><option>Racing</option>
+      <option>Action</option><option>Sports</option><option>Platformer</option>
+      <option>Idle</option><option>Strategy</option><option>Shooter</option>
+      <option>Other</option>
+    </select>
+
+    <div class="modal-sub">Disguise — what it looks like in Classroom mode</div>
+
+    <label for="f-subject">Appears as subject / class name</label>
+    <input id="f-subject" type="text" placeholder="Blank = auto-picked from the category">
+
+    <label for="f-teacher">Teacher name</label>
+    <input id="f-teacher" type="text" placeholder="Blank = auto-picked">
+
+    <label for="f-section">Section</label>
+    <input id="f-section" type="text" placeholder="Period 1 · Room 204">
+
+    <label for="f-color">Card colour</label>
+    <input id="f-color" type="color" value="#1e8e3e" style="height:38px;padding:2px">
+
+    <div class="modal-actions">
+      <button class="mk-btn" id="modal-cancel">Cancel</button>
+      <button class="mk-btn accent" id="modal-save">Add game</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/games.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
