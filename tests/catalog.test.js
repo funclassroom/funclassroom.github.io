@@ -49,12 +49,21 @@ check(
   CATALOG.every((g) => Number.isInteger(g.plays) && g.plays >= 0)
 );
 check(
-  "the wall is ordered by popularity inside each group",
+  "the wall leads with sources we can vouch for",
+  (() => {
+    const trusted = (g) => g.sources[0].portal === "gamemonetize.com";
+    const firstUntrusted = CATALOG.findIndex((g) => !trusted(g));
+    if (firstUntrusted === -1) return true;
+    return CATALOG.slice(firstUntrusted).every((g) => !trusted(g));
+  })()
+);
+check(
+  "popularity breaks ties inside a group",
   CATALOG.every((g, i) => {
     if (i === 0) return true;
     const prev = CATALOG[i - 1];
-    const playable = (x) => x.sources.some((s) => s.embed);
-    if (playable(prev) !== playable(g)) return playable(prev);
+    const trusted = (x) => x.sources[0].portal === "gamemonetize.com";
+    if (trusted(prev) !== trusted(g)) return true;
     return prev.plays >= g.plays;
   })
 );
