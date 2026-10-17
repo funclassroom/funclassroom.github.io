@@ -1,0 +1,36 @@
+name: Refresh catalogue
+
+# Runs on GitHub's runners because the dev sandbox cannot reach madkidgames.com.
+# Pulls the full sitemap, merges new titles into assets/js/catalog.js and
+# commits the result back to this branch.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalog
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild catalog.js from the sitemap
+        run: python3 scripts/build-catalog.py
+
+      - name: Commit if the catalogue changed
+        run: |
+          git config user.name "catalog-bot"
+          git config user.email "catalog-bot@users.noreply.github.com"
+          git add assets/js/catalog.js
+          if git diff --cached --quiet; then
+            echo "No change."
+            exit 0
+          fi
+          git commit -m "Refresh catalogue from madkidgames.com sitemap"
+          git push
