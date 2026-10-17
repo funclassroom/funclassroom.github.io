@@ -30,7 +30,7 @@ const CATALOG = sandbox.window.CATALOG;
 const slugs = CATALOG.map((g) => g.slug);
 const titles = CATALOG.map((g) => g.title);
 
-check("catalogue holds every listed title", CATALOG.length === 507, String(CATALOG.length));
+check("catalogue holds every title in the sitemap", CATALOG.length === 506, String(CATALOG.length));
 check("slugs are unique", new Set(slugs).size === slugs.length);
 check("titles are unique", new Set(titles).size === titles.length);
 check(
@@ -72,7 +72,7 @@ const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
 check("index loads the catalogue", /assets\/js\/catalog\.js/.test(index));
 check("index loads the app", /assets\/js\/app\.js/.test(index));
 check("index loads the one stylesheet", /assets\/css\/app\.css/.test(index));
-check("index has no classroom leftovers", !/classroom|gamekit|data-mode/i.test(index));
+check("index has no old dual-skin leftovers", !/gamekit|data-mode|mode-classroom/i.test(index));
 check("index has no hero wordmark", !/class="hero"|class="wordmark"/.test(index));
 check(
   "every local asset referenced exists",
@@ -80,6 +80,11 @@ check(
     .map((m) => m[1])
     .every((rel) => fs.existsSync(path.join(ROOT, rel)))
 );
+check(
+  "no AI-titled entries remain",
+  !CATALOG.some((g) => /\bai\b|chatgpt|midjourney|gemini|veo/i.test(g.title + " " + g.slug))
+);
+check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
 check("the old game files are gone", !fs.existsSync(path.join(ROOT, "assets/js/games")));
 check("the old toolkit is gone", !fs.existsSync(path.join(ROOT, "assets/js/gamekit.js")));
 check("the 404 page links home", /href="\.\/"/.test(notFound));
@@ -88,8 +93,8 @@ check("the 404 page keeps the wordmark", notFound.includes("G@M£$"));
 check("package version is 4.x", /^4\./.test(pkg.version), pkg.version);
 check("npm test runs both suites", /ui\.test\.js/.test(pkg.scripts.test) && /catalog\.test\.js/.test(pkg.scripts.test));
 check("no build step is required", !pkg.scripts.build);
-check("README documents the rebuild", readme.includes("G@M£$"));
-check("README states the count", readme.includes("507"));
+check("README explains the disguise", /tab reads \*\*Classroom\*\*/i.test(readme));
+check("README states the count", readme.includes("506"));
 
 console.log("\n  DATA: " + pass + " passed, " + fail + " failed\n");
 if (fail) {

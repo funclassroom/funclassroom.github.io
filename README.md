@@ -1,67 +1,69 @@
-# G@M£$
+# Classroom
 
-A wall of HTML5 titles. Click one and it plays in the page; close it and the
-frame is destroyed.
+A wall of HTML5 titles behind an unremarkable tab. The tab reads **Classroom**
+with a chalkboard icon; the page is a plain grid of 506 playable titles.
 
 **Live:** https://socks275.github.io/Classroom/
 
-## What's in it
+## The catalogue
 
-507 titles, scraped from the embeddable catalogue at
-`madkidgames.com/html5-games` on 2026-10-17, with the publisher's own
-thumbnails, star ratings and play counts.
+506 titles, taken from MadKidGames' own sitemap — that is the whole site, not a
+sample. Their marketing copy says "thousands", but the sitemap lists exactly 507
+game URLs, one of which is an AI-video tie-in that has been filtered out.
 
-- Search by title, sort by popular / top rated / A–Z
-- Save titles (star on hover) and revisit the last eight you opened
+Each entry keeps the publisher's real title, star rating and play count.
+Thumbnails and players are built from the slug:
+
+```
+https://www.madkidgames.com/games/<slug>/thumb_2.jpg
+https://www.madkidgames.com/full/<slug>
+```
+
+### Keeping it current
+
+`.github/workflows/catalog.yml` re-reads the sitemap on GitHub's runners and
+regenerates `assets/js/catalog.js`, keeping existing metadata and adding new
+slugs with titles derived from their names. It runs when `scripts/build-catalog.py`
+changes, or by hand from the Actions tab. The generator also drops
+generative-AI-titled entries.
+
+## The page
+
+- Search, plus Popular / Top rated / A–Z
+- Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
-- Fullscreen, plus an "open in a new tab" button if a title won't frame
-- No build step, no framework, no backend, no tracking
+- Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
+
+No frameworks, no build step, no backend. `localStorage` holds saves and
+recents; nothing is sent anywhere.
 
 ## Files
 
 ```
-index.html              the page
-404.html                not-found page, same stylesheet
-assets/css/app.css      all of the styling
-assets/js/catalog.js    the 507 entries (slug, title, rating, plays)
-assets/js/app.js        search, sort, saves, recents, player
-tests/ui.test.js        DOM behaviour
-tests/catalog.test.js   data and repository checks
+index.html               the page
+404.html                 not-found page
+assets/css/app.css       all styling
+assets/js/catalog.js     generated catalogue (506 rows)
+assets/js/app.js         search, sort, saves, recents, player
+scripts/build-catalog.py catalogue generator
+tests/ui.test.js         DOM behaviour
+tests/catalog.test.js    data and repository checks
 ```
-
-### Adding or removing a title
-
-Edit `RAW` in `assets/js/catalog.js`. One row per title:
-
-```js
-["new-slug", "New Title", 4.2, 12345],
-```
-
-The thumbnail (`…/games/<slug>/thumb_2.jpg`) and the player
-(`…/full/<slug>`) are built from the slug.
 
 ## Running
 
 ```bash
 npm start     # python3 -m http.server 8000 --bind 0.0.0.0
-```
-
-Open <http://localhost:8000>. Opening `index.html` from disk also works,
-except that deep links need a real server.
-
-```bash
-npm install
-npm test
+npm test      # jsdom, no network
 ```
 
 ## Deployment
 
-Static files, served by GitHub Pages from the branch root
-(`arena/22c34602-classroom`, folder `/`). Push and Pages rebuilds.
+Static files on GitHub Pages, branch `arena/22c34602-classroom`, folder `/`.
+Push, and Pages rebuilds.
 
-## Notes
+## On images and AI
 
-- Titles stream from MadKidGames; nothing is copied or hosted here.
-- A blank frame means the publisher declined that slug. The arrow in the
-  player bar opens it in a new tab.
-- The interface calls them titles. Title names are the publisher's.
+No image is generated or hosted here: every thumbnail is the publisher's own
+file, and the only artwork in the repo is the hand-written SVG tab icon. The
+AI filter exists because one catalogue entry was a Veo 3 tie-in.

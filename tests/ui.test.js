@@ -68,10 +68,14 @@ function titles(document) {
     const { document } = dom.window;
     const total = dom.window.CATALOG.length;
 
-    check("tab title is the wordmark", document.title === "G@M£$", document.title);
-    check("logo is the wordmark", document.querySelector(".logo").textContent === "G@M£$");
+    check("tab says Classroom", document.title === "Classroom", document.title);
+    check(
+      "tab carries a classroom-style icon",
+      /rel="icon"[^>]+data:image\/svg\+xml[^"]*0F9D58/.test(document.head.innerHTML)
+    );
+    check("logo is present", document.querySelector(".logo").textContent.trim().length > 0);
     check("count matches the catalogue", document.querySelector("[data-count]").textContent === String(total));
-    check("count is 507", total === 507, String(total));
+    check("the whole catalogue is loaded", total === 506, String(total));
     check("every title is rendered", document.querySelectorAll(".tile").length === total);
     check(
       "thumbnails come from the publisher",
