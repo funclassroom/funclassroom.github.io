@@ -1,0 +1,29 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe HEAD vs GET
+        run: |
+          set +e
+          exec > probe-out.txt 2>&1
+          node -e '
+            global.window={};require("./assets/js/catalog.js");
+            const urls=window.CATALOG.filter(x=>x.sources[0].portal==="gamemonetize.com").map(x=>x.sources[0].url);
+            console.log(urls.filter((_,i)=>i%800===0).slice(0,20).join("\n"));
+          ' > urls.txt
+          while read -r u; do
+            [ -z "$u" ] && continue
+            h=$(curl -s -o /dev/null -w "%{http_code}" -I --max-time 10 "$u")
+            g=$(curl -s -o /dev/null -w "%{http_code}" -r 0-0 --max-time 10 "$u")
+            echo "HEAD=$h GET=$g $u"
+          done < urls.txt
+          echo "=== done"
+      - name: Save
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.txt && git commit -q -m "probe head vs get" && git push
