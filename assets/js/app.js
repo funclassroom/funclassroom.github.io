@@ -207,10 +207,13 @@
       thumb.appendChild(rating);
     }
 
-    if (embeddable(item).length > 1) {
+    var portals = {};
+    item.sources.forEach(function (source) { portals[source.portal] = true; });
+    var portalsUsed = Object.keys(portals).length;
+    if (portalsUsed > 1) {
       var mirrors = document.createElement("span");
       mirrors.className = "tile-mirrors";
-      mirrors.textContent = embeddable(item).length + " sources";
+      mirrors.textContent = item.sources.length + " routes";
       mirrors.title = item.sources.map(function (s) { return s.portal; }).join(", ");
       thumb.appendChild(mirrors);
     }

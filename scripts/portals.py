@@ -146,6 +146,12 @@ def gamemonetize(limit_pages=4, num=4000, pause=20):
                 "portal": "gamemonetize.com",
                 "title": title,
                 "url": embed,
+                # Second way in: the publisher's own wrapper, which redirects
+                # to the same game. Different host, so a broken hostname or a
+                # redirect hiccup is survivable.
+                "alt": "https://gamemonetize.com/gameshtml5.php?gmdidco=%s/" % (
+                    embed.rstrip("/").rsplit("/", 1)[-1]
+                ),
                 "thumb": (entry.get("thumb") or "").strip(),
                 "slug": str(entry.get("id") or ""),
                 "rating": 0.0,

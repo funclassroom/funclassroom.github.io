@@ -316,7 +316,7 @@ function titles(document) {
     const { window } = dom;
     const { document } = window;
 
-    check("a multi-source tile says so", document.querySelector(".tile-mirrors").textContent === "3 sources");
+    check("a cross-portal tile says how many routes", document.querySelector(".tile-mirrors").textContent === "3 routes");
 
     click(window, document.querySelector(".tile-open"));
     const src = () => document.querySelector("iframe").getAttribute("src");
@@ -422,7 +422,7 @@ function titles(document) {
     const { window } = dom;
     const { document } = window;
 
-    check("every source is counted", document.querySelector(".tile-mirrors").textContent === "3 sources");
+    check("every source is counted", document.querySelector(".tile-mirrors").textContent === "3 routes");
     click(window, document.querySelector(".tile-open"));
     check("first source loads", /portal1\.test/.test(document.querySelector("iframe").src));
     click(window, document.querySelector("[data-next]"));
