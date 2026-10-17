@@ -3,7 +3,7 @@
 A wall of HTML5 titles behind an unremarkable tab. The tab reads **Classroom**
 with a chalkboard icon; the page is a plain grid of 506 playable titles.
 
-**Live:** https://socks275.github.io/Classroom/
+**Live:** https://socks275.github.io/ClassroomGames/
 
 ## The catalogue
 
