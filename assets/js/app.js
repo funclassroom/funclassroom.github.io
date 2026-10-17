@@ -1,4 +1,4 @@
-/* G@M£$ — wall of titles, one click to play. */
+/* G@M£$ — browse the wall, open a title, close it. */
 (function () {
   "use strict";
 
@@ -9,7 +9,8 @@
   var KEY_SAVED = "gams.saved.v1";
   var KEY_RECENT = "gams.recent.v1";
   var MAX_RECENT = 8;
-  var LOAD_NAG_MS = 12000;
+  var SLOW_LOAD_MS = 12000;
+  var EAGER_IMAGES = 24;
 
   var state = {
     q: "",
@@ -23,8 +24,6 @@
 
   var dom = {};
 
-  /* ---------- storage (private mode can throw) ---------- */
-
   function readList(key) {
     try {
       var raw = JSON.parse(window.localStorage.getItem(key));
@@ -35,22 +34,19 @@
   }
 
   function writeList(key, list) {
-    try { window.localStorage.setItem(key, JSON.stringify(list)); } catch (err) { /* ignore */ }
+    try { window.localStorage.setItem(key, JSON.stringify(list)); } catch (err) { /* private mode */ }
   }
 
-  /* ---------- helpers ---------- */
-
   function $(sel, root) { return (root || document).querySelector(sel); }
-  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function $$(sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
 
   function shortNum(n) {
     if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "m";
     if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k";
     return String(n);
-  }
-
-  function label(item) {
-    return item.rating > 0 ? item.rating.toFixed(1) : "New";
   }
 
   function sorted(list) {
@@ -68,16 +64,15 @@
 
   function visible() {
     var q = state.q.trim().toLowerCase();
-    var list = ALL.filter(function (item) {
+    return sorted(ALL.filter(function (item) {
       if (state.savedOnly && state.saved.indexOf(item.slug) === -1) return false;
       if (!q) return true;
       return item.title.toLowerCase().indexOf(q) !== -1 ||
         item.slug.replace(/-/g, " ").indexOf(q) !== -1;
-    });
-    return sorted(list);
+    }));
   }
 
-  /* ---------- grid ---------- */
+  /* ---------- tiles ---------- */
 
   function buildTile(item, index) {
     var tile = document.createElement("article");
@@ -100,32 +95,24 @@
     img.width = 512;
     img.height = 384;
     img.decoding = "async";
-    img.loading = index > 11 ? "lazy" : "eager";
+    if (index >= EAGER_IMAGES) img.setAttribute("loading", "lazy");
     img.addEventListener("error", function () {
       thumb.classList.add("is-broken");
       img.remove();
     });
     thumb.appendChild(img);
 
-    var rating = document.createElement("span");
-    rating.className = "tile-rating";
-    rating.textContent = label(item);
-    if (item.rating === 0) rating.setAttribute("data-new", "");
-
-    var shade = document.createElement("span");
-    shade.className = "tile-shade";
+    if (item.rating > 0) {
+      var rating = document.createElement("span");
+      rating.className = "tile-rating";
+      rating.textContent = item.rating.toFixed(1);
+      thumb.appendChild(rating);
+    }
 
     var play = document.createElement("span");
     play.className = "tile-play";
-    play.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>';
-    play.appendChild(document.createTextNode("Play"));
-
-    thumb.appendChild(shade);
-    thumb.appendChild(rating);
+    play.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>Play';
     thumb.appendChild(play);
-
-    var body = document.createElement("span");
-    body.className = "tile-body";
 
     var title = document.createElement("span");
     title.className = "tile-title";
@@ -135,20 +122,19 @@
     meta.className = "tile-meta";
     meta.textContent = shortNum(item.plays) + " plays";
 
-    body.appendChild(title);
-    body.appendChild(meta);
     open.appendChild(thumb);
-    open.appendChild(body);
+    open.appendChild(title);
+    open.appendChild(meta);
 
     var fav = document.createElement("button");
     fav.type = "button";
     fav.className = "tile-fav";
     fav.setAttribute("data-fav", item.slug);
     var isSaved = state.saved.indexOf(item.slug) !== -1;
+    if (isSaved) fav.classList.add("is-on");
     fav.setAttribute("aria-pressed", isSaved ? "true" : "false");
     fav.setAttribute("aria-label", (isSaved ? "Remove " : "Save ") + item.title);
     fav.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-star"/></svg>';
-    if (isSaved) fav.classList.add("is-on");
 
     tile.appendChild(open);
     tile.appendChild(fav);
@@ -163,19 +149,18 @@
     dom.grid.appendChild(frag);
 
     dom.shown.textContent = list.length === ALL.length ? "" : list.length + " of " + ALL.length;
+    dom.empty.hidden = list.length !== 0;
+    dom.grid.hidden = list.length === 0;
 
-    var empty = list.length === 0;
-    dom.empty.hidden = !empty;
-    if (empty) {
-      dom.emptyQ.textContent = state.q.trim() ? "“" + state.q.trim() + "”" : "this filter";
+    if (!list.length) {
+      var term = state.q.trim();
+      dom.emptyQ.textContent = term ? '"' + term + '"' : "this filter";
     }
-    dom.grid.hidden = empty;
   }
 
   function renderSaved() {
     dom.savedCount.textContent = String(state.saved.length);
     dom.savedToggle.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
-    dom.savedToggle.classList.toggle("is-on", state.savedOnly);
   }
 
   function renderRecent() {
@@ -192,8 +177,8 @@
       img.src = item.thumb;
       img.alt = "";
       img.loading = "lazy";
-      img.width = 96;
-      img.height = 54;
+      img.width = 88;
+      img.height = 66;
 
       var text = document.createElement("span");
       text.textContent = item.title;
@@ -217,18 +202,17 @@
     if (!item || state.active === slug) return;
     var opts = options || {};
 
-    var previous = state.active;
-    var restore = document.activeElement;
+    if (!state.active) state.lastFocus = document.activeElement;
     state.active = slug;
-    if (!previous) state.lastFocus = restore;
 
     dom.playerTitle.textContent = item.title;
-    dom.playerSub.textContent = label(item) + " ★ · " + shortNum(item.plays) + " plays";
+    dom.playerSub.textContent = (item.rating > 0 ? item.rating.toFixed(1) + " stars · " : "") +
+      shortNum(item.plays) + " plays";
     dom.external.href = item.embed;
 
     clearStage();
     dom.loading.hidden = false;
-    dom.loadingText.textContent = "Loading…";
+    dom.loadingText.textContent = "Loading";
     dom.loadLink.hidden = true;
     dom.loadLink.href = item.embed;
 
@@ -247,14 +231,14 @@
 
     dom.loadTimer = window.setTimeout(function () {
       if (!dom.loading.hidden) {
-        dom.loadingText.textContent = "Still loading…";
+        dom.loadingText.textContent = "Still loading";
         dom.loadLink.hidden = false;
       }
-    }, LOAD_NAG_MS);
+    }, SLOW_LOAD_MS);
 
     dom.player.hidden = false;
     dom.player.setAttribute("aria-hidden", "false");
-    document.body.classList.add("playing");
+    document.body.classList.add("locked");
     dom.close.focus({ preventScroll: true });
 
     touchRecent(slug);
@@ -276,18 +260,20 @@
     state.active = null;
     clearStage();
     dom.loading.hidden = false;
-    dom.loadingText.textContent = "Loading…";
+    dom.loadingText.textContent = "Loading";
     dom.loadLink.hidden = true;
     dom.player.hidden = true;
     dom.player.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("playing");
+    document.body.classList.remove("locked");
 
-    if (dom.fs && document.fullscreenElement) {
+    if (document.fullscreenElement) {
       try { document.exitFullscreen(); } catch (err) { /* ignore */ }
     }
 
     if (opts.push !== false) {
-      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch (err) { /* ignore */ }
+      try {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      } catch (err) { /* ignore */ }
     }
 
     var back = state.lastFocus;
@@ -307,7 +293,6 @@
     else state.saved.splice(i, 1);
     writeList(KEY_SAVED, state.saved);
 
-    // Paint the star in place so focus and scroll survive the click.
     var fav = document.querySelector('[data-fav="' + slug + '"]');
     if (fav) {
       var item = BY_SLUG[slug];
@@ -329,7 +314,7 @@
     openPlayer(pick.slug);
   }
 
-  /* ---------- url state ---------- */
+  /* ---------- url ---------- */
 
   function slugFromHash() {
     var hash = window.location.hash || "";
@@ -344,7 +329,7 @@
     else closePlayer({ push: false });
   }
 
-  /* ---------- wiring ---------- */
+  /* ---------- start ---------- */
 
   function init() {
     dom.grid = $("#grid");
@@ -367,6 +352,7 @@
     dom.external = $("[data-external]");
     dom.fs = $("[data-fs]");
     dom.q = $("#q");
+    dom.searchClear = $("[data-search-clear]");
     dom.clear = $("[data-clear]");
     dom.sorts = $$("[data-sort]");
 
@@ -375,9 +361,18 @@
     dom.count.textContent = String(ALL.length);
     render();
 
-    dom.q.addEventListener("input", function () {
+    function onSearch() {
       state.q = dom.q.value;
+      dom.searchClear.hidden = state.q.length === 0;
       renderGrid();
+    }
+
+    dom.q.addEventListener("input", onSearch);
+
+    dom.searchClear.addEventListener("click", function () {
+      dom.q.value = "";
+      onSearch();
+      dom.q.focus();
     });
 
     dom.grid.addEventListener("click", function (event) {
@@ -408,9 +403,8 @@
     });
 
     dom.clear.addEventListener("click", function () {
-      state.q = "";
       dom.q.value = "";
-      renderGrid();
+      onSearch();
       dom.q.focus();
     });
 
@@ -433,7 +427,7 @@
       var typing = /^(input|textarea|select)$/i.test(event.target.tagName);
       if (event.key === "Escape") {
         if (state.active) { event.preventDefault(); closePlayer(); return; }
-        if (state.q) { state.q = ""; dom.q.value = ""; renderGrid(); return; }
+        if (state.q) { dom.q.value = ""; onSearch(); return; }
         if (state.savedOnly) { state.savedOnly = false; render(); }
         return;
       }
@@ -446,8 +440,8 @@
     window.addEventListener("popstate", applyHash);
     window.addEventListener("hashchange", applyHash);
 
-    var initial = slugFromHash();
-    if (initial) openPlayer(initial, { push: false });
+    var start = slugFromHash();
+    if (start) openPlayer(start, { push: false });
   }
 
   if (document.readyState === "loading") {

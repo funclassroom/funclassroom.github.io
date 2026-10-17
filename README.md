@@ -1,100 +1,67 @@
 # G@M£$
 
-A single-page wall of instant-play titles. No sign-up, no installs, no build
-step — every tile opens the publisher's own HTML5 player in a full-screen
-overlay right on the page.
+A wall of HTML5 titles. Click one and it plays in the page; close it and the
+frame is destroyed.
 
-**Live:** <https://socks275.github.io/Classroom/> (once Pages points at this
-branch).
+**Live:** https://socks275.github.io/Classroom/
 
----
+## What's in it
 
-## What it is
+507 titles, scraped from the embeddable catalogue at
+`madkidgames.com/html5-games` on 2026-10-17, with the publisher's own
+thumbnails, star ratings and play counts.
 
-- **168 titles**, harvested from the MadKidGames embeddable catalogue and
-  ordered by popularity.
-- **One click to play.** Tiles are lazy — an iframe is only created when you
-  open a title, and it is torn down when you close, so audio and network stop.
-- **Search, three sorts, saves, and a “jump back in” row.** Saves and recents
-  live in `localStorage`.
-- **A player that behaves.** Full-screen overlay, `Esc` to leave, focus returns
-  to the tile you came from, `#p=<slug>` deep links, and a “new tab” escape
-  hatch if the publisher ever refuses to frame.
-- **No build step.** Three files and a stylesheet, served statically.
+- Search by title, sort by popular / top rated / A–Z
+- Save titles (star on hover) and revisit the last eight you opened
+- `#p=<slug>` deep links, `Esc` to close, `/` to search
+- Fullscreen, plus an "open in a new tab" button if a title won't frame
+- No build step, no framework, no backend, no tracking
 
-## Layout
+## Files
 
 ```
-index.html               shell: header, hero, wall, player overlay
-404.html                 same skin, links home
-assets/css/app.css       the whole skin (dark, lime, one stylesheet)
-assets/js/catalog.js     data: [slug, title, rating, plays] × 168
-assets/js/app.js         search/sort/saves/recents/player/url state
-tests/ui.test.js         jsdom checks for the wall and the player
-tests/catalog.test.js    data + repository integrity
+index.html              the page
+404.html                not-found page, same stylesheet
+assets/css/app.css      all of the styling
+assets/js/catalog.js    the 507 entries (slug, title, rating, plays)
+assets/js/app.js        search, sort, saves, recents, player
+tests/ui.test.js        DOM behaviour
+tests/catalog.test.js   data and repository checks
 ```
 
-### Adding a title
+### Adding or removing a title
 
-Append one row to `RAW` in `assets/js/catalog.js`:
+Edit `RAW` in `assets/js/catalog.js`. One row per title:
 
 ```js
 ["new-slug", "New Title", 4.2, 12345],
 ```
 
-Thumbnails (`…/games/<slug>/thumb_2.jpg`) and player URLs
-(`…/full/<slug>`) are derived from the slug, so that is the only edit.
+The thumbnail (`…/games/<slug>/thumb_2.jpg`) and the player
+(`…/full/<slug>`) are built from the slug.
 
-## Running it
+## Running
 
 ```bash
-npm start          # python3 -m http.server 8000 --bind 0.0.0.0
-# open http://localhost:8000
+npm start     # python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
-Or open `index.html` directly. (Deep links rely on `history.replaceState`,
-which some browsers restrict on `file://`; the site itself still works.)
-
-### Tests
+Open <http://localhost:8000>. Opening `index.html` from disk also works,
+except that deep links need a real server.
 
 ```bash
 npm install
 npm test
 ```
 
-Two jsdom suites, 85 checks total. They drive the real DOM: first paint, sort
-order, search and empty states, saves and persistence, the player lifecycle
-(only one iframe, correct `src`, teardown on `Esc`, focus return), deep links,
-shuffle, shortcuts, and the catalogue’s shape.
+## Deployment
 
-## Embedding notes
+Static files, served by GitHub Pages from the branch root
+(`arena/22c34602-classroom`, folder `/`). Push and Pages rebuilds.
 
-Titles are iframed from `https://www.madkidgames.com/full/<slug>` — the URL the
-publisher’s own “New Window” button uses, and the one their embed guide
-supports. Nothing is copied, proxied, or hosted here.
+## Notes
 
-If a title shows a blank frame, the publisher is refusing to be framed for that
-slug; the arrow in the player bar opens it in a new tab instead. Everything else
-on the wall keeps working.
-
-## Deploying
-
-The site is plain static files, so GitHub Pages serves it straight from the
-branch root:
-
-1. **Settings → Pages** → branch `arena/22c34602-classroom`, folder `/ (root)`.
-2. If this branch is also the repository’s default branch, pushes go live with
-   no pull request.
-
-## A note on the copy
-
-The brand is **G@M£$**. The interface deliberately avoids the obvious word for
-the things it lists — it says *titles*, *the wall*, *the arcade* — and title
-names are the only place the publisher’s own wording shows through.
-
-## History
-
-This is the third build of the repository: a Google-Classroom disguise, then a
-self-contained seven-game arcade, and now a thin, fast front-end over a real
-embeddable catalogue. The classroom mode and the hand-written titles are gone;
-the current tree is what the site actually is.
+- Titles stream from MadKidGames; nothing is copied or hosted here.
+- A blank frame means the publisher declined that slug. The arrow in the
+  player bar opens it in a new tab.
+- The interface calls them titles. Title names are the publisher's.

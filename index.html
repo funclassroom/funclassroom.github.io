@@ -4,79 +4,71 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>G@M£$</title>
-<meta name="description" content="G@M£$ — a wall of instant-play titles. Pick one and it opens right here.">
-<meta name="theme-color" content="#07070a">
+<meta name="description" content="G@M£$ — 507 titles that play right in the page.">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23d7ff3e'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='900' text-anchor='middle' fill='%2307070a'%3EG%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2315161a'/%3E%3Ctext x='32' y='44' font-family='system-ui,sans-serif' font-size='34' font-weight='800' text-anchor='middle' fill='%23ffffff'%3EG%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/app.css">
 </head>
 <body>
-<a class="skip" href="#grid">Skip to the collection</a>
+<a class="skip" href="#grid">Skip to the list</a>
 
 <header class="bar">
   <div class="bar-in">
-    <a class="brand" href="./">
-      <span class="brand-mark" aria-hidden="true">G</span>
-      <span class="brand-word">G@M£$</span>
-    </a>
+    <a class="logo" href="./">G@M£$</a>
 
     <div class="search">
       <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
       <input id="q" type="search" placeholder="Search titles" autocomplete="off" spellcheck="false" aria-label="Search titles">
-      <kbd aria-hidden="true">/</kbd>
+      <button type="button" class="search-clear" data-search-clear hidden aria-label="Clear search">
+        <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
     </div>
 
     <div class="bar-actions">
-      <button type="button" class="chip" data-saved-toggle aria-pressed="false">
+      <button type="button" class="btn" data-saved-toggle aria-pressed="false">
         <svg class="ico" aria-hidden="true"><use href="#i-star"/></svg>
         <span>Saved</span>
         <b data-saved-count>0</b>
       </button>
-      <button type="button" class="btn btn-lime" data-shuffle>
+      <button type="button" class="btn btn-dark" data-shuffle>
         <svg class="ico" aria-hidden="true"><use href="#i-shuffle"/></svg>
-        <span>Surprise me</span>
+        <span>Random</span>
       </button>
     </div>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <p class="kicker">The arcade</p>
-    <h1 class="wordmark">G@M£$</h1>
-    <p class="sub"><b data-count>0</b> titles. No installs, no accounts — tap one and it plays right here.</p>
-  </section>
-
-  <section class="toolbar">
-    <h2>All titles <span class="shown" data-shown aria-live="polite"></span></h2>
+<main class="wrap">
+  <div class="toolbar">
+    <h1>All titles <span class="count" data-count>0</span><span class="shown" data-shown></span></h1>
     <div class="sorts" role="group" aria-label="Sort by">
       <button type="button" data-sort="hot" aria-pressed="true">Popular</button>
       <button type="button" data-sort="top" aria-pressed="false">Top rated</button>
       <button type="button" data-sort="az" aria-pressed="false">A–Z</button>
     </div>
-  </section>
+  </div>
 
-  <section class="recent" data-recent hidden aria-label="Recently opened">
-    <p class="recent-label">Jump back in</p>
+  <section class="recent" data-recent hidden aria-label="Recently played">
+    <h2>Recently played</h2>
     <div class="recent-list" data-recent-list></div>
   </section>
 
-  <section id="grid" class="grid" aria-label="Collection"></section>
+  <section id="grid" class="grid" aria-label="Titles"></section>
 
   <p class="empty" data-empty hidden>
-    Nothing matches <b data-empty-q></b>.
-    <button type="button" class="link" data-clear>Clear the search</button>
+    No results for <b data-empty-q></b>.
+    <button type="button" class="link" data-clear>Clear search</button>
   </p>
 </main>
 
 <footer class="foot">
-  <p>Built for the five-minute break. <span aria-hidden="true">©</span> 2026 G@M£$</p>
-  <p class="foot-small">Titles are streamed from their publisher — nothing is hosted here.</p>
+  <p>G@M£$ <span class="sep">/</span> 507 titles, streamed from MadKidGames. Nothing is hosted here.</p>
 </footer>
 
 <div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="player-title">
   <div class="player-top">
-    <button type="button" class="icon-btn" data-close aria-label="Close and go back">
+    <button type="button" class="pbtn" data-close aria-label="Close">
       <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
     </button>
     <div class="player-meta">
@@ -84,10 +76,10 @@
       <span data-player-sub></span>
     </div>
     <div class="player-tools">
-      <a class="icon-btn" data-external target="_blank" rel="noopener" aria-label="Open in a new tab">
+      <a class="pbtn" data-external target="_blank" rel="noopener" aria-label="Open in a new tab">
         <svg class="ico" aria-hidden="true"><use href="#i-external"/></svg>
       </a>
-      <button type="button" class="icon-btn" data-fs aria-label="Fullscreen" aria-pressed="false">
+      <button type="button" class="pbtn" data-fs aria-label="Fullscreen" aria-pressed="false">
         <svg class="ico" aria-hidden="true"><use href="#i-expand"/></svg>
       </button>
     </div>
@@ -96,14 +88,10 @@
   <div class="player-stage" data-stage>
     <div class="player-load" data-loading>
       <span class="spinner" aria-hidden="true"></span>
-      <span data-loading-text>Loading…</span>
-      <a class="load-link" data-load-link target="_blank" rel="noopener" hidden>Open it in a new tab</a>
+      <span data-loading-text>Loading</span>
+      <a class="load-link" data-load-link target="_blank" rel="noopener" hidden>Open in a new tab</a>
     </div>
   </div>
-
-  <noscript>
-    <p class="player-noscript">This player needs JavaScript. <a data-external-noscript href="https://www.madkidgames.com/">Open the publisher instead</a>.</p>
-  </noscript>
 </div>
 
 <svg class="sprite" aria-hidden="true" focusable="false">

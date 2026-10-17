@@ -30,7 +30,7 @@ const CATALOG = sandbox.window.CATALOG;
 const slugs = CATALOG.map((g) => g.slug);
 const titles = CATALOG.map((g) => g.title);
 
-check("catalogue has the six harvested pages", CATALOG.length === 168, String(CATALOG.length));
+check("catalogue holds every listed title", CATALOG.length === 507, String(CATALOG.length));
 check("slugs are unique", new Set(slugs).size === slugs.length);
 check("titles are unique", new Set(titles).size === titles.length);
 check(
@@ -73,6 +73,7 @@ check("index loads the catalogue", /assets\/js\/catalog\.js/.test(index));
 check("index loads the app", /assets\/js\/app\.js/.test(index));
 check("index loads the one stylesheet", /assets\/css\/app\.css/.test(index));
 check("index has no classroom leftovers", !/classroom|gamekit|data-mode/i.test(index));
+check("index has no hero wordmark", !/class="hero"|class="wordmark"/.test(index));
 check(
   "every local asset referenced exists",
   Array.from(index.matchAll(/(?:src|href)="((?!https?:|data:|#)[^"]+)"/g))
@@ -84,11 +85,11 @@ check("the old toolkit is gone", !fs.existsSync(path.join(ROOT, "assets/js/gamek
 check("the 404 page links home", /href="\.\/"/.test(notFound));
 check("the 404 page wears the same skin", /assets\/css\/app\.css/.test(notFound));
 check("the 404 page keeps the wordmark", notFound.includes("G@M£$"));
-check("package version is 3.x", /^3\./.test(pkg.version), pkg.version);
+check("package version is 4.x", /^4\./.test(pkg.version), pkg.version);
 check("npm test runs both suites", /ui\.test\.js/.test(pkg.scripts.test) && /catalog\.test\.js/.test(pkg.scripts.test));
 check("no build step is required", !pkg.scripts.build);
 check("README documents the rebuild", readme.includes("G@M£$"));
-check("README states the count", readme.includes("168"));
+check("README states the count", readme.includes("507"));
 
 console.log("\n  DATA: " + pass + " passed, " + fail + " failed\n");
 if (fail) {
