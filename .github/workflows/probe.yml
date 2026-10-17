@@ -1,0 +1,26 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          cat > u.txt <<'TXT'
+          https://img.gamemonetize.com/awue2vxolgollll5aop6wlbdfgizj7e0/512x384.jpg
+          https://img.gamemonetize.com/m0f68pr59l5jbq3e4mgsi3dlq83c0wgs/512x384.jpg
+          https://img.gamemonetize.com/jqnh1iqo7lo3cpi99z37h1u24w00h8j2/512x384.jpg
+          https://img.gamemonetize.com/h0yn15shfo0centrh5lpm45c2iun248s/512x384.jpg
+          https://img.gamemonetize.com/jrztyk0wdnq6wuoczlby4t8iv7h9de8r/512x384.jpg
+          https://img.gamemonetize.com/sunivbgaw98s2nmvao60lhqyhjh0es3f/512x384.jpg
+          https://img.gamemonetize.com/l0t4l08q7wex6y2l01cpdr0at0cudyap/512x384.jpg
+          https://img.gamemonetize.com/1pdxy0j95mvsrtonv49i7xi4doevxhaq/512x384.jpg
+          https://www.madkidgames.com/games/geometry-dash/thumb_2.jpg
+          TXT
+          while read -r u; do [ -z "$u" ] && continue; echo "$(curl -s -o /dev/null -w '%{http_code} %{size_download}' --max-time 20 "$u") $u"; done < u.txt | tee probe-out.txt
+      - name: Save
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.txt && git commit -q -m "probe thumbs" && git push
