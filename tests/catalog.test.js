@@ -134,6 +134,16 @@ check(
 );
 check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
 check(
+  "the in-house studio ships with the site",
+  fs.existsSync(path.join(ROOT, "veo.html")) &&
+    fs.existsSync(path.join(ROOT, "assets/js/veo.js"))
+);
+check(
+  "the studio never calls out to the network",
+  !/https?:\/\//.test(fs.readFileSync(path.join(ROOT, "assets/js/veo.js"), "utf8")) &&
+    !/\bsrc=["']https?:/.test(fs.readFileSync(path.join(ROOT, "veo.html"), "utf8"))
+);
+check(
   "saved state never leaves the device",
   !/sendBeacon|XMLHttpRequest|navigator\.send/.test(app) &&
     !/fetch\([\s\S]{0,200}body:/.test(app) &&
