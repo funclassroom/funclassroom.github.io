@@ -1,0 +1,17 @@
+{
+  "routes": {
+    "2": 16195,
+    "3": 151
+  },
+  "sources": {
+    "gamemonetize.com": 31851,
+    "madkidgames.com": 992
+  },
+  "tiles": 16346,
+  "verified": {
+    "alive": 490,
+    "checked": 16346,
+    "gone": 0,
+    "unknown": 15856
+  }
+}
