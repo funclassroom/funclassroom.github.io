@@ -1,0 +1,45 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm init -y >/dev/null 2>&1; npm i playwright@1.47.2 --no-audit --no-fund >/dev/null 2>&1
+      - run: npx playwright install chromium --with-deps >/dev/null 2>&1
+      - name: Play the plain one
+        run: |
+          cat > probe.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "node:fs";
+          const out = {};
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+          await page.goto("https://socks275.github.io/ClassroomGames/?v=10", { waitUntil: "networkidle", timeout: 90000 });
+          await page.fill("#q", "geometry dash");
+          await page.waitForTimeout(4000);
+          out.titles = await page.$$eval(".tile-title", (n) => n.map((x) => x.textContent));
+          await page.screenshot({ path: "probe-wall.png" });
+          const plain = page.locator(".tile", { has: page.locator(".tile-title", { hasText: /^Geometry Dash$/ }) });
+          await plain.first().locator(".tile-open").click();
+          await page.waitForTimeout(15000);
+          out.player = await page.evaluate(() => ({
+            blocked: !document.querySelector("[data-blocked]")?.hidden,
+            src: document.querySelector("iframe")?.src,
+            source: document.querySelector("[data-source]")?.textContent,
+          }));
+          await page.screenshot({ path: "probe-plain.png" });
+          await browser.close();
+          fs.writeFileSync("probe-out.json", JSON.stringify(out, null, 1));
+          JS
+          node probe.mjs
+      - name: Save
+        if: always()
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.json probe-wall.png probe-plain.png .github/workflows/probe.yml
+          git commit -q -m "probe: plain geometry dash" || true
+          git push || true
