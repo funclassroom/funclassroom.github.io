@@ -5,19 +5,19 @@
     "madkidgames": 507
   },
   "routes": {
-    "1": 1701,
-    "2": 15833,
+    "1": 1694,
+    "2": 15807,
     "3": 56
   },
   "sources": {
-    "gamemonetize.com": 31777,
-    "htmlgames.com": 1251,
+    "gamemonetize.com": 31725,
+    "htmlgames.com": 1244,
     "madkidgames.com": 507
   },
-  "tiles": 17590,
+  "tiles": 17557,
   "verified": {
-    "alive": 17580,
-    "checked": 17566,
+    "alive": 17547,
+    "checked": 17559,
     "gone": 2,
     "unknown": 10
   }
