@@ -73,9 +73,14 @@ UA_CHECK = "Mozilla/5.0 (compatible; classroom-catalog/3.0)"
 
 def status_of(url):
     """What the host actually answers. 404/410 means the game is gone."""
-    request = urllib.request.Request(url, headers={"User-Agent": UA_CHECK}, method="HEAD")
+    # A range request, not HEAD: the CDN answers HEAD with 403 but serves the
+    # first byte happily, so HEAD would call every game dead.
+    request = urllib.request.Request(
+        url, headers={"User-Agent": UA_CHECK, "Range": "bytes=0-0"}
+    )
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
+            response.read(1)
             return response.status
     except urllib.error.HTTPError as err:
         return err.code
