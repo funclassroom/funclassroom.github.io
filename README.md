@@ -7,13 +7,14 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 ## The catalogue
 
-Three sources, merged into one wall by title:
+Three feeds plus a short hand-written list, merged into one wall by title:
 
 | source | titles | embed host |
 | --- | --- | --- |
 | GameMonetize's public feed | ~15,800 | `html5.gamemonetize.co` (+ `gamemonetize.com` wrapper) |
 | HTMLGames' public embed index | 1,244 | `cdn.htmlgames.com` |
 | MadKidGames sitemap | 506 | `www.madkidgames.com` |
+| `scripts/extras.py`, by hand | 1 | `eymenwsmc.site` |
 
 Routes are chosen **one per domain**, so a block on one host never takes the
 backup with it. That is why `html5.gamemonetize.co` and `gamemonetize.com` are
@@ -40,6 +41,23 @@ shows an empty frame. So when a title also exists on GameMonetize, that route
 opens first and MadKid becomes the backup. Their pages sit behind a bot
 wall that answers automated checks with a Cloudflare challenge, which is why
 the build cannot verify them; the browser can.
+
+### Titles no feed carries
+
+`scripts/extras.py` is a list of games added by hand. They go through the same
+grouping and sorting as a feed, so an extra can never appear twice and a portal
+that later starts carrying the same title just becomes a second route on the
+same tile. Two keys are special: `id` names the tile slug, and `pin` keeps it
+above the most-played, on every sort.
+
+The one entry is **Minecraft** — Eaglercraft 26.2, the WebAssembly port of
+Minecraft Java Edition, served from [eymenwsmc.site](https://eymenwsmc.site/262/index.html?v=u2)
+with the standalone client build as the fallback route. It was loaded in a real
+browser, both on its own and inside a bare iframe, before it went on the wall:
+the client boots to the title screen, singleplayer works, and the page framed
+it with no `X-Frame-Options` or `frame-ancestors` in the way. The player's
+iframe now also asks for `pointer-lock`, without which the mouse cannot look
+around in-game.
 
 ### Why not hundreds of portals
 
@@ -123,9 +141,10 @@ recents; nothing is sent anywhere.
 index.html               the page
 404.html                 not-found page
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,557 rows)
+assets/js/catalog.js     generated catalogue (17,558 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
+scripts/extras.py        titles added by hand (Minecraft)
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
 ```
@@ -144,8 +163,11 @@ Push, and Pages rebuilds.
 
 ## On images and AI
 
-No image file is generated or hosted here: every thumbnail is the publisher's
-own file, and the only artwork in the repo is the hand-written SVG tab icon.
+No image is generated here: every thumbnail is the publisher's own file. The
+only two files of artwork in the repo are the hand-written SVG tab icon and
+`assets/img/minecraft.png`, a screenshot of the Eaglercraft title screen taken
+while checking that the embed actually boots — the game has no artwork of its
+own to point a thumbnail at.
 
 AI-titled titles are no longer filtered — the old blocklist was removed when it
 turned out to be hiding the one Veo title the feeds still carried.

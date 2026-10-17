@@ -107,7 +107,17 @@ check(
 );
 check(
   "every tile has a thumbnail",
-  CATALOG.every((g) => /^https:\/\//.test(g.thumb))
+  CATALOG.every((g) => /^https:\/\//.test(g.thumb) || /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(g.thumb))
+);
+check(
+  "the hand-added title is pinned and leads the catalogue",
+  CATALOG[0].id === "minecraft" && CATALOG[0].pinned === true && CATALOG[0].title === "Minecraft"
+);
+check(
+  "the hand-added title carries the Eaglercraft build as a fallback",
+  CATALOG[0].sources.length === 2 &&
+    /eymenwsmc\.site/.test(CATALOG[0].sources[0].url) &&
+    /eaglercraft/.test(CATALOG[0].sources[1].url)
 );
 
 /* ---------- files ---------- */
@@ -132,7 +142,10 @@ check(
   "AI titles are no longer filtered out",
   !/ai-token|AI_TOKENS|is_ai/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
 );
-check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
+check(
+  "the only image in the repo is the hand-shot title screen",
+  fs.readdirSync(path.join(ROOT, "assets/img")).join(",") === "minecraft.png"
+);
 check(
   "saved state never leaves the device",
   !/sendBeacon|XMLHttpRequest|navigator\.send/.test(app) &&

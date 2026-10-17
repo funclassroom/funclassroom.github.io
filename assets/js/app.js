@@ -146,6 +146,9 @@
   function sorted(list) {
     var copy = list.slice();
     copy.sort(function (a, b) {
+      // A pinned title is the one thing the wall leads with, on every sort:
+      // it is hand-added and has no play count to rank by.
+      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
       // Games that can play inside the page always lead; the rest open in a
       // tab and sit at the end.
       if (playable(a) !== playable(b)) return playable(a) ? -1 : 1;
@@ -220,6 +223,7 @@
     tile.className = "tile";
     tile.setAttribute("data-id", item.id);
     tile.setAttribute("data-playable", playable(item) ? "1" : "0");
+    tile.setAttribute("data-pinned", item.pinned ? "1" : "0");
     tile.setAttribute("data-rating", item.rating.toFixed(1));
 
     var open = document.createElement("button");
@@ -609,7 +613,12 @@
     frame.className = "player-frame";
     frame.src = source.url;
     frame.title = item.title;
-    frame.setAttribute("allow", "autoplay; fullscreen; gamepad; accelerometer; gyroscope");
+    // pointer-lock is what lets a game capture the mouse inside the frame;
+    // Minecraft's look controls are dead without it.
+    frame.setAttribute(
+      "allow",
+      "autoplay; fullscreen; gamepad; pointer-lock; accelerometer; gyroscope"
+    );
     frame.setAttribute("allowfullscreen", "");
     frame.setAttribute("frameborder", "0");
 

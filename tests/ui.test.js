@@ -122,10 +122,22 @@ function titles(document) {
       check("the button counts what is left", /\d+ left/.test(more.textContent) || /Show 120 more/.test(more.textContent));
     }
     check(
-      "thumbnails come from a portal",
+      "thumbnails are portal art or the local pinned art",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
-        /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src"))
+        /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src")) ||
+        /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
       )
+    );
+    check(
+      "the pinned title leads the wall",
+      (() => {
+        const first = document.querySelector(".tile");
+        return (
+          first.getAttribute("data-pinned") === "1" &&
+          first.querySelector(".tile-title").textContent === "Minecraft"
+        );
+      })(),
+      document.querySelector(".tile .tile-title").textContent
     );
     check(
       "tiles name themselves for screen readers",
@@ -189,14 +201,25 @@ function titles(document) {
     const alphabetical = titles(document);
     const sortedPart = alphabetical.filter((t) => t !== "");
     check("A–Z sorts", sortedPart.length === alphabetical.length);
+    check(
+      "the pinned title still leads A–Z",
+      document.querySelector(".tile").getAttribute("data-pinned") === "1"
+    );
 
     click(window, buttons.find((b) => b.dataset.sort === "top"));
+    // The pinned tile is deliberate and carries no rating, so the ranking
+    // assertion is about everything else on the wall.
     const ratings = Array.from(document.querySelectorAll(".tile"))
+      .filter((t) => t.getAttribute("data-pinned") !== "1")
       .map((t) => Number(t.getAttribute("data-rating")));
     check(
       "top rated descends",
       ratings.every((r, i) => i === 0 || ratings[i - 1] >= r),
       ratings.slice(0, 5).join(",")
+    );
+    check(
+      "the pinned title still leads top rated",
+      document.querySelector(".tile").getAttribute("data-pinned") === "1"
     );
     check("one sort at a time", document.querySelectorAll('[data-sort][aria-pressed="true"]').length === 1);
     dom.window.close();
