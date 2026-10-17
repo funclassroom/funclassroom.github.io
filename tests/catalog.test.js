@@ -129,8 +129,8 @@ check(
     .every((rel) => fs.existsSync(path.join(ROOT, rel)))
 );
 check(
-  "no AI-titled entries remain",
-  !CATALOG.some((g) => /\bai\b|chatgpt|midjourney|gemini|veo/i.test(g.title + " " + g.slug))
+  "AI titles are no longer filtered out",
+  !/ai-token|AI_TOKENS|is_ai/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
 );
 check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
 check(

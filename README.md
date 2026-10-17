@@ -72,7 +72,8 @@ re-reads the MadKidGames sitemap, merges duplicates by a normalised title
 
 The builder refuses to write a catalogue that is smaller than the one already
 in place, so a bad feed day cannot wipe the wall. It also drops generative-AI
-titles and a short blocklist of gambling titles (casino, slots, poker).
+titles and a short blocklist of gambling titles (casino, slots, poker). AI-titled
+games are no longer excluded — an earlier rule did that, and it has been removed.
 
 ## Progress and saves
 

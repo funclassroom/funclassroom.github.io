@@ -20,40 +20,6 @@ from concurrent.futures import ThreadPoolExecutor
 import portals
 
 OUT = "assets/js/catalog.js"
-AI_TOKENS = (
-    "artificial-intelligence", "chatgpt", "gpt-", "midjourney", "stable-diffusion",
-    "gemini", "veo-3", "neural-network", "ai-image", "ai-art", "ai-chat",
-)
-
-
-def is_ai(slug, title):
-    key = (slug + " " + title).lower()
-    if any(token in key for token in AI_TOKENS):
-        return True
-    return re.search(r"\bai\b", key) is not None
-
-
-def read_existing():
-    """Keep real titles, ratings and play counts between rebuilds."""
-    try:
-        with open(OUT, encoding="utf-8") as handle:
-            text = handle.read()
-    except FileNotFoundError:
-        return {}
-
-    rows = {}
-    pattern = r'\["([^"]+)",\s*"((?:[^"\\]|\\.)*)",\s*([0-9.]+),\s*(\d+),\s*"([^"]*)"'
-    for match in re.finditer(pattern, text):
-        slug = match.group(1)
-        rows[slug] = {
-            "title": match.group(2).replace('\\"', '"').replace("\\\\", "\\"),
-            "rating": float(match.group(3)),
-            "plays": int(match.group(4)),
-            "thumb": match.group(5),
-        }
-    return rows
-
-
 def clean_title(text):
     """Feeds carry HTML entities and zero-width joiners; browsers should not."""
     text = html.unescape(text or "")
@@ -189,8 +155,6 @@ def main():
             continue
         game["title"] = clean_title(game["title"])
         if not game["title"]:
-            continue
-        if is_ai(game.get("slug", ""), game["title"]):
             continue
 
         if key not in groups:
