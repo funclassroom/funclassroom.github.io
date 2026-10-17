@@ -386,6 +386,26 @@ function titles(document) {
     dom.window.close();
   }
 
+  /* a frame that loads quickly is a working frame, never "blocked" */
+  {
+    const dom = boot("", null, miniCatalog([{ id: "fast", title: "Fast", sources: sourcesFor(2) }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    click(window, document.querySelector(".tile-open"));
+    const frame = document.querySelector("iframe");
+    check("the frame is mounted", !!frame);
+    window.dispatchEvent(new window.Event("load"));
+    const inner = frame;
+    inner.dispatchEvent(new window.Event("load"));
+    await tick();
+    check("a fast load is not treated as a block", document.querySelector("[data-blocked]").hidden);
+    check("the frame stays mounted", document.querySelectorAll("iframe").length === 1);
+    check("the loading overlay goes away", document.querySelector("[data-loading]").hidden);
+    dom.window.close();
+  }
+
   /* a source that will not load is tried first, then excused */
   {
     const dom = boot("", null, miniCatalog([{

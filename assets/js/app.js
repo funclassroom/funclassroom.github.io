@@ -495,9 +495,6 @@
   }
 
   function mountFrame(item, source, sources, index) {
-    var startedAt = Date.now();
-    state.loadingFrame = true;
-
     var frame = document.createElement("iframe");
     frame.className = "player-frame";
     frame.src = source.url;
@@ -507,43 +504,30 @@
     frame.setAttribute("frameborder", "0");
 
     frame.addEventListener("load", function () {
-      window.clearTimeout(dom.loadTimer);
-
-      // A frame that "finishes loading" in a few dozen milliseconds sent no
-      // game — that is the browser's own error page for a refused frame.
-      var instant = Date.now() - startedAt < 600;
-      if (instant && index + 1 < sources.length) {
-        noteBad(source.portal);
-        nextSource(true);
-        return;
-      }
-
+      // The document answered. Whether it then draws a game is the
+      // publisher's business, and there is no honest way for this page to
+      // see inside a cross-origin frame — so never call it broken here.
       state.loaded = true;
       state.loadingFrame = false;
       dom.loading.hidden = true;
-
-      if (instant) {
-        // Last route, and it refused: say so instead of showing a dead frame.
-        noteBad(source.portal);
-        showBlocked(item, sources);
-      }
+      window.clearTimeout(dom.loadTimer);
+      window.clearTimeout(dom.slowTimer);
     });
 
     dom.stage.appendChild(frame);
 
+    // The overlay must never be the thing that hides a working game: it comes
+    // away after a moment whether or not `load` fired.
     window.clearTimeout(dom.loadTimer);
     dom.loadTimer = window.setTimeout(function () {
-      if (state.loaded) {
-        dom.loadLink.hidden = false;
-        return;
-      }
-      dom.loadingText.textContent = "That source is not answering";
-      window.setTimeout(function () {
-        if (state.active && !state.loaded && state.loadingFrame && state.sourceIndex === index) {
-          noteBad(source.portal);
-          nextSource(true);
-        }
-      }, GIVE_UP_MS - SLOW_LOAD_MS);
+      dom.loading.hidden = true;
+    }, 3500);
+
+    window.clearTimeout(dom.slowTimer);
+    dom.slowTimer = window.setTimeout(function () {
+      if (state.loaded) return;
+      dom.loadLink.hidden = false;
+      dom.source.textContent = "still loading — use “Try another source” if it stays blank";
     }, SLOW_LOAD_MS);
   }
 
@@ -611,6 +595,7 @@
 
   function clearStage() {
     window.clearTimeout(dom.loadTimer);
+    window.clearTimeout(dom.slowTimer);
     var frame = $(".player-frame", dom.stage);
     if (frame) frame.remove();
   }
