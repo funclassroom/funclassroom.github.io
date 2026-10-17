@@ -14,6 +14,7 @@
   var MAX_RECENT = 8;
   var SLOW_LOAD_MS = 9000;
   var GIVE_UP_MS = 12000;
+  var REACH_MS = 6000;
   var EAGER_IMAGES = 24;
   var BATCH = 120;
   var SCROLL_SAVE_MS = 350;
@@ -388,12 +389,57 @@
 
   function sourcesFor(item) {
     var list = embeddable(item);
+
+    // Portals that already failed on this device go to the back of the queue,
+    // so a blocked host does not cost a wait on every single tile.
+    list.sort(function (a, b) {
+      return (store.bad[a.portal] ? 1 : 0) - (store.bad[b.portal] ? 1 : 0);
+    });
+
+    // A portal that played last time comes first for the same title.
     var good = store.good[item.id];
-    if (typeof good === "number" && good > 0 && good < list.length) {
-      var preferred = list.splice(good, 1)[0];
-      list.unshift(preferred);
+    if (typeof good === "string") {
+      for (var i = 0; i < list.length; i += 1) {
+        if (list[i].portal === good) {
+          list.unshift(list.splice(i, 1)[0]);
+          break;
+        }
+      }
+    } else if (typeof good === "number" && good > 0 && good < list.length) {
+      list.unshift(list.splice(good, 1)[0]);
     }
     return list;
+  }
+
+  /* Can the browser reach this host at all? A blocked host answers the frame
+     with an error page that still fires `load`, which is why a dead route can
+     look like a success. An opaque no-cors request is the honest check. */
+  function reachable(url) {
+    if (!window.fetch || !window.AbortController) return Promise.resolve(true);
+
+    return new Promise(function (resolve) {
+      var settled = false;
+      var controller = new window.AbortController();
+      var timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        try { controller.abort(); } catch (err) { /* ignore */ }
+        resolve(false);
+      }, REACH_MS);
+
+      function finish(ok) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(ok);
+      }
+
+      window.fetch(url, {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: controller.signal
+      }).then(function () { finish(true); }, function () { finish(false); });
+    });
   }
 
   function noteBad(portal) {
@@ -403,15 +449,7 @@
 
   function noteGood(id, portal) {
     delete store.bad[portal];
-    var index = -1;
-    var item = BY_ID[id];
-    if (item) {
-      item.sources.forEach(function (source, i) {
-        if (source.portal === portal) index = i;
-      });
-    }
-    if (index > 0) store.good[id] = index;
-    else delete store.good[id];
+    store.good[id] = portal;
     save();
   }
 
@@ -444,6 +482,9 @@
 
     rememberPlay(id);
 
+    // Freeze the order for this session: a portal failing mid-way must not
+    // shuffle the queue under the user's feet.
+    state.queue = sourcesFor(item);
     attemptSource(0);
     dom.close.focus({ preventScroll: true });
 
@@ -456,7 +497,7 @@
     var item = BY_ID[state.active];
     if (!item) return;
 
-    var sources = sourcesFor(item);
+    var sources = state.queue && state.queue.length ? state.queue : sourcesFor(item);
     clearStage();
 
     if (index >= sources.length) {
@@ -468,6 +509,7 @@
     state.loaded = false;
 
     var source = sources[index];
+    state.currentId = state.active;
     dom.blocked.hidden = true;
     dom.loading.hidden = false;
     dom.loadingText.textContent = "Loading";
@@ -481,6 +523,27 @@
     dom.next.hidden = sources.length < 2;
     dom.next.disabled = false;
 
+    if (!window.fetch || !window.AbortController) {
+      mountFrame(item, source, sources, index);
+      return;
+    }
+
+    var token = (state.token = (state.token || 0) + 1);
+
+    reachable(source.url).then(function (ok) {
+      if (token !== state.token || state.active !== state.currentId) return;
+      if (!ok) {
+        noteBad(source.portal);
+        nextSource(true);
+        return;
+      }
+      mountFrame(item, source, sources, index);
+    });
+  }
+
+  function mountFrame(item, source, sources, index) {
+    var startedAt = Date.now();
+
     var frame = document.createElement("iframe");
     frame.className = "player-frame";
     frame.src = source.url;
@@ -490,9 +553,25 @@
     frame.setAttribute("frameborder", "0");
 
     frame.addEventListener("load", function () {
+      window.clearTimeout(dom.loadTimer);
+
+      // A frame that "finishes loading" in a few dozen milliseconds sent no
+      // game — that is the browser's own error page for a refused frame.
+      var instant = Date.now() - startedAt < 600;
+      if (instant && index + 1 < sources.length) {
+        noteBad(source.portal);
+        nextSource(true);
+        return;
+      }
+
       state.loaded = true;
       dom.loading.hidden = true;
-      window.clearTimeout(dom.loadTimer);
+
+      if (instant) {
+        // Last route, and it refused: say so instead of showing a dead frame.
+        noteBad(source.portal);
+        showBlocked(item, sources);
+      }
     });
 
     dom.stage.appendChild(frame);
@@ -516,7 +595,7 @@
   function nextSource(automatic) {
     var item = BY_ID[state.active];
     if (!item) return;
-    var sources = sourcesFor(item);
+    var sources = state.queue && state.queue.length ? state.queue : sourcesFor(item);
     var index = state.sourceIndex;
 
     if (index + 1 >= sources.length) {
@@ -569,6 +648,9 @@
     var item = id ? BY_ID[id] : null;
     if (!item) return;
     dom.blocked.hidden = true;
+    // Rebuild the queue: portals that failed are now last, so a retry starts
+    // with one that has not been given a chance yet.
+    state.queue = sourcesFor(item);
     attemptSource(0);
   }
 
@@ -590,6 +672,7 @@
 
     state.active = null;
     state.sourceIndex = -1;
+    state.queue = null;
     state.loaded = false;
     clearStage();
     dom.loading.hidden = false;

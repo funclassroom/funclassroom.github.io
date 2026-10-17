@@ -349,7 +349,11 @@ function titles(document) {
     check("no next button in the dead end", document.querySelector("[data-next]").hidden);
 
     click(window, document.querySelector("[data-retry]"));
-    check("retry starts again at the first source", src() === "https://portal1.test/embed/");
+    check(
+      "retry starts again, preferring the portals that did not fail",
+      /portal[23]\.test/.test(src()),
+      src()
+    );
     check("blocked panel is hidden on retry", document.querySelector("[data-blocked]").hidden);
     dom.window.close();
   }

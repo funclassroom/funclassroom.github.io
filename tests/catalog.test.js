@@ -128,7 +128,13 @@ check(
 check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
 check(
   "saved state never leaves the device",
-  !/\bfetch\s*\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(app)
+  !/sendBeacon|XMLHttpRequest|navigator\.send/.test(app) &&
+    !/fetch\([^)]*store/.test(app) &&
+    !/fetch\([^)]*JSON\.stringify/.test(app)
+);
+check(
+  "the only request is a reachability check that carries no data",
+  (app.match(/fetch\(/g) || []).length === 1 && /mode:\s*"no-cors"/.test(app)
 );
 check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
 check("the page offers a way to wipe its own data", /data-reset/.test(index));
