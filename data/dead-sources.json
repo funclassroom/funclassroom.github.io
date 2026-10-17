@@ -1,7 +1,24 @@
 {
-  "checkedAt": "2026-10-17T11:52:37.538Z",
-  "checked": 240,
-  "dead": 0,
-  "urls": [],
-  "detail": []
+  "checkedAt": "2026-10-17T12:28:29.562Z",
+  "checked": 1500,
+  "dead": 1,
+  "urls": [
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/"
+  ],
+  "detail": [
+    {
+      "id": "49563",
+      "title": "Jinx & Minx Tower Escape",
+      "portal": "gamemonetize.com",
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/",
+      "status": 302,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": ""
+      },
+      "dead": true
+    }
+  ]
 }
