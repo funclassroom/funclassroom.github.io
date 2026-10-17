@@ -20,22 +20,6 @@ from concurrent.futures import ThreadPoolExecutor
 import portals
 
 OUT = "assets/js/catalog.js"
-# Titles a school network would actually object to, and games that are really
-# gambling dressed up. Narrow on purpose: "shoot" and "war" catch half the
-# arcade shelf and are not what a filter flags.
-BLOCK_TOKENS = (
-    "horror", "granny", "evil-nun", "fnaf", "five-nights", "poppy-playtime",
-    "huggy-wuggy", "siren-head", "slender", "creepypasta", "gore", "blood",
-    "murder", "serial-killer", "hentai", "nsfw", "porn", "sex-", "stripper",
-    "casino", "slots", "roulette", "blackjack", "poker", "gambling", "betting",
-)
-
-
-def is_blocked(slug, title):
-    key = (slug + " " + title).lower().replace(" ", "-")
-    return any(token in key for token in BLOCK_TOKENS)
-
-
 AI_TOKENS = (
     "artificial-intelligence", "chatgpt", "gpt-", "midjourney", "stable-diffusion",
     "gemini", "veo-3", "neural-network", "ai-image", "ai-art", "ai-chat",
@@ -207,8 +191,6 @@ def main():
         if not game["title"]:
             continue
         if is_ai(game.get("slug", ""), game["title"]):
-            continue
-        if is_blocked(game.get("slug", ""), game["title"]):
             continue
 
         if key not in groups:
