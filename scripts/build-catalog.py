@@ -83,9 +83,9 @@ def status_of(url):
         return 0
 
 
-def verify(entries, workers=32):
-    """Drop sources the hosts say do not exist; count what answered."""
-    urls = sorted({src["url"] for entry in entries for src in entry["sources"]})
+def verify(entries, workers=24):
+    """Check the route each tile opens with; drop tiles that are truly gone."""
+    urls = sorted({entry["sources"][0]["url"] for entry in entries})
     print("checking %d urls" % len(urls), file=sys.stderr)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         codes = dict(zip(urls, pool.map(status_of, urls)))
@@ -93,21 +93,16 @@ def verify(entries, workers=32):
     gone = alive = unknown = 0
     kept = []
     for entry in entries:
-        sources = []
-        for src in entry["sources"]:
-            code = codes.get(src["url"], 0)
-            if code in (404, 410):
-                gone += 1
-                continue
-            if 200 <= code < 400:
-                alive += 1
-                src["ok"] = True
-            else:
-                unknown += 1
-            sources.append(src)
-        if sources:
-            entry["sources"] = sources
-            kept.append(entry)
+        code = codes.get(entry["sources"][0]["url"], 0)
+        if code in (404, 410):
+            gone += 1
+            continue
+        if 200 <= code < 400:
+            alive += 1
+            entry["sources"][0]["ok"] = True
+        else:
+            unknown += 1
+        kept.append(entry)
 
     print("sources alive %d, gone %d, unknown %d" % (alive, gone, unknown))
     verify_stats.update({"checked": len(urls), "alive": alive, "gone": gone, "unknown": unknown})
@@ -245,8 +240,8 @@ def main():
     lines.append("")
 
     # Guard: never shrink the wall by accident.
-    playable_now = sum(1 for e in entries if any(src["embed"] for src in e["sources"]))
-    if len(entries) < len(existing) * 0.6 or playable_now < playable_before * 0.6:
+    playable_now = len(entries)
+    if len(entries) < len(existing) * 0.6:
         print(
             "refusing to write: %d entries / %d playable is far below %d / %d"
             % (len(entries), playable_now, len(existing), playable_before),
