@@ -38,4 +38,8 @@ jobs:
           console.log(JSON.stringify(out, null, 1));
           await b.close();
           JS
-          node p.mjs
+          node p.mjs | tee probe-out.txt
+      - name: Save
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.txt && git commit -q -m 'probe results' && git push || true
