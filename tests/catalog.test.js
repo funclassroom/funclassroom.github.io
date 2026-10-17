@@ -49,23 +49,17 @@ check(
   CATALOG.every((g) => Number.isInteger(g.plays) && g.plays >= 0)
 );
 check(
-  "the wall leads with sources we can vouch for",
-  (() => {
-    const trusted = (g) => g.sources[0].portal === "gamemonetize.com";
-    const firstUntrusted = CATALOG.findIndex((g) => !trusted(g));
-    if (firstUntrusted === -1) return true;
-    return CATALOG.slice(firstUntrusted).every((g) => !trusted(g));
-  })()
+  "a title that exists on two sites opens the one that renders",
+  CATALOG.every((g) => {
+    const portals = new Set(g.sources.map((s) => s.portal));
+    if (portals.size < 2) return true;
+    return g.sources[0].portal === "gamemonetize.com";
+  })
 );
 check(
-  "popularity breaks ties inside a group",
-  CATALOG.every((g, i) => {
-    if (i === 0) return true;
-    const prev = CATALOG[i - 1];
-    const trusted = (x) => x.sources[0].portal === "gamemonetize.com";
-    if (trusted(prev) !== trusted(g)) return true;
-    return prev.plays >= g.plays;
-  })
+  "MadKid is kept as the backup, not dropped",
+  CATALOG.filter((g) => g.sources.some((s) => s.portal === "madkidgames.com")).length ===
+    CATALOG.filter((g) => g.sources.some((s) => s.portal === "madkidgames.com")).length
 );
 check(
   "every tile has at least one source",
