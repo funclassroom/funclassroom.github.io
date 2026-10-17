@@ -169,22 +169,32 @@ def main():
 
     # Sources that can actually play inside the page come first; a tile whose
     # only source forbids framing is still kept, it just opens in a new tab.
-    def rank(game):
-        # The first source is what the tile opens. MadKid's embed refuses
-        # pages that are not madkidgames.com (it renders black), so a title
-        # that also exists on a feed we can frame opens that one first and
-        # keeps MadKid as the backup.
+    def play_rank(game):
+        # What the tile opens first. MadKid's embed renders black anywhere
+        # outside madkidgames.com, so a title we also have on a feed we can
+        # frame opens that one and keeps MadKid as the backup.
         return (
             0 if game["portal"] == "gamemonetize.com" else 1,
             0 if game.get("embed") else 1,
-            0 if game.get("thumb") else 1,
             game["portal"],
+        )
+
+    def meta_rank(game):
+        # Where the name, art and stats come from. MadKid has real ratings and
+        # play counts; its titles are also the cleaner ones ("Geometry Dash"
+        # rather than "Geometry Dash Unblocked").
+        return (
+            0 if game["portal"] == "madkidgames.com" else 1,
+            0 if game.get("thumb") else 1,
+            len(game["title"]),
         )
 
     entries = []
     for key in order:
-        bucket = sorted(groups[key], key=rank)[:3]
-        primary = bucket[0]
+        bucket = groups[key]
+        meta = sorted(bucket, key=meta_rank)[0]
+        sources = sorted(bucket, key=play_rank)[:3]
+        primary = meta
         entries.append({
             "id": primary.get("slug") or key.replace(" ", "-"),
             "title": primary["title"],
@@ -193,7 +203,7 @@ def main():
             "thumb": primary.get("thumb") or bucket[-1].get("thumb", ""),
             "sources": [
                 {"portal": item["portal"], "url": item["url"], "embed": bool(item.get("embed"))}
-                for item in bucket
+                for item in sources
             ],
         })
 
