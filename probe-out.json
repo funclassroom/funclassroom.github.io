@@ -1,0 +1,73 @@
+{
+ "gameflare": {
+  "iframes": [
+   "https://www.gameflare.com/online-game/monopoly-online/",
+   "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/b/turnstile/f/av0/rch/m5o3n/0x4AAAAAAADnPIDROrmt1Wwj/light/fbE/new/normal?lang=auto"
+  ],
+  "reqs": [
+   "document https://www.gameflare.com/online-game/monopoly-online/",
+   "script https://www.gameflare.com/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=a4beba0e8fc8a1fb",
+   "other blob:https://www.gameflare.com/5a0924b4-161e-4a17-8275-651ed8e121ea",
+   "xhr https://www.gameflare.com/cdn-cgi/challenge-platform/h/b/fo/3300846780:1792231317:88gwWnLZWomszblIRJquxxMKKFzku8TI5LEnjfDM4Ow/a4beba0e8fc8a1fb/SdmzwvwZwjNAGDQbvxiJdtye8H7p1dKCoR1MTnT4aUQ-1792234063-1.2.1.1-fkXHl5nf.l6JbsDDLakNiMKFSJRnI_tv1w1JPAKEt1e2vY9hXiigxDoJBkSSPl6W",
+   "other blob:https://www.gameflare.com/67374025-e9b8-4549-99e7-9b46ac5f6de1"
+  ]
+ },
+ "tiles": [
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/stick-war-legacy",
+   "title": "Stick War Legacy",
+   "ms": 14058
+  },
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/subway-surfers",
+   "title": "Subway Surfers",
+   "ms": 14062
+  },
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/angry-birds-2",
+   "title": "Angry Birds 2",
+   "ms": 14048
+  },
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/offroad-outlaws",
+   "title": "Offroad Outlaws",
+   "ms": 14066
+  },
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/toca-boca-life-city",
+   "title": "Toca Boca Life City",
+   "ms": 14064
+  },
+  {
+   "source": "madkidgames.com",
+   "blocked": false,
+   "loading": false,
+   "src": "https://www.madkidgames.com/full/bowmasters-archery-shooting",
+   "title": "Bowmasters Archery Shooting",
+   "ms": 14061
+  }
+ ],
+ "failures": [
+  "https://www.madkidgames.com/full/stick-war-legacy :: net::ERR_BLOCKED_BY_RESPONSE",
+  "https://www.madkidgames.com/full/subway-surfers :: net::ERR_BLOCKED_BY_RESPONSE",
+  "https://www.madkidgames.com/full/angry-birds-2 :: net::ERR_BLOCKED_BY_RESPONSE",
+  "https://www.madkidgames.com/full/offroad-outlaws :: net::ERR_BLOCKED_BY_RESPONSE",
+  "https://www.madkidgames.com/full/toca-boca-life-city :: net::ERR_BLOCKED_BY_RESPONSE",
+  "https://www.madkidgames.com/full/bowmasters-archery-shooting :: net::ERR_BLOCKED_BY_RESPONSE"
+ ]
+}
