@@ -382,7 +382,7 @@ function titles(document) {
     dom.window.close();
   }
 
-  /* a portal that refuses framing never gets an iframe */
+  /* a source that will not load is tried first, then excused */
   {
     const dom = boot("", null, miniCatalog([{
       id: "walled", title: "Walled Garden",
@@ -393,19 +393,22 @@ function titles(document) {
     const { document } = window;
 
     click(window, document.querySelector(".tile-open"));
-    check("no iframe for a non-embeddable source", document.querySelectorAll("iframe").length === 0);
-    check("the block panel is shown straight away", !document.querySelector("[data-blocked]").hidden);
+    check("the source is still attempted", document.querySelectorAll("iframe").length === 1);
+    check("nothing is condemned up front", document.querySelector("[data-blocked]").hidden);
+    check("the tile shows how many sources it has", !document.querySelector(".tile-mirrors"));
+
+    click(window, document.querySelector("[data-next]"));
+    check("the panel appears only after the attempt", !document.querySelector("[data-blocked]").hidden);
     check(
-      "it explains the no-frame rule",
-      /does not allow its games inside another page/.test(document.querySelector("[data-blocked-text]").textContent)
+      "it says the title would not load",
+      /would not load/.test(document.querySelector("[data-blocked]").textContent)
     );
     check(
       "it offers the new-tab button",
       !document.querySelector("[data-blocked-open]").hidden &&
         document.querySelector("[data-blocked-open]").getAttribute("href") === "https://walled.test/full/game"
     );
-    check("the new tab button is named", /Play on walled\.test/.test(document.querySelector("[data-blocked-open]").textContent));
-    check("the tile has no source badge", !document.querySelector(".tile-mirrors"));
+    check("the new tab button is named", /Open on walled\.test/.test(document.querySelector("[data-blocked-open]").textContent));
     dom.window.close();
   }
 
@@ -419,13 +422,15 @@ function titles(document) {
     const { window } = dom;
     const { document } = window;
 
-    check("only frameable sources are counted", document.querySelector(".tile-mirrors").textContent === "2 sources");
+    check("every source is counted", document.querySelector(".tile-mirrors").textContent === "3 sources");
     click(window, document.querySelector(".tile-open"));
-    check("first frameable source loads", /portal1\.test/.test(document.querySelector("iframe").src));
+    check("first source loads", /portal1\.test/.test(document.querySelector("iframe").src));
     click(window, document.querySelector("[data-next]"));
+    click(window, document.querySelector("[data-next]"));
+    check("the third source is tried too", /walled\.test/.test(document.querySelector("iframe").src));
     click(window, document.querySelector("[data-next]"));
     check("running out brings the panel", !document.querySelector("[data-blocked]").hidden);
-    check("the walled source is the escape hatch", !document.querySelector("[data-blocked-open]").hidden);
+    check("there is always a way out", !document.querySelector("[data-blocked-open]").hidden);
     dom.window.close();
   }
 
@@ -461,13 +466,13 @@ function titles(document) {
     );
     check("deep link is named", document.querySelector("[data-player-title]").textContent === first.title);
 
-    const walled = boot("#p=subway-surfers");
+    const other = boot("#p=subway-surfers");
     await tick();
     check(
-      "deep link to a walled tile still explains itself",
-      !walled.window.document.querySelector("[data-blocked]").hidden
+      "deep link to the old portal opens a player",
+      other.window.document.querySelectorAll("iframe").length === 1
     );
-    walled.window.close();
+    other.window.close();
     dom.window.close();
   }
 
@@ -536,10 +541,12 @@ function titles(document) {
       !document.querySelector("[data-continue]").hidden &&
         document.querySelector("[data-continue-title]").textContent.length > 0
     );
+    check("saved survives a reload", readStore(second.window).saved[0] === seed.saved[0]);
+    click(second.window, document.querySelector("[data-saved-toggle]"));
     check(
-      "saved survives a reload",
-      document.querySelector('[data-fav="' + seed.saved[0] + '"]') &&
-        document.querySelector('[data-fav="' + seed.saved[0] + '"]').getAttribute("aria-pressed") === "true"
+      "the saved view still holds it",
+      document.querySelectorAll(".tile").length === 1 &&
+        document.querySelector(".tile").getAttribute("data-id") === seed.saved[0]
     );
     check(
       "sort survives a reload",

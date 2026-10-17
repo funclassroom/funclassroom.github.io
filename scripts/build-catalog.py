@@ -11,6 +11,9 @@ import html
 import json
 import re
 import sys
+import urllib.error
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 
 import portals
 
@@ -65,11 +68,57 @@ def count_playable(path):
     return text.count('"gamemonetize.com"')
 
 
+UA_CHECK = "Mozilla/5.0 (compatible; classroom-catalog/3.0)"
+
+
+def status_of(url):
+    """What the host actually answers. 404/410 means the game is gone."""
+    request = urllib.request.Request(url, headers={"User-Agent": UA_CHECK}, method="HEAD")
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return response.status
+    except urllib.error.HTTPError as err:
+        return err.code
+    except Exception:  # noqa: BLE001 - timeouts and DNS flake are "unknown"
+        return 0
+
+
+def verify(entries, workers=32):
+    """Drop sources the hosts say do not exist; count what answered."""
+    urls = sorted({src["url"] for entry in entries for src in entry["sources"]})
+    print("checking %d urls" % len(urls), file=sys.stderr)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        codes = dict(zip(urls, pool.map(status_of, urls)))
+
+    gone = alive = unknown = 0
+    kept = []
+    for entry in entries:
+        sources = []
+        for src in entry["sources"]:
+            code = codes.get(src["url"], 0)
+            if code in (404, 410):
+                gone += 1
+                continue
+            if 200 <= code < 400:
+                alive += 1
+                src["ok"] = True
+            else:
+                unknown += 1
+            sources.append(src)
+        if sources:
+            entry["sources"] = sources
+            kept.append(entry)
+
+    print("sources alive %d, gone %d, unknown %d" % (alive, gone, unknown))
+    return kept
+
+
 def js(value):
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def main():
+    do_verify = "--verify" in sys.argv
     existing = read_existing()
     playable_before = count_playable(OUT)
 
@@ -104,6 +153,13 @@ def main():
             groups[key] = []
             order.append(key)
         bucket = groups[key]
+        if game.get("alt"):
+            alt = dict(game)
+            alt["url"] = game["alt"]
+            alt.pop("alt", None)
+            alt["embed"] = True
+            if not any(item["url"] == alt["url"] for item in bucket):
+                bucket.append(alt)
         if any(item["url"] == game["url"] for item in bucket):
             continue
         # One source per portal per title: two copies on the same site are
@@ -136,6 +192,9 @@ def main():
                 for item in bucket
             ],
         })
+
+    if do_verify:
+        entries = verify(entries)
 
     def order_key(entry):
         playable = any(source["embed"] for source in entry["sources"])

@@ -371,8 +371,9 @@
 
   /* ---------- sources ---------- */
 
+  // Every source is attempted; the publisher decides whether it renders.
   function embeddable(item) {
-    return item.sources.filter(function (source) { return source.embed !== false; });
+    return item.sources.slice();
   }
 
   function sourcesFor(item) {
@@ -432,11 +433,6 @@
     document.body.classList.add("locked");
 
     rememberPlay(id);
-
-    if (!embeddable(item).length) {
-      showBlocked(item, []);
-      return;
-    }
 
     attemptSource(0);
     dom.close.focus({ preventScroll: true });
@@ -528,24 +524,15 @@
     dom.loading.hidden = true;
     dom.next.hidden = true;
 
-    var external = item.sources.filter(function (source) { return source.embed === false; });
-    var title = dom.blocked.querySelector("h2");
-    var attempt = sources.length;
+    var attempt = sources.length || item.sources.length;
+    dom.source.textContent = attempt + (attempt === 1 ? " source" : " sources") + " tried";
+    dom.blocked.querySelector("h2").textContent = "This one would not load";
 
-    if (attempt === 0) {
-      dom.source.textContent = "not embeddable";
-      title.textContent = "This one will not be framed";
-      dom.blockedText.textContent =
-        item.sources[0].portal + " does not allow its games inside another page " +
-        "(it sends an outright no-frame rule), so it cannot play here. " +
-        "It still works in its own tab — sorry for the extra click.";
-    } else {
-      dom.source.textContent = attempt + (attempt === 1 ? " source" : " sources") + " tried";
-      title.textContent = "Every source is blocked";
-      dom.blockedText.textContent = attempt === 1
-        ? "The only source for this title refused to load. Sorry — nothing else can play it right now."
-        : "All " + attempt + " sources for this title refused to load. Sorry — none of them can play it right now.";
-    }
+    dom.blockedText.textContent = (attempt === 1
+      ? "The only source for this title gave us nothing back. "
+      : "All " + attempt + " sources for this title gave us nothing back. ") +
+      "That usually means the site is refusing frames or is down — not that the game is broken. " +
+      "It opens fine in its own tab.";
 
     dom.blockedList.innerHTML = "";
     item.sources.forEach(function (source) {
@@ -554,16 +541,15 @@
       link.href = source.url;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = source.portal + (source.embed === false ? " — opens in a new tab" : "");
+      link.textContent = source.portal + " — " + source.url.replace(/^https:\/\//, "");
       li.appendChild(link);
       dom.blockedList.appendChild(li);
     });
 
-    dom.blockedOpen.hidden = external.length === 0;
-    if (external.length) {
-      dom.blockedOpen.href = external[0].url;
-      dom.blockedOpen.textContent = "Play on " + external[0].portal;
-    }
+    var first = item.sources[0];
+    dom.blockedOpen.hidden = false;
+    dom.blockedOpen.href = first.url;
+    dom.blockedOpen.textContent = "Open on " + first.portal;
 
     dom.blocked.hidden = false;
   }
@@ -573,10 +559,6 @@
     var item = id ? BY_ID[id] : null;
     if (!item) return;
     dom.blocked.hidden = true;
-    if (!embeddable(item).length) {
-      showBlocked(item, []);
-      return;
-    }
     attemptSource(0);
   }
 
