@@ -1,5 +1,6 @@
 name: validate
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: "40 3 * * 3"
