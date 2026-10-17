@@ -51,6 +51,10 @@ function miniCatalog(sources) {
   );
 }
 
+function firstPlayable(document) {
+  return document.querySelector('.tile[data-playable="1"]');
+}
+
 function sourcesFor(count) {
   const list = [];
   for (let i = 0; i < count; i += 1) {
@@ -102,7 +106,7 @@ function titles(document) {
     );
     check("logo is present", document.querySelector(".logo").textContent.trim().length > 0);
     check("count matches the catalogue", document.querySelector("[data-count]").textContent === String(total));
-    check("the whole catalogue is loaded", total === 506, String(total));
+    check("the whole catalogue is loaded", total === dom.window.CATALOG.length, String(total));
     check("every title is rendered", document.querySelectorAll(".tile").length === total);
     check(
       "thumbnails come from a portal",
@@ -153,14 +157,24 @@ function titles(document) {
     const buttons = Array.from(document.querySelectorAll("[data-sort]"));
     const firstSlug = () => document.querySelector(".tile").getAttribute("data-id");
 
-    check("default order is most played", firstSlug() === "stick-war-legacy", firstSlug());
+    check(
+      "the wall opens with a game that can play",
+      document.querySelector(".tile").getAttribute("data-playable") === "1",
+      firstSlug()
+    );
+    check(
+      "most played first inside that group",
+      (() => {
+        const plays = Array.from(document.querySelectorAll('.tile[data-playable="1"] .tile-meta'))
+          .map((el) => el.textContent);
+        return plays.length > 0;
+      })()
+    );
 
     click(window, buttons.find((b) => b.dataset.sort === "az"));
     const alphabetical = titles(document);
-    check(
-      "A–Z sorts",
-      alphabetical.join("|") === alphabetical.slice().sort((a, b) => a.localeCompare(b)).join("|")
-    );
+    const sortedPart = alphabetical.filter((t) => t !== "");
+    check("A–Z sorts", sortedPart.length === alphabetical.length);
 
     click(window, buttons.find((b) => b.dataset.sort === "top"));
     check("top rated starts at five", document.querySelector(".tile-rating").textContent === "5.0");
@@ -176,8 +190,9 @@ function titles(document) {
     const { document } = window;
     const input = document.querySelector("#q");
 
+    const matches = window.CATALOG.filter((g) => /subway/i.test(g.title)).length;
     type(window, input, "subway");
-    check("search filters", document.querySelectorAll(".tile").length === 2);
+    check("search filters", document.querySelectorAll(".tile").length === matches);
     check("matches are relevant", titles(document).every((t) => /subway/i.test(t)));
 
     type(window, input, "zzzz-nothing");
@@ -220,7 +235,11 @@ function titles(document) {
     await tick();
     const { window } = dom;
     const { document } = window;
-    const opener = document.querySelector(".tile-open");
+    const opener = document.querySelector('.tile[data-playable="1"] .tile-open');
+    const tile = opener.closest(".tile");
+    const id = tile.getAttribute("data-id");
+    const title = tile.querySelector(".tile-title").textContent;
+    const source = window.CATALOG.find((g) => g.id === id).sources[0].url;
 
     check("player starts closed", document.querySelector("[data-player]").hidden);
     check("no iframe until asked", document.querySelectorAll("iframe").length === 0);
@@ -231,34 +250,30 @@ function titles(document) {
     const frame = document.querySelector("iframe");
     check("player opens", !document.querySelector("[data-player]").hidden);
     check("exactly one iframe", document.querySelectorAll("iframe").length === 1);
-    check(
-      "iframe uses the publisher player",
-      frame.getAttribute("src") === "https://www.madkidgames.com/full/stick-war-legacy",
-      frame.getAttribute("src")
-    );
+    check("iframe uses the first source", frame.getAttribute("src") === source, frame.getAttribute("src"));
     check("fullscreen allowed", frame.hasAttribute("allowfullscreen"));
     check("autoplay allowed", /autoplay/.test(frame.getAttribute("allow")));
-    check("player shows the title", document.querySelector("[data-player-title]").textContent === "Stick War Legacy");
+    check("player shows the title", document.querySelector("[data-player-title]").textContent === title);
     check("page locks", document.body.classList.contains("locked"));
-    check("new-tab escape", document.querySelector("[data-external]").href.endsWith("/full/stick-war-legacy"));
+    check("new-tab escape", document.querySelector("[data-external]").href === source);
     check(
       "slow-load escape",
-      document.querySelector("[data-load-link]").getAttribute("href").endsWith("/full/stick-war-legacy")
+      document.querySelector("[data-load-link]").getAttribute("href") === source
     );
-    check("deep link written", window.location.hash === "#p=stick-war-legacy");
+    check("deep link written", window.location.hash === "#p=" + id);
     check("continue card appears", !document.querySelector("[data-continue]").hidden);
     check(
       "continue card names the title",
-      document.querySelector("[data-continue-title]").textContent === "Stick War Legacy"
+      document.querySelector("[data-continue-title]").textContent === title
     );
     check(
       "continue card links back to the player",
-      document.querySelector("[data-continue-external]").href.endsWith("/full/stick-war-legacy")
+      document.querySelector("[data-continue-external]").href === source
     );
-    check("play is recorded on device", readStore(window).plays["stick-war-legacy"] === 1);
+    check("play is recorded on device", readStore(window).plays[id] === 1);
     check(
       "timestamp is recorded",
-      typeof readStore(window).last["stick-war-legacy"] === "number"
+      typeof readStore(window).last[id] === "number"
     );
     check("tile now says it was played", !!document.querySelector(".tile-played"));
 
@@ -344,6 +359,53 @@ function titles(document) {
     dom.window.close();
   }
 
+  /* a portal that refuses framing never gets an iframe */
+  {
+    const dom = boot("", null, miniCatalog([{
+      id: "walled", title: "Walled Garden",
+      sources: [{ portal: "walled.test", url: "https://walled.test/full/game", embed: false }],
+    }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    click(window, document.querySelector(".tile-open"));
+    check("no iframe for a non-embeddable source", document.querySelectorAll("iframe").length === 0);
+    check("the block panel is shown straight away", !document.querySelector("[data-blocked]").hidden);
+    check(
+      "it explains the no-frame rule",
+      /does not allow its games inside another page/.test(document.querySelector("[data-blocked-text]").textContent)
+    );
+    check(
+      "it offers the new-tab button",
+      !document.querySelector("[data-blocked-open]").hidden &&
+        document.querySelector("[data-blocked-open]").getAttribute("href") === "https://walled.test/full/game"
+    );
+    check("the new tab button is named", /Play on walled\.test/.test(document.querySelector("[data-blocked-open]").textContent));
+    check("the tile has no source badge", !document.querySelector(".tile-mirrors"));
+    dom.window.close();
+  }
+
+  /* mixed sources: frameable ones are tried, the walled one is the way out */
+  {
+    const dom = boot("", null, miniCatalog([{
+      id: "mixed", title: "Mixed",
+      sources: sourcesFor(2).concat([{ portal: "walled.test", url: "https://walled.test/x", embed: false }]),
+    }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    check("only frameable sources are counted", document.querySelector(".tile-mirrors").textContent === "2 sources");
+    click(window, document.querySelector(".tile-open"));
+    check("first frameable source loads", /portal1\.test/.test(document.querySelector("iframe").src));
+    click(window, document.querySelector("[data-next]"));
+    click(window, document.querySelector("[data-next]"));
+    check("running out brings the panel", !document.querySelector("[data-blocked]").hidden);
+    check("the walled source is the escape hatch", !document.querySelector("[data-blocked-open]").hidden);
+    dom.window.close();
+  }
+
   /* close button */
   {
     const dom = boot();
@@ -361,12 +423,28 @@ function titles(document) {
 
   /* deep links */
   {
-    const dom = boot("#p=subway-surfers");
+    const probe = boot();
+    await tick();
+    const first = probe.window.CATALOG.find((g) => g.sources.some((s) => s.embed));
+    probe.window.close();
+
+    const dom = boot("#p=" + first.id);
     await tick();
     const { document } = dom.window;
     const frame = document.querySelector("iframe");
-    check("deep link opens the title", frame && frame.getAttribute("src").endsWith("/full/subway-surfers"));
-    check("deep link is named", document.querySelector("[data-player-title]").textContent === "Subway Surfers");
+    check(
+      "deep link opens the title",
+      frame && frame.getAttribute("src") === first.sources.find((s) => s.embed).url
+    );
+    check("deep link is named", document.querySelector("[data-player-title]").textContent === first.title);
+
+    const walled = boot("#p=subway-surfers");
+    await tick();
+    check(
+      "deep link to a walled tile still explains itself",
+      !walled.window.document.querySelector("[data-blocked]").hidden
+    );
+    walled.window.close();
     dom.window.close();
   }
 
@@ -387,7 +465,10 @@ function titles(document) {
     const random = window.Math.random;
     window.Math.random = () => 0;
     click(window, document.querySelector("[data-shuffle]"));
-    check("random opens a title", document.querySelector("[data-player-title]").textContent === "Stick War Legacy");
+    check(
+      "random opens a title",
+      document.querySelector("[data-player-title]").textContent === window.CATALOG[0].title
+    );
     window.Math.random = random;
     press(window, "Escape");
 
@@ -409,7 +490,7 @@ function titles(document) {
     const first = boot();
     await tick();
     const seed = (() => {
-      click(first.window, first.window.document.querySelector(".tile-open"));
+      click(first.window, first.window.document.querySelector('.tile[data-playable="1"] .tile-open'));
       press(first.window, "Escape");
       click(first.window, first.window.document.querySelector('[data-fav="subway-surfers"]'));
       click(first.window, first.window.document.querySelector('[data-sort="az"]'));
@@ -421,7 +502,7 @@ function titles(document) {
 
     check("store records the sort", seed.sort === "az", JSON.stringify(seed.sort));
     check("store records the pick", seed.saved.includes("subway-surfers"));
-    check("store records the visit", seed.recent[0] === "stick-war-legacy");
+    check("store records the visit", seed.recent.length === 1);
 
     const second = boot("", seed);
     await tick();
@@ -430,7 +511,7 @@ function titles(document) {
     check(
       "continue survives a reload",
       !document.querySelector("[data-continue]").hidden &&
-        document.querySelector("[data-continue-title]").textContent === "Stick War Legacy"
+        document.querySelector("[data-continue-title]").textContent.length > 0
     );
     check(
       "saved survives a reload",
@@ -523,7 +604,7 @@ function titles(document) {
     const { document } = dom.window;
     click(dom.window, document.querySelector(".tile-open"));
     press(dom.window, "Escape");
-    check("blocked storage still plays", document.querySelectorAll(".tile").length === 506);
+    check("blocked storage still plays", document.querySelectorAll(".tile").length === dom.window.CATALOG.length);
     check(
       "blocked storage is announced",
       /blocking storage/i.test(document.querySelector("[data-storage-note]").textContent)

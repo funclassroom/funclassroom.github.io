@@ -137,9 +137,16 @@
     }
   }
 
+  function playable(item) {
+    return embeddable(item).length > 0;
+  }
+
   function sorted(list) {
     var copy = list.slice();
     copy.sort(function (a, b) {
+      // Games that can play inside the page always lead; the rest open in a
+      // tab and sit at the end.
+      if (playable(a) !== playable(b)) return playable(a) ? -1 : 1;
       if (state.sort === "az") return a.title.localeCompare(b.title);
       if (state.sort === "top") {
         if (b.rating !== a.rating) return b.rating - a.rating;
@@ -166,6 +173,7 @@
     var tile = document.createElement("article");
     tile.className = "tile";
     tile.setAttribute("data-id", item.id);
+    tile.setAttribute("data-playable", playable(item) ? "1" : "0");
 
     var open = document.createElement("button");
     open.type = "button";
@@ -197,10 +205,10 @@
       thumb.appendChild(rating);
     }
 
-    if (item.sources.length > 1) {
+    if (embeddable(item).length > 1) {
       var mirrors = document.createElement("span");
       mirrors.className = "tile-mirrors";
-      mirrors.textContent = item.sources.length + " sources";
+      mirrors.textContent = embeddable(item).length + " sources";
       mirrors.title = item.sources.map(function (s) { return s.portal; }).join(", ");
       thumb.appendChild(mirrors);
     }
@@ -343,8 +351,12 @@
 
   /* ---------- sources ---------- */
 
+  function embeddable(item) {
+    return item.sources.filter(function (source) { return source.embed !== false; });
+  }
+
   function sourcesFor(item) {
-    var list = item.sources.slice();
+    var list = embeddable(item);
     var good = store.good[item.id];
     if (typeof good === "number" && good > 0 && good < list.length) {
       var preferred = list.splice(good, 1)[0];
@@ -400,6 +412,12 @@
     document.body.classList.add("locked");
 
     rememberPlay(id);
+
+    if (!embeddable(item).length) {
+      showBlocked(item, []);
+      return;
+    }
+
     attemptSource(0);
     dom.close.focus({ preventScroll: true });
 
@@ -488,32 +506,57 @@
   function showBlocked(item, sources) {
     clearStage();
     dom.loading.hidden = true;
-    dom.loading.hidden = true;
-    dom.source.textContent = sources.length + (sources.length === 1 ? " source" : " sources") + " tried";
     dom.next.hidden = true;
 
-    dom.blocked.hidden = false;
-    dom.blockedText.textContent = sources.length === 1
-      ? "The only source for this title refused to load. Sorry — nothing else can play it right now."
-      : "All " + sources.length + " sources for this title refused to load. Sorry — none of them can play it right now.";
+    var external = item.sources.filter(function (source) { return source.embed === false; });
+    var title = dom.blocked.querySelector("h2");
+    var attempt = sources.length;
+
+    if (attempt === 0) {
+      dom.source.textContent = "not embeddable";
+      title.textContent = "This one will not be framed";
+      dom.blockedText.textContent =
+        item.sources[0].portal + " does not allow its games inside another page " +
+        "(it sends an outright no-frame rule), so it cannot play here. " +
+        "It still works in its own tab — sorry for the extra click.";
+    } else {
+      dom.source.textContent = attempt + (attempt === 1 ? " source" : " sources") + " tried";
+      title.textContent = "Every source is blocked";
+      dom.blockedText.textContent = attempt === 1
+        ? "The only source for this title refused to load. Sorry — nothing else can play it right now."
+        : "All " + attempt + " sources for this title refused to load. Sorry — none of them can play it right now.";
+    }
 
     dom.blockedList.innerHTML = "";
-    sources.forEach(function (source) {
+    item.sources.forEach(function (source) {
       var li = document.createElement("li");
       var link = document.createElement("a");
       link.href = source.url;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = source.portal;
+      link.textContent = source.portal + (source.embed === false ? " — opens in a new tab" : "");
       li.appendChild(link);
       dom.blockedList.appendChild(li);
     });
+
+    dom.blockedOpen.hidden = external.length === 0;
+    if (external.length) {
+      dom.blockedOpen.href = external[0].url;
+      dom.blockedOpen.textContent = "Play on " + external[0].portal;
+    }
+
+    dom.blocked.hidden = false;
   }
 
   function retrySources() {
     var id = state.active;
-    if (!id) return;
+    var item = id ? BY_ID[id] : null;
+    if (!item) return;
     dom.blocked.hidden = true;
+    if (!embeddable(item).length) {
+      showBlocked(item, []);
+      return;
+    }
     attemptSource(0);
   }
 
@@ -668,6 +711,7 @@
     dom.blocked = $("[data-blocked]");
     dom.blockedText = $("[data-blocked-text]");
     dom.blockedList = $("[data-blocked-list]");
+    dom.blockedOpen = $("[data-blocked-open]");
     dom.source = $("[data-source]");
     dom.next = $("[data-next]");
     dom.close = $("[data-close]");

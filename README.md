@@ -1,31 +1,55 @@
 # Classroom
 
 A wall of HTML5 titles behind an unremarkable tab. The tab reads **Classroom**
-with a chalkboard icon; the page is a plain grid of 506 playable titles.
+with a chalkboard icon; the page is a plain grid of playable titles.
 
 **Live:** https://socks275.github.io/ClassroomGames/
 
 ## The catalogue
 
-506 titles, taken from MadKidGames' own sitemap — that is the whole site, not a
-sample. Their marketing copy says "thousands", but the sitemap lists exactly 507
-game URLs, one of which is an AI-video tie-in that has been filtered out.
+Two sources, merged into one wall by title:
 
-Each entry keeps the publisher's real title, star rating and play count.
-Thumbnails and players are built from the slug:
+| source | titles | plays inside the page? |
+| --- | --- | --- |
+| GameMonetize's public embed feed | up to ~13,000 | yes — `html5.gamemonetize.co/<id>/` answers 200 with no frame rule |
+| MadKidGames sitemap | 506 | no — the site sends `X-Frame-Options: SAMEORIGIN` and says "Embedding unavailable" |
 
-```
-https://www.madkidgames.com/games/<slug>/thumb_2.jpg
-https://www.madkidgames.com/full/<slug>
-```
+Every title appears once. A tile only carries more than one source when the
+same game exists on more than one portal, and the extra sources are never shown
+as separate tiles — the player walks down them only when the one above refuses
+to load.
+
+MadKidGames is kept because it is the catalogue the site started from, but it
+cannot be framed by anyone. Those tiles are still listed, at the end of the
+wall, and open in a new tab with a one-line explanation rather than an
+apologetic blank frame.
+
+### Why not hundreds of portals
+
+Most portals do not publish a keyless embed feed, and the ones that do guard it
+hard:
+
+- **GameMonetize** — public JSON feed, embeddable. Used.
+- **MadKidGames** — full sitemap, but framing is forbidden. Listed, not framed.
+- **KBH Games** — sitemap readable, pages behind Cloudflare's bot challenge.
+- **GamePix, Gameflare, CrazyGames, Poki, Y8** — no keyless feed, or a 404
+  sitemap; they need a partner key or an approved domain.
+
+So the catalogue grows through the one portal that actually allows embedding,
+not through a list of names that would each need an integration agreement.
 
 ### Keeping it current
 
-`.github/workflows/catalog.yml` re-reads the sitemap on GitHub's runners and
-regenerates `assets/js/catalog.js`, keeping existing metadata and adding new
-slugs with titles derived from their names. It runs when `scripts/build-catalog.py`
-changes, or by hand from the Actions tab. The generator also drops
-generative-AI-titled entries.
+`.github/workflows/catalog.yml` runs `scripts/build-catalog.py` on GitHub's
+runners, which have real network access. It pages through the GameMonetize
+feed (paced, because Cloudflare rate-limits at a thousand requests or so),
+re-reads the MadKidGames sitemap, merges duplicates by a normalised title
+(stop-words and punctuation stripped, `&` read as "and"), and rewrites
+`assets/js/catalog.js`.
+
+The builder refuses to write a catalogue that is smaller than the one already
+in place, so a bad feed day cannot wipe the wall. It also drops generative-AI
+titles.
 
 ## Progress and saves
 
@@ -56,6 +80,9 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
+- A fallback chain: if a source will not load, the next one for that game is
+  tried automatically; if every one refuses, the player says so, apologises,
+  and offers the portal in a new tab
 
 No frameworks, no build step, no backend. `localStorage` holds saves and
 recents; nothing is sent anywhere.

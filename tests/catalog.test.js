@@ -30,7 +30,8 @@ const CATALOG = sandbox.window.CATALOG;
 const slugs = CATALOG.map((g) => g.id);
 const titles = CATALOG.map((g) => g.title);
 
-check("catalogue holds every title in the sitemap", CATALOG.length === 506, String(CATALOG.length));
+check("catalogue is not empty", CATALOG.length > 100, String(CATALOG.length));
+check("the old 506-title wall survived", CATALOG.length >= 506, String(CATALOG.length));
 check("slugs are unique", new Set(slugs).size === slugs.length);
 check("titles are unique", new Set(titles).size === titles.length);
 check(
@@ -44,12 +45,18 @@ check(
   CATALOG.every((g) => typeof g.rating === "number" && g.rating >= 0 && g.rating <= 5)
 );
 check(
-  "play counts are positive integers",
-  CATALOG.every((g) => Number.isInteger(g.plays) && g.plays > 0)
+  "play counts are whole numbers",
+  CATALOG.every((g) => Number.isInteger(g.plays) && g.plays >= 0)
 );
 check(
-  "the wall is ordered by popularity",
-  CATALOG.every((g, i) => i === 0 || CATALOG[i - 1].plays >= g.plays)
+  "the wall is ordered by popularity inside each group",
+  CATALOG.every((g, i) => {
+    if (i === 0) return true;
+    const prev = CATALOG[i - 1];
+    const playable = (x) => x.sources.some((s) => s.embed);
+    if (playable(prev) !== playable(g)) return playable(prev);
+    return prev.plays >= g.plays;
+  })
 );
 check(
   "every tile has at least one source",
@@ -60,6 +67,25 @@ check(
   CATALOG.every((g) =>
     g.sources.every((s) => typeof s.portal === "string" && /^https:\/\//.test(s.url))
   )
+);
+check(
+  "sources say whether they can be framed",
+  CATALOG.every((g) => g.sources.every((s) => typeof s.embed === "boolean"))
+);
+check(
+  "frameable sources come before walled ones",
+  CATALOG.every((g) => {
+    const first = g.sources.findIndex((s) => s.embed === false);
+    return first === -1 || g.sources.slice(first).every((s) => s.embed === false);
+  })
+);
+check(
+  "the wall starts with games that play in the page",
+  (() => {
+    const firstWalled = CATALOG.findIndex((g) => g.sources.every((s) => !s.embed));
+    if (firstWalled === -1) return true;
+    return CATALOG.slice(firstWalled).every((g) => g.sources.every((s) => !s.embed));
+  })()
 );
 check(
   "no tile repeats a source url",

@@ -213,6 +213,15 @@ a { color: inherit; }
 
 .btn-dark:hover { background: #2c2e34; }
 
+.btn-accent {
+  border-color: var(--ink);
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.btn-accent:hover { background: #f1f1f3; }
+
 /* toolbar */
 
 .wrap {
@@ -787,7 +796,15 @@ a { color: inherit; }
 
 .blocked-list a { color: #cfd2da; }
 
-.blocked-actions { margin-top: 8px; }
+.blocked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.blocked-actions .btn { width: auto; }
 
 .blocked-apology { color: #7f828c; font-size: 12.5px; }
 

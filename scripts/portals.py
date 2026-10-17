@@ -11,6 +11,7 @@ X-Frame-Options / frame-ancestors before it is trusted.
 
 import json
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -94,87 +95,69 @@ def madkidgames(existing):
             "slug": slug,
             "rating": existing.get(slug, {}).get("rating", 0.0),
             "plays": existing.get(slug, {}).get("plays", 0),
+            # madkidgames.com answers with "Embedding unavailable" and sends
+            # X-Frame-Options: SAMEORIGIN, so it can only open in a new tab.
+            "embed": False,
         })
     return games
 
 
-def gamemonetize(limit_pages=400, num=100):
-    """GameMonetize publishes a paginated JSON feed meant for embedding."""
+def gamemonetize(limit_pages=260, num=50, pause=1.1):
+    """GameMonetize publishes a paginated JSON feed meant for embedding.
+
+    Every game is served from html5.gamemonetize.co/<id>/ which answers 200
+    with no X-Frame-Options, so these are the tiles that actually play.
+    The feed rate-limits hard (Cloudflare 1015), hence the pacing and the
+    stop-after-three-failures rule.
+    """
     games = []
+    failures = 0
+
     for page in range(1, limit_pages + 1):
         url = "https://gamemonetize.com/feed.php?format=0&num=%d&page=%d" % (num, page)
         try:
             payload = get(url)
-        except Exception:  # noqa: BLE001 - stop paginating on trouble
-            break
+        except Exception:  # noqa: BLE001 - rate limit or flake
+            payload = ""
 
         match = re.search(r"\[.*\]", payload, re.S)
-        if not match:
-            break
-        try:
-            batch = json.loads(match.group(0))
-        except ValueError:
-            break
-        if not batch:
-            break
+        batch = None
+        if match:
+            try:
+                batch = json.loads(match.group(0))
+            except ValueError:
+                batch = None
 
+        if not batch:
+            failures += 1
+            if failures >= 3:
+                break
+            time.sleep(pause * 3)
+            continue
+
+        failures = 0
         for entry in batch:
-            embed = entry.get("url")
-            title = entry.get("title")
+            embed = (entry.get("url") or "").strip()
+            title = (entry.get("title") or "").strip()
             if not embed or not title:
                 continue
             games.append({
                 "portal": "gamemonetize.com",
-                "title": title.strip(),
-                "url": embed.strip(),
+                "title": title,
+                "url": embed,
                 "thumb": (entry.get("thumb") or "").strip(),
-                "slug": entry.get("id") or "",
+                "slug": str(entry.get("id") or ""),
                 "rating": 0.0,
                 "plays": 0,
+                "embed": True,
             })
+
+        time.sleep(pause)
+
     return games
 
 
-def kbhgames(existing):
-    """KBH Games lists thousands of titles across 30 post sitemaps.
-
-    It is a mirrors-only portal: its pages are added as extra sources for
-    games we already show, never as new tiles, because its catalogue is huge
-    and its thumbnails would need a second request per game.
-    """
-    games = []
-    seen = set()
-
-    sitemaps = ["https://kbhgames.com/post-sitemap.xml"] + [
-        "https://kbhgames.com/post-sitemap%d.xml" % i for i in range(2, 31)
-    ]
-
-    for sitemap in sitemaps:
-        try:
-            xml = get(sitemap)
-        except Exception:  # noqa: BLE001 - keep the rest of the sitemaps
-            continue
-
-        for slug in re.findall(r"https://kbhgames\.com/game/([a-z0-9][a-z0-9-]*)", xml):
-            if slug in seen:
-                continue
-            seen.add(slug)
-            games.append({
-                "portal": "kbhgames.com",
-                "title": title_from_slug(slug),
-                "url": "https://kbhgames.com/game/" + slug,
-                "thumb": "",
-                "slug": slug,
-                "rating": 0.0,
-                "plays": 0,
-            })
-    return games
-
-
-PORTALS = [madkidgames, gamemonetize, kbhgames]
-
-# Portals that only contribute fallback sources for titles we already list.
-MIRROR_ONLY = {"kbhgames.com"}
+PORTALS = [madkidgames, gamemonetize]
 
 
 # ---------------------------------------------------------------- titles
