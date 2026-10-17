@@ -1,0 +1,20 @@
+{
+ "game": {
+  "status": 307,
+  "frames": [
+   "https://www.madkidgames.com/game/subway-surfers",
+   "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/b/turnstile/f/av0/rch/ttdue/0x4AAAAAAADnPIDROrmt1Wwj/light/fbE/new/normal?lang=auto"
+  ],
+  "reqs": [],
+  "body": "www.madkidgames.com\nPerforming security verification\n\nThis website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot.\n\nRay ID: a4be79cc8e59ebcb\nPerformance and Security by Cloudflare\nPrivacy"
+ },
+ "full": {
+  "status": 403,
+  "frames": [
+   "https://www.madkidgames.com/full/subway-surfers",
+   "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/h/b/turnstile/f/av0/rch/t9srm/0x4AAAAAAADnPIDROrmt1Wwj/light/fbE/new/normal?lang=auto"
+  ],
+  "reqs": [],
+  "body": "www.madkidgames.com\nPerforming security verification\n\nThis website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot.\n\nRay ID: a4be7a2b5e21ebcb\nPerformance and Security by Cloudflare\nPrivacy"
+ }
+}
