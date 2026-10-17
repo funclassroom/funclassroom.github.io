@@ -1,29 +1,15 @@
-/* Drives the real DOM the way a student would: clicks, keys, typing. */
+/* UI behaviour for the G@M£$ wall. jsdom only — no network, no canvas. */
 const fs = require("fs");
 const path = require("path");
-const { JSDOM, VirtualConsole } = require("jsdom");
+const { JSDOM } = require("jsdom");
 
 const ROOT = path.join(__dirname, "..");
-const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const HTML = fs
+  .readFileSync(path.join(ROOT, "index.html"), "utf8")
+  .replace(/<script src="[^"]+"><\/script>/g, "");
 
-const errors = [];
-const virtualConsole = new VirtualConsole();
-virtualConsole.on("jsdomError", (error) => errors.push(error.message));
-
-const dom = new JSDOM(html, {
-  url: "http://localhost:8000/",
-  runScripts: "outside-only",
-  pretendToBeVisual: true,
-  virtualConsole,
-});
-
-const { window } = dom;
-const { document } = window;
-
-// jsdom has no canvas implementation; the games are expected to degrade
-// to a readable message rather than throw.
-window.HTMLCanvasElement.prototype.getContext = function () { return null; };
-window.addEventListener("error", (event) => errors.push(event.message));
+const CATALOG_JS = fs.readFileSync(path.join(ROOT, "assets/js/catalog.js"), "utf8");
+const APP_JS = fs.readFileSync(path.join(ROOT, "assets/js/app.js"), "utf8");
 
 let pass = 0;
 let fail = 0;
@@ -40,207 +26,305 @@ function check(name, condition, extra) {
   }
 }
 
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-const click = (node) => node.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
-const key = (k, opts = {}) => document.dispatchEvent(new window.KeyboardEvent("keydown", Object.assign({ key: k, bubbles: true, cancelable: true }, opts)));
-const type = (input, value) => {
+function boot(hash) {
+  const dom = new JSDOM(HTML, {
+    url: "https://example.test/" + (hash || ""),
+    runScripts: "outside-only",
+    pretendToBeVisual: true,
+  });
+  dom.window.eval(CATALOG_JS);
+  dom.window.eval(APP_JS);
+  return dom;
+}
+
+const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
+
+function click(window, node) {
+  node.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+}
+
+function type(window, input, value) {
   input.value = value;
   input.dispatchEvent(new window.Event("input", { bubbles: true }));
-};
-const tick = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function bootScripts() {
-  [
-    "gamekit",
-    "catalog",
-    "games/snake",
-    "games/breakout",
-    "games/skydash",
-    "games/g2048",
-    "games/minesweeper",
-    "games/memory",
-    "games/pong",
-    "app",
-  ].forEach((file) => {
-    window.eval(fs.readFileSync(path.join(ROOT, "assets/js", file + ".js"), "utf8"));
-  });
 }
 
-async function main() {
-  if (document.readyState !== "complete") {
-    await new Promise((resolve) => window.addEventListener("load", resolve, { once: true }));
-  }
-  bootScripts();
+function press(window, key) {
+  const event = new window.KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  window.document.body.dispatchEvent(event);
+  return event;
+}
+
+function visibleTitles(document) {
+  return Array.from(document.querySelectorAll(".tile-title")).map((n) => n.textContent);
+}
+
+(async function run() {
+  console.log("\nUI — chrome, search, sort, player\n");
+  await tick();
 
   /* ---------- first paint ---------- */
-  check("starts in Classroom mode", document.body.dataset.mode === "classroom");
-  check("starts with a Classroom tab title", document.title === "Classes", document.title);
-  check("home heading is present", $("#gc-view h1") && $("#gc-view h1").textContent === "Your classes");
-  check("renders every class card", $$(".gc-card").length === 7, String($$(".gc-card").length));
-  check("renders the Join class tile", !!$(".gc-join[data-action='join']"));
-  check("games mode is hidden", $("#mode-games").hidden === true);
+  {
+    const dom = boot();
+    await tick();
+    const { document } = dom.window;
 
-  /* ---------- class page ---------- */
-  click($('.gc-card[data-id="snake"]'));
-  check("class banner shows the subject", $(".gc-banner h1").textContent === "Biology");
-  check("class page has three tabs", $$(".gc-tab").length === 3);
-  check("tab title follows the class", document.title === "Biology", document.title);
-  check("stream has the assignment attachment", !!$(".gc-attach[data-action='open-game']"));
-  check("stream has multiple posts", $$(".gc-post").length >= 3, String($$(".gc-post").length));
+    check("page title is the wordmark", document.title === "G@M£$", document.title);
+    check("header carries the wordmark", document.querySelector(".brand-word").textContent === "G@M£$");
+    check("hero carries the wordmark", document.querySelector(".wordmark").textContent === "G@M£$");
+    check(
+      "hero count matches the catalogue",
+      document.querySelector("[data-count]").textContent === String(dom.window.CATALOG.length)
+    );
+    check("every title is on the wall", document.querySelectorAll(".tile").length === dom.window.CATALOG.length);
+    check(
+      "tiles use publisher thumbnails",
+      Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
+        /^https:\/\/www\.madkidgames\.com\/games\/[a-z0-9-]+\/thumb_2\.jpg$/.test(img.getAttribute("src"))
+      )
+    );
+    check(
+      "each tile is a play button with a name",
+      Array.from(document.querySelectorAll(".tile-open")).every((b) =>
+        /^Play /.test(b.getAttribute("aria-label"))
+      )
+    );
+    check(
+      "unrated titles are labelled new",
+      document.querySelectorAll(".tile-rating[data-new]").length ===
+        dom.window.CATALOG.filter((t) => t.rating === 0).length
+    );
+    check(
+      "tile images declare their box",
+      Array.from(document.querySelectorAll(".tile-thumb img")).every(
+        (img) => img.getAttribute("width") === "512" && img.getAttribute("height") === "384"
+      )
+    );
 
-  click($('[data-tab="people"]'));
-  check("people tab lists the teacher and students", $$(".gc-person").length === 12, String($$(".gc-person").length));
-  check("people tab marks the signed-in student", $(".gc-people").textContent.includes("(you)"));
+    const chrome = [".bar", ".hero", ".toolbar", ".foot"]
+      .map((sel) => document.querySelector(sel).textContent)
+      .join(" ");
+    check("chrome avoids the G-word", !/\bgames?\b/i.test(chrome), chrome.match(/\bgames?\b/i)?.[0]);
 
-  click($('[data-tab="classwork"]'));
-  check("classwork tab lists assignments", $$(".gc-cw-row").length >= 2, String($$(".gc-cw-row").length));
-  check("classwork row points at the real activity", $(".gc-cw-row").getAttribute("data-id") === "snake");
-
-  click($('[data-tab="stream"]'));
-  check("stream tab can be reopened", $(".gc-tab.active").getAttribute("data-tab") === "stream");
-
-  /* ---------- assignment / player ---------- */
-  click($(".gc-attach"));
-  check("assignment opens the player", $("#player").hidden === false);
-  const snakeEntry = window.GAME_CATALOG.find((game) => game.id === "snake");
-  check("player shows the disguised assignment", $(".assignment-title h1").textContent === snakeEntry.class.assignment, $(".assignment-title h1").textContent);
-  check("assignment title is in the tab", document.title.indexOf("Biology") !== -1, document.title);
-  check("game stage exists", !!$("#game-stage"));
-  check("game stage is mounted in the assignment", !!$(".material-stage #game-stage"));
-  check("canvas games degrade without canvas", !!$("#game-stage .gk-fallback"));
-  check("page is locked while playing", document.body.classList.contains("playing"));
-  check("classroom activity does not leak the game name", !$(".material-head").textContent.includes(snakeEntry.title));
-  const ids = $$("[id]").map((node) => node.id);
-  check("no duplicate ids while playing", new Set(ids).size === ids.length, ids.join(","));
-  check("no undefined text is rendered", !document.body.textContent.includes("undefined"));
-
-  click($('[data-action="mark-done"]'));
-  check("Mark as done updates the status", $("[data-turnin-status]").textContent === "Done");
-  click($('[data-action="mark-done"]'));
-  check("Mark as done can be undone", $("[data-turnin-status]").textContent === "Assigned");
-
-  key("Escape");
-  check("Escape closes the assignment", $("#player").hidden === true);
-  check("Escape returns to the class page", document.title === "Biology", document.title);
-
-  /* ---------- live mode switch while a game is open ---------- */
-  click($(".gc-attach"));
-  const stageBefore = $("#game-stage");
-  const canvasBefore = stageBefore.querySelector("canvas");
-
-  key("K", { ctrlKey: true, shiftKey: true });
-  check("Ctrl+Shift+K switches to games with a game open", document.body.dataset.mode === "games");
-  check("the player stays open across the switch", $("#player").hidden === false);
-  check("games player chrome is used", !!$(".mk-playbar"));
-  check("games mode layer is visible", $("#mode-games").hidden === false);
-  check("classroom layer is hidden", $("#mode-classroom").hidden === true);
-  check("the same stage element survives", $("#game-stage") === stageBefore);
-  check("the same canvas survives", $("#game-stage canvas") === canvasBefore);
-  check("tab title switches to the game", document.title === "Snake — MadKid Games", document.title);
-
-  key("`");
-  check("backtick switches back to Classroom", document.body.dataset.mode === "classroom");
-  check("assignment chrome is back", !!$(".assignment-title"));
-  check("tab title returns to the assignment", document.title.includes("Biology"), document.title);
-
-  click($('#player [data-action="close-player"]'));
-  check("closing the player hides it", $("#player").hidden === true);
-  check("closing returns to the class", document.title === "Biology", document.title);
-
-  key("Escape");
-  check("Escape leaves the class", $("#gc-view h1") && $("#gc-view h1").textContent === "Your classes");
-  check("home title is restored", document.title === "Classes", document.title);
-
-  /* ---------- games mode ---------- */
-  key("`");
-  check("backtick opens games mode", document.body.dataset.mode === "games");
-  check("games grid shows all seven games", $$(".mk-card").length === 7, String($$(".mk-card").length));
-  check("games tab title is set", document.title.indexOf("MadKid Games") !== -1, document.title);
-
-  const search = $("#mk-search");
-  type(search, "snake");
-  check("search narrows the grid", $$(".mk-card").length === 1, String($$(".mk-card").length));
-
-  type(search, '<img src=x onerror="window.__xss=1">');
-  check("no results state is escaped", $(".mk-empty") && $(".mk-empty").innerHTML.includes("&lt;img"));
-  check("hostile search input is not executed", window.__xss === undefined);
-  check("hostile search input creates no element", !$(".mk-empty img"));
-
-  click($('[data-action="clear-filters"]'));
-  check("clear filters restores the grid", $$(".mk-card").length === 7);
-
-  click($('[data-action="category"][data-cat="Puzzle"]'));
-  check("category chips filter the grid", $$(".mk-card").length === 3, String($$(".mk-card").length));
-  check("category count is rendered", $(".mk-count").textContent === "3 games", $(".mk-count").textContent);
-
-  click($('[data-action="category"][data-cat="All"]'));
-  window.GameKit.setBest("snake", 321, "high");
-  click($('[data-action="category"][data-cat="All"]'));
-  check("best scores appear on cards", $('.mk-card[data-id="snake"]').textContent.includes("321"));
-
-  click($('.mk-card[data-id="2048"]'));
-  check("dom game opens in the games player", !!$(".mk-playbar") && !!$("#game-stage .g2048"));
-  check("2048 renders sixteen cells", $$("#game-stage .g2048-cell").length === 16, String($$("#game-stage .g2048-cell").length));
-  check("game title is in the tab", document.title === "2048 — MadKid Games", document.title);
-  click($("#game-stage .gk-btn"));
-  click($("#game-stage .g2048-new"));
-  check("New game keeps the board alive", $$("#game-stage .g2048-cell").length === 16);
-
-  click($('#player [data-action="close-player"]'));
-  check("closing a games-player returns to browse", $("#player").hidden === true && document.title.indexOf("MadKid Games") !== -1);
-
-  /* ---------- drawer, toast, search keys ---------- */
-  key("`");
-  check("classroom remembers the last class", $(".gc-banner h1").textContent === "Mathematics");
-  key("Escape");
-
-  click($('[data-action="drawer"]'));
-  check("drawer opens", $("#drawer-scrim").hidden === false);
-  click($(".gc-drawer"));
-  check("clicking the drawer body keeps it open", $("#drawer-scrim").hidden === false);
-  key("Escape");
-  check("Escape closes the drawer", $("#drawer-scrim").hidden === true);
-
-  click($('[data-action="drawer"]'));
-  click($('.gc-drawer-item[data-action="home"]'));
-  check("drawer navigation closes the drawer", $("#drawer-scrim").hidden === true);
-  check("drawer navigation returns home", $("#gc-view h1").textContent === "Your classes");
-
-  click($('.gc-card[data-id="snake"]'));
-  click($(".gc-compose"));
-  check("composer explains the permission model", $("#toast").textContent.includes("Only teachers"));
-  check("toast becomes visible", $("#toast").classList.contains("show"));
-
-  key("`");
-  key("/");
-  check("slash focuses search", document.activeElement === search);
-  search.dispatchEvent(new window.KeyboardEvent("keydown", { key: "`", bubbles: true, cancelable: true }));
-  check("backtick is ignored while typing", document.body.dataset.mode === "games");
-
-  type(search, "pong");
-  key("Escape");
-  check("Escape clears the search", search.value === "" && $$(".mk-card").length === 7);
-  click($(".mk-brand"));
-  check("brand link resets filters", $$(".mk-card").length === 7 && search.value === "");
-
-  check("GameKit is exposed for the app", typeof window.GameKit.setBest === "function");
-  check("Arcade registered every game", window.Arcade.ids().length === 7, String(window.Arcade.ids().length));
-
-  await tick(30);
-
-  check("no uncaught page errors", errors.length === 0, errors.join(" | "));
-
-  console.log("\n  UI: " + pass + " passed, " + fail + " failed");
-  if (fail) {
-    console.log("  Failures:\n    " + failures.join("\n    "));
-    process.exitCode = 1;
+    check(
+      "no duplicate ids",
+      (() => {
+        const ids = Array.from(document.querySelectorAll("[id]")).map((n) => n.id);
+        return ids.length === new Set(ids).size;
+      })()
+    );
+    check(
+      "every sprite reference resolves",
+      Array.from(document.querySelectorAll("use")).every((use) =>
+        document.querySelector(use.getAttribute("href"))
+      )
+    );
+    dom.window.close();
   }
 
-  dom.window.close();
-}
+  /* ---------- sorting ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    const buttons = Array.from(document.querySelectorAll("[data-sort]"));
+    const firstSlug = () => document.querySelector(".tile").getAttribute("data-slug");
+    const firstRating = () => document.querySelector(".tile-rating").textContent;
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+    check("default order is most played", firstSlug() === "stick-war-legacy", firstSlug());
+
+    click(window, buttons.find((b) => b.dataset.sort === "az"));
+    const alphabetical = visibleTitles(document);
+    check(
+      "A–Z is actually alphabetical",
+      alphabetical.join("|") === alphabetical.slice().sort((a, b) => a.localeCompare(b)).join("|")
+    );
+
+    click(window, buttons.find((b) => b.dataset.sort === "top"));
+    check("top rated leads with five stars", firstRating() === "5.0", firstRating());
+
+    check(
+      "only one sort is pressed at a time",
+      document.querySelectorAll('[data-sort][aria-pressed="true"]').length === 1
+    );
+    dom.window.close();
+  }
+
+  /* ---------- search + empty state ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    const input = document.querySelector("#q");
+
+    type(window, input, "subway");
+    const titles = visibleTitles(document);
+    check("search narrows the wall", titles.length === 2, String(titles.length));
+    check("search matches titles", titles.every((t) => /subway/i.test(t)), titles.join(", "));
+
+    type(window, input, "zzzz-nothing");
+    check("no matches hides the wall", document.querySelector("#grid").hidden);
+    check("empty state is announced", !document.querySelector("[data-empty]").hidden);
+    check(
+      "empty state quotes the query",
+      document.querySelector("[data-empty-q]").textContent.includes("zzzz-nothing")
+    );
+
+    click(window, document.querySelector("[data-clear]"));
+    check("clear restores every tile", document.querySelectorAll(".tile").length === window.CATALOG.length);
+    dom.window.close();
+  }
+
+  /* ---------- saved ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    const first = document.querySelector(".tile");
+
+    click(window, first.querySelector("[data-fav]"));
+    check("saving lights the star", first.querySelector("[data-fav]").getAttribute("aria-pressed") === "true");
+    check("saved count updates", document.querySelector("[data-saved-count]").textContent === "1");
+    check(
+      "saved titles persist",
+      JSON.parse(window.localStorage.getItem("gams.saved.v1")).includes(first.dataset.slug)
+    );
+
+    click(window, document.querySelector("[data-saved-toggle]"));
+    check("saved view shows only saves", document.querySelectorAll(".tile").length === 1);
+
+    click(window, document.querySelector("[data-fav]"));
+    check("unsaving empties the view", document.querySelectorAll(".tile").length === 0);
+    check("empty state covers a blank filter", document.querySelector("[data-empty-q]").textContent === "this filter");
+    check("saved count returns to zero", document.querySelector("[data-saved-count]").textContent === "0");
+    check(
+      "the saved filter stays on until it is switched off",
+      document.querySelector("[data-saved-toggle]").getAttribute("aria-pressed") === "true"
+    );
+    dom.window.close();
+  }
+
+  /* ---------- player ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    const first = document.querySelector(".tile");
+    const opener = first.querySelector(".tile-open");
+
+    check("player starts closed", document.querySelector("[data-player]").hidden);
+    check("no iframe before opening", document.querySelectorAll("iframe").length === 0);
+
+    opener.focus();
+    click(window, opener);
+    const frame = document.querySelector("iframe");
+    const player = document.querySelector("[data-player]");
+
+    check("clicking a tile opens the player", !player.hidden);
+    check("exactly one player loads", document.querySelectorAll("iframe").length === 1);
+    check(
+      "iframe points at the publisher's player",
+      frame.getAttribute("src") === "https://www.madkidgames.com/full/stick-war-legacy",
+      frame.getAttribute("src")
+    );
+    check("iframe can go fullscreen", frame.hasAttribute("allowfullscreen"));
+    check("iframe allows autoplay", /autoplay/.test(frame.getAttribute("allow")));
+    check("player titles the title", document.querySelector("[data-player-title]").textContent === "Stick War Legacy");
+    check("page locks behind the player", document.body.classList.contains("playing"));
+    check("new-tab link matches the embed", document.querySelector("[data-external]").href.endsWith("/full/stick-war-legacy"));
+    check(
+      "a stalled player can be opened elsewhere",
+      document.querySelector("[data-load-link]").getAttribute("href").endsWith("/full/stick-war-legacy")
+    );
+    check("deep link is written to the url", window.location.hash === "#p=stick-war-legacy");
+    check("recent row appears", !document.querySelector("[data-recent]").hidden);
+    check(
+      "recent row names the title",
+      document.querySelector("[data-recent-list]").textContent.includes("Stick War Legacy")
+    );
+
+    press(window, "Escape");
+    check("escape closes the player", player.hidden);
+    check("escape unloads the iframe", document.querySelectorAll("iframe").length === 0);
+    check("body scroll is restored", !document.body.classList.contains("playing"));
+    check("focus returns to the tile", document.activeElement === opener);
+    check("hash is cleared on close", window.location.hash === "");
+    dom.window.close();
+  }
+
+  /* ---------- close button + fullscreen wiring ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    const opener = document.querySelector(".tile-open");
+
+    opener.focus();
+    click(window, opener);
+    click(window, document.querySelector("[data-close]"));
+    check("close button also unloads", document.querySelectorAll("iframe").length === 0);
+    check("close button restores focus", document.activeElement === opener);
+    dom.window.close();
+  }
+
+  /* ---------- deep links ---------- */
+  {
+    const dom = boot("#p=subway-surfers");
+    await tick();
+    const { document } = dom.window;
+    const frame = document.querySelector("iframe");
+    check("a deep link opens that title", frame && frame.getAttribute("src").endsWith("/full/subway-surfers"));
+    check("the deep-linked title is named", document.querySelector("[data-player-title]").textContent === "Subway Surfers");
+    dom.window.close();
+  }
+
+  {
+    const dom = boot("#p=not-a-real-slug");
+    await tick();
+    check("a bad deep link is ignored", dom.window.document.querySelector("[data-player]").hidden);
+    dom.window.close();
+  }
+
+  /* ---------- shuffle, keys, shortcuts ---------- */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    const original = window.Math.random;
+    window.Math.random = () => 0;
+    click(window, document.querySelector("[data-shuffle]"));
+    check(
+      "shuffle plays the first title when the dice say so",
+      document.querySelector("[data-player-title]").textContent === "Stick War Legacy"
+    );
+    window.Math.random = original;
+    press(window, "Escape");
+
+    click(window, document.querySelector(".tile-open"));
+    check("player is open before the shortcut test", !document.querySelector("[data-player]").hidden);
+    // Opening from a tile while a tile is focused keeps focus predictable.
+    check("shortcut does not disturb the iframe", document.querySelectorAll("iframe").length === 1);
+    press(window, "Escape");
+
+    const search = document.querySelector("#q");
+    const event = press(window, "/");
+    check("slash focuses search", document.activeElement === search && event.defaultPrevented);
+
+    type(window, search, "snake");
+    press(window, "Escape");
+    check("escape clears a search first", search.value === "" && document.querySelectorAll(".tile").length === window.CATALOG.length);
+    dom.window.close();
+  }
+
+  console.log("\n  UI: " + pass + " passed, " + fail + " failed\n");
+  if (fail) {
+    failures.forEach((f) => console.log("   - " + f));
+    process.exitCode = 1;
+  }
+})();

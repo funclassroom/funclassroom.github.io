@@ -1,141 +1,122 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Classes.">
-<meta name="robots" content="noindex, nofollow">
-<title>Classes</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e8e3e'/%3E%3Cpath d='M16 7 27 12 16 17 5 12Z' fill='%23fff'/%3E%3C/svg%3E">
+<title>G@M£$</title>
+<meta name="description" content="G@M£$ — a wall of instant-play titles. Pick one and it opens right here.">
+<meta name="theme-color" content="#07070a">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23d7ff3e'/%3E%3Ctext x='32' y='45' font-family='system-ui,sans-serif' font-size='38' font-weight='900' text-anchor='middle' fill='%2307070a'%3EG%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/app.css">
 </head>
-<body data-mode="classroom">
+<body>
+<a class="skip" href="#grid">Skip to the collection</a>
 
-<!-- icon sprite -->
-<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></symbol>
-  <symbol id="i-school" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9zM5 13.18v4L12 21l7-3.82v-4L12 17z"/></symbol>
-  <symbol id="i-apps" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></symbol>
-  <symbol id="i-add" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></symbol>
-  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></symbol>
-  <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
-  <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M21.58 16.09l-1.09-7.66A3.996 3.996 0 0 0 16.53 5H7.47C5.48 5 3.79 6.46 3.51 8.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19c.68 0 1.32-.27 1.8-.75L9 16h6l2.25 2.25c.48.48 1.13.75 1.8.75 1.56 0 2.75-1.37 2.53-2.91zM11 11H9v2H8v-2H6v-1h2V8h1v2h2zm4-1c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2 3c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></symbol>
-  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78 3.15 3.15.02-.16c0-1.66-1.34-3-3-3z"/></symbol>
-  <symbol id="i-fullscreen" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z"/></symbol>
-  <symbol id="i-assignment" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7zm3-4H7v-2h10zm0-4H7V7h10z"/></symbol>
-  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8z"/></symbol>
-  <symbol id="i-people" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></symbol>
-  <symbol id="i-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14z"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"/></symbol>
-  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2z"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></symbol>
-  <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
-  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
-  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></symbol>
-  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M14 4v5c0 1.12.37 2.16 1 2.98V14H9v-2.02c.63-.82 1-1.86 1-2.98V4h-2V2h8v2zM9 16h6l-1 6h-4z"/></symbol>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true">G</span>
+      <span class="brand-word">G@M£$</span>
+    </a>
+
+    <div class="search">
+      <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="q" type="search" placeholder="Search titles" autocomplete="off" spellcheck="false" aria-label="Search titles">
+      <kbd aria-hidden="true">/</kbd>
+    </div>
+
+    <div class="bar-actions">
+      <button type="button" class="chip" data-saved-toggle aria-pressed="false">
+        <svg class="ico" aria-hidden="true"><use href="#i-star"/></svg>
+        <span>Saved</span>
+        <b data-saved-count>0</b>
+      </button>
+      <button type="button" class="btn btn-lime" data-shuffle>
+        <svg class="ico" aria-hidden="true"><use href="#i-shuffle"/></svg>
+        <span>Surprise me</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="kicker">The arcade</p>
+    <h1 class="wordmark">G@M£$</h1>
+    <p class="sub"><b data-count>0</b> titles. No installs, no accounts — tap one and it plays right here.</p>
+  </section>
+
+  <section class="toolbar">
+    <h2>All titles <span class="shown" data-shown aria-live="polite"></span></h2>
+    <div class="sorts" role="group" aria-label="Sort by">
+      <button type="button" data-sort="hot" aria-pressed="true">Popular</button>
+      <button type="button" data-sort="top" aria-pressed="false">Top rated</button>
+      <button type="button" data-sort="az" aria-pressed="false">A–Z</button>
+    </div>
+  </section>
+
+  <section class="recent" data-recent hidden aria-label="Recently opened">
+    <p class="recent-label">Jump back in</p>
+    <div class="recent-list" data-recent-list></div>
+  </section>
+
+  <section id="grid" class="grid" aria-label="Collection"></section>
+
+  <p class="empty" data-empty hidden>
+    Nothing matches <b data-empty-q></b>.
+    <button type="button" class="link" data-clear>Clear the search</button>
+  </p>
+</main>
+
+<footer class="foot">
+  <p>Built for the five-minute break. <span aria-hidden="true">©</span> 2026 G@M£$</p>
+  <p class="foot-small">Titles are streamed from their publisher — nothing is hosted here.</p>
+</footer>
+
+<div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="player-title">
+  <div class="player-top">
+    <button type="button" class="icon-btn" data-close aria-label="Close and go back">
+      <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <div class="player-meta">
+      <b id="player-title" data-player-title></b>
+      <span data-player-sub></span>
+    </div>
+    <div class="player-tools">
+      <a class="icon-btn" data-external target="_blank" rel="noopener" aria-label="Open in a new tab">
+        <svg class="ico" aria-hidden="true"><use href="#i-external"/></svg>
+      </a>
+      <button type="button" class="icon-btn" data-fs aria-label="Fullscreen" aria-pressed="false">
+        <svg class="ico" aria-hidden="true"><use href="#i-expand"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="player-stage" data-stage>
+    <div class="player-load" data-loading>
+      <span class="spinner" aria-hidden="true"></span>
+      <span data-loading-text>Loading…</span>
+      <a class="load-link" data-load-link target="_blank" rel="noopener" hidden>Open it in a new tab</a>
+    </div>
+  </div>
+
+  <noscript>
+    <p class="player-noscript">This player needs JavaScript. <a data-external-noscript href="https://www.madkidgames.com/">Open the publisher instead</a>.</p>
+  </noscript>
+</div>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8L3.5 9.8l5.9-.9z"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7"/><path d="M16 21h5v-5M21 21l-6-6M8 3H3v5M3 3l6 6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M4 15v5h5M20 9V4h-5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
 </svg>
 
-<!-- ============================================================
-     CLASSROOM MODE
-     ============================================================ -->
-<div id="mode-classroom" class="mode">
-  <header class="gc-topbar">
-    <button class="gc-iconbtn" data-action="drawer" aria-label="Open menu" title="Main menu">
-      <svg class="icon"><use href="#i-menu"/></svg>
-    </button>
-    <a class="gc-brand" href="#" data-action="home" aria-label="Classroom home">
-      <span class="gc-brand-mark"><svg class="icon"><use href="#i-school"/></svg></span>
-      <span class="gc-brand-name">Classroom</span>
-    </a>
-    <span class="gc-topbar-divider" aria-hidden="true"></span>
-    <div class="gc-spacer"></div>
-    <button class="gc-iconbtn" data-action="toggle-mode" aria-label="Apps" title="Apps">
-      <svg class="icon"><use href="#i-apps"/></svg>
-    </button>
-    <button class="gc-iconbtn" data-action="join" aria-label="Join class" title="Join class">
-      <svg class="icon"><use href="#i-add"/></svg>
-    </button>
-    <button class="gc-avatar" data-action="account" aria-label="Google Account" title="Sam Carter">S</button>
-  </header>
-
-  <main id="gc-view" class="gc-view"></main>
-</div>
-
-<!-- ============================================================
-     GAMES MODE
-     ============================================================ -->
-<div id="mode-games" class="mode" hidden>
-  <header class="mk-topbar">
-    <a class="mk-brand" href="#" data-action="games-home" aria-label="MadKid Games home">
-      <span class="mk-brand-mark"><svg class="icon"><use href="#i-gamepad"/></svg></span>
-      <span class="mk-brand-name">MadKid<b>Games</b></span>
-    </a>
-
-    <label class="mk-search">
-      <svg class="icon"><use href="#i-search"/></svg>
-      <input id="mk-search" type="search" placeholder="Search games" autocomplete="off" spellcheck="false" aria-label="Search games">
-      <kbd class="mk-slash">/</kbd>
-    </label>
-
-    <div class="mk-spacer"></div>
-
-    <button class="mk-btn mk-btn-quiet" data-action="toggle-mode" title="Ctrl+Shift+K" aria-label="Switch to Classroom mode">
-      <svg class="icon"><use href="#i-eye-off"/></svg>
-      <span>Classroom mode</span>
-    </button>
-  </header>
-
-  <main id="mk-view" class="mk-view"></main>
-</div>
-
-<!-- ============================================================
-     PLAYER (shared by both skins — never remounted on switch)
-     ============================================================ -->
-<section id="player" class="player" hidden aria-live="polite"></section>
-
-<!-- ============================================================
-     DRAWER (Classroom)
-     ============================================================ -->
-<div id="drawer-scrim" class="scrim" hidden data-action="drawer-close">
-  <aside class="gc-drawer" role="dialog" aria-label="Main menu">
-    <div class="gc-drawer-head">
-      <span class="gc-brand-mark"><svg class="icon"><use href="#i-school"/></svg></span>
-      <strong>Classroom</strong>
-    </div>
-    <nav class="gc-drawer-nav">
-      <button class="gc-drawer-item" data-action="home">
-        <svg class="icon"><use href="#i-home"/></svg><span>Classes</span>
-      </button>
-      <button class="gc-drawer-item" data-action="calendar">
-        <svg class="icon"><use href="#i-calendar"/></svg><span>Calendar</span>
-      </button>
-      <button class="gc-drawer-item" data-action="todo">
-        <svg class="icon"><use href="#i-check"/></svg><span>To-do</span>
-      </button>
-    </nav>
-    <div class="gc-drawer-foot">
-      <button class="gc-drawer-item gc-drawer-games" data-action="toggle-mode">
-        <svg class="icon"><use href="#i-gamepad"/></svg><span>Games view</span>
-      </button>
-      <p class="gc-drawer-note">Signed in as Sam Carter</p>
-    </div>
-  </aside>
-</div>
-
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-<script src="assets/js/gamekit.js"></script>
 <script src="assets/js/catalog.js"></script>
-<script src="assets/js/games/snake.js"></script>
-<script src="assets/js/games/breakout.js"></script>
-<script src="assets/js/games/skydash.js"></script>
-<script src="assets/js/games/g2048.js"></script>
-<script src="assets/js/games/minesweeper.js"></script>
-<script src="assets/js/games/memory.js"></script>
-<script src="assets/js/games/pong.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

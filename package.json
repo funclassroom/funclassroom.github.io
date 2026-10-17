@@ -1,11 +1,11 @@
 {
-  "name": "madkid-classroom",
-  "version": "2.0.0",
+  "name": "gams-arcade",
+  "version": "3.0.0",
   "private": true,
-  "description": "A self-contained HTML5 arcade wearing a Google Classroom disguise.",
+  "description": "G@M£$ — a wall of embeddable titles streamed from MadKidGames.",
   "scripts": {
     "start": "python3 -m http.server 8000 --bind 0.0.0.0",
-    "test": "node tests/ui.test.js && node tests/games.test.js"
+    "test": "node tests/ui.test.js && node tests/catalog.test.js"
   },
   "devDependencies": {
     "jsdom": "^30.1.3"

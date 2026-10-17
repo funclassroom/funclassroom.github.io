@@ -1,290 +1,189 @@
-/* ============================================================
-   CATALOG — the only file you need to edit to change the line-up.
-   Every entry is one game + the classroom it hides behind.
+/* G@M£$ catalogue — data harvested from madkidgames.com/html5-games on 2026-10-17.
+   Each row is [slug, title, rating out of 5, plays]. Thumbnails and player URLs
+   are derived from the slug, so adding a title is a one-line change. */
+(function () {
+  "use strict";
 
-   id          unique slug, must match Arcade.register({ id })
-   title       real game name (games mode)
-   tagline     one line shown on the card
-   category    Arcade | Puzzle | Action | Sports
-   tags        search keywords
-   ratio       width / height of the play surface (number)
-   art         card gradient + glyph (decorative, inline SVG)
-   scoreType   "high" or "low"
-   scoreLabel  label for the best-score chip
-   scoreFormat "number" | "time" | "moves"
-   controls    short controls hint
-   game.class  the Classroom disguise
-   ============================================================ */
+  var RAW = [
+    ["stick-war-legacy", "Stick War Legacy", 4.3, 266801],
+    ["subway-surfers", "Subway Surfers", 4.0, 200880],
+    ["angry-birds-2", "Angry Birds 2", 4.5, 102391],
+    ["offroad-outlaws", "Offroad Outlaws", 4.6, 97607],
+    ["toca-boca-life-city", "Toca Boca Life City", 4.4, 96909],
+    ["bowmasters-archery-shooting", "Bowmasters Archery Shooting", 4.1, 90636],
+    ["bad-piggies", "Bad Piggies", 3.9, 89019],
+    ["bus-simulator-ultimate", "Bus Simulator Ultimate", 4.3, 74442],
+    ["purble-place", "Purble Place", 4.6, 74318],
+    ["toca-boca-life-vacation", "Toca Boca Life Vacation", 4.3, 70954],
+    ["hot-wheels-race-off", "Hot Wheels Race Off", 3.9, 63468],
+    ["airplane-flight-simulator-evo", "Airplane Flight Simulator Evo", 4.3, 59773],
+    ["toca-boca-life-neighborhood", "Toca Boca Life Neighborhood", 3.7, 53992],
+    ["toca-boca-life-office", "Toca Boca Life Office", 4.1, 52637],
+    ["toca-boca-life-hospital", "Toca Boca Life Hospital", 4.3, 47750],
+    ["pepi-house-happy-family", "Pepi House Happy Family", 4.2, 44363],
+    ["free-kick-football-3d-soccer", "Free Kick Football 3D Soccer", 4.7, 38675],
+    ["toca-boca-life-school", "Toca Boca Life School", 3.8, 38565],
+    ["toca-boca-life-farm", "Toca Boca Life Farm", 4.5, 33521],
+    ["toca-boca-life-town", "Toca Boca Life Town", 4.2, 33265],
+    ["pepi-hospital-learn-and-care", "Pepi Hospital Learn and Care", 4.3, 32029],
+    ["toca-boca-life-after-school", "Toca Boca Life After School", 3.9, 31866],
+    ["pepi-wonder-world-magic-isle", "Pepi Wonder World Magic Isle", 3.7, 29159],
+    ["pepi-super-stores-fun-games", "Pepi Super Stores Fun & Games", 4.0, 27633],
+    ["world-cricket-championship-wcc-lite", "World Cricket Championship WCC Lite", 3.8, 27485],
+    ["world-cricket-championship-lte", "World Cricket Championship Lte", 3.9, 26845],
+    ["subway-princess-runner", "Subway Princess Runner", 4.0, 26751],
+    ["toca-boca-life-pets", "Toca Boca Life Pets", 4.3, 24231],
+    ["my-town-school", "My Town School", 4.5, 23227],
+    ["toca-boca-life-stable", "Toca Boca Life Stable", 4.2, 22740],
+    ["my-town-home-family-playhouse", "My Town Home Family Playhouse", 4.2, 22343],
+    ["flat-zombies-defense-and-cleanup", "Flat Zombies Defense & Cleanup", 4.0, 20637],
+    ["hot-wheels-race-off-multiplayer", "Hot Wheels Race Off Multiplayer", 3.7, 19822],
+    ["coach-bus-simulator", "Coach Bus Simulator", 3.8, 19005],
+    ["street-racing-3d", "Street Racing 3D", 4.5, 18268],
+    ["mountain-bike-xtreme", "Mountain Bike Xtreme", 4.7, 18021],
+    ["toca-boca-life-town-new", "Toca Boca Life Town New", 3.9, 17745],
+    ["racing-in-car-2", "Racing in Car 2", 4.3, 17565],
+    ["banana-kong", "Banana Kong", 4.6, 16728],
+    ["racing-limits", "Racing Limits", 5.0, 16149],
+    ["ultimate-car-driving-simulator", "Ultimate Car Driving Simulator", 4.7, 16036],
+    ["geometry-dash", "Geometry Dash", 4.3, 15648],
+    ["shadow-fight-2", "Shadow Fight 2", 4.3, 15574],
+    ["driving-school-2016", "Driving School 2016", 3.8, 15550],
+    ["driving-school-2017", "Driving School 2017", 4.4, 15136],
+    ["my-town-preschool-kids-game", "My Town Preschool Kids Game", 4.4, 15038],
+    ["mmx-hill-dash", "MMX Hill Dash", 4.0, 14434],
+    ["dr-panda-town-tales", "Dr. Panda Town Tales", 3.4, 14150],
+    ["evil-nun-horror-at-school", "Evil Nun Horror at School", 4.3, 13988],
+    ["demolition-derby-2", "Demolition Derby 2", 4.5, 13922],
+    ["idle-miner-tycoon-gold-games", "Idle Miner Tycoon Gold Games", 5.0, 13820],
+    ["bouncemasters-penguin-games", "Bouncemasters Penguin Games", 4.7, 13558],
+    ["my-town-hospital-doctor-game", "My Town Hospital – Doctor Game", 5.0, 13491],
+    ["survivor-io", "Survivor iO", 4.2, 13352],
+    ["food-fighter-clicker-games", "Food Fighter Clicker Games", 4.4, 13307],
+    ["central-hospital-stories", "Central Hospital Stories", 4.7, 13245],
+    ["farm-simulator-evo", "Farm Simulator Evo", 4.6, 12993],
+    ["mr-meat-horror-escape-room", "Mr Meat Horror Escape Room", 4.1, 12378],
+    ["my-town-beauty-contest", "My Town Beauty Contest", 4.1, 12279],
+    ["granny", "Granny", 4.4, 12156],
+    ["cat-runner-decorate-home", "Cat Runner Decorate Home", 2.7, 12113],
+    ["truckers-of-europe-2", "Truckers of Europe 2", 5.0, 12022],
+    ["vector-2", "Vector 2", 4.7, 11997],
+    ["traffic-rider", "Traffic Rider", 3.3, 11735],
+    ["sunny-school-stories", "Sunny School Stories", 5.0, 11683],
+    ["grow-castle-tower-defense", "Grow Castle - Tower Defense", 4.2, 11526],
+    ["my-town-daycare-game", "My Town Daycare Game", 4.8, 11504],
+    ["mmx-hill-dash-2-race-offroad", "MMX Hill Dash 2 – Race Offroad", 4.2, 11497],
+    ["vacation-hotel-stories", "Vacation Hotel Stories", 4.7, 11369],
+    ["sweet-home-stories", "Sweet Home Stories", 4.5, 11351],
+    ["truck-simulator-usa-classic", "Truck Simulator USA Classic", 4.8, 11331],
+    ["stunt-bike-extreme", "Stunt Bike Extreme", 4.4, 11247],
+    ["truck-simulator-europe", "Truck Simulator Europe", 4.2, 11048],
+    ["short-life", "Short Life", 4.4, 11006],
+    ["my-town-stores", "My Town Stores", 3.8, 11003],
+    ["pov-car-driving", "POV Car Driving", 4.1, 10816],
+    ["burrito-bison-launcha-libre", "Burrito Bison Launcha Libre", 4.5, 10632],
+    ["driving-school-classics", "Driving School Classics", 4.0, 10616],
+    ["ultimate-dog-simulator", "Ultimate Dog Simulator", 4.7, 10509],
+    ["truck-simulator-pro-2", "Truck Simulator PRO 2", 4.7, 10228],
+    ["golf-orbit-oneshot-golf-games", "Golf Orbit Oneshot Golf Games", 5.0, 10162],
+    ["altos-adventure", "Altos Adventure", 4.5, 10122],
+    ["my-town-police-games-for-kids", "My Town Police Games For Kids", 4.7, 10082],
+    ["idle-guy-life-simulator", "Idle Guy Life Simulator", 4.6, 9682],
+    ["ship-simulator-19", "Ship Simulator 19", 2.9, 9672],
+    ["bus-simulator-17", "Bus Simulator 17", 4.5, 9576],
+    ["chess-titans", "Chess Titans", 4.3, 9489],
+    ["stickman-destruction-3-heroes-ragdoll-game", "Stickman Destruction 3 Heroes Ragdoll Game", 4.0, 9383],
+    ["rovercraft-race-your-space-car", "Rovercraft Race Your Space Car", 5.0, 9323],
+    ["speed-legends-car-driving-simulator", "Speed Legends Car Driving Simulator", 4.8, 9283],
+    ["my-town-beach-picnic", "My Town Beach Picnic", 4.6, 9225],
+    ["happy-daycare-stories-school", "Happy Daycare Stories - School", 5.0, 9152],
+    ["my-town-car-repair-mechanic", "My Town Car Repair - Mechanic", 4.1, 9132],
+    ["bus-simulator-pro-2", "Bus Simulator PRO 2", 3.9, 9087],
+    ["dr-panda-town-mall", "Dr Panda Town Mall", 3.9, 9051],
+    ["merge-cake-merge-cooking", "Merge Cake - Merge Cooking", 0.0, 9002],
+    ["train-driver-2018", "Train Driver 2018", 4.1, 8807],
+    ["cafe-racer", "Cafe Racer", 4.1, 8784],
+    ["euro-truck-driver-2018", "Euro Truck Driver 2018", 4.1, 8659],
+    ["traffic-racer", "Traffic Racer", 3.8, 8555],
+    ["dr-panda-town-vacation", "Dr. Panda Town Vacation", 4.6, 8538],
+    ["european-truck-simulator", "European Truck Simulator", 4.2, 8461],
+    ["happy-glass", "Happy Glass", 3.6, 8328],
+    ["dr-panda-town-pet-world", "Dr Panda Town Pet World", 5.0, 8309],
+    ["who-wants-to-be-a-millionaire", "Who Wants to Be a Millionaire", 5.0, 8265],
+    ["real-pool-3d", "Real Pool 3D", 3.8, 8248],
+    ["ultimate-motorcycle-simulator", "Ultimate Motorcycle Simulator", 4.5, 8219],
+    ["last-day-on-earth-survival", "Last Day on Earth Survival", 4.2, 8079],
+    ["taxi-sim-2016", "Taxi Sim 2016", 4.0, 8031],
+    ["stunt-car-challenge-3", "Stunt Car Challenge 3", 4.4, 7999],
+    ["five-nights-at-freddys", "Five Nights at Freddy's", 4.5, 7996],
+    ["daily-shopping-stories", "Daily Shopping Stories", 4.4, 7960],
+    ["cats-and-cups-barista-simulator", "Cats & Cups Barista Simulator", 5.0, 7776],
+    ["yasa-pets-hospital", "Yasa Pets Hospital", 5.0, 7721],
+    ["truckers-of-europe", "Truckers of Europe", 4.4, 7533],
+    ["stickman-world-battle", "Stickman World Battle", 3.0, 7512],
+    ["fun-kids-train-racing-games", "Fun Kids Train Racing Games", 3.6, 7473],
+    ["racing-fever-moto", "Racing Fever Moto", 2.1, 7414],
+    ["truck-simulator-offroad-4", "Truck Simulator OffRoad 4", 2.5, 7326],
+    ["moto-rider-go-highway-traffic", "Moto Rider GO Highway Traffic", 0.0, 7293],
+    ["smashy-road-wanted", "Smashy Road Wanted", 5.0, 7182],
+    ["ship-inc-packaging-simulator", "Ship Inc Packaging Simulator", 3.6, 7160],
+    ["short-ride", "Short Ride", 3.8, 7081],
+    ["fishing-inc", "Fishing Inc", 3.8, 7068],
+    ["bounce-tales", "Bounce Tales", 4.4, 7062],
+    ["royal-battletown-gta-game", "Royal Battletown GTA Game", 4.4, 7058],
+    ["mountain-climb-4x4-car-drive", "Mountain Climb 4x4 Car Drive", 5.0, 7024],
+    ["fiete-world-roleplay-for-kids", "Fiete World Roleplay For Kids", 4.4, 6924],
+    ["drag-sim-2018", "Drag Sim 2018", 4.2, 6837],
+    ["rocket-car-ball", "Rocket Car Ball", 5.0, 6832],
+    ["jurassic-world-simulator", "Jurassic World Simulator", 5.0, 6762],
+    ["truck-simulator-ultimate-3d", "Truck Simulator Ultimate 3D", 4.2, 6749],
+    ["scary-neighbor-3d", "Scary Neighbor 3D", 4.6, 6733],
+    ["tizi-town-my-airport-games", "Tizi Town - My Airport Games", 5.0, 6689],
+    ["bottle-flip-3d-tap-and-jump", "Bottle Flip 3D Tap & Jump", 5.0, 6682],
+    ["yasa-pets-village", "Yasa Pets Village", 4.5, 6644],
+    ["yasa-pets-tower", "Yasa Pets Tower", 5.0, 6544],
+    ["build-a-bridge", "Build a Bridge", 3.8, 6513],
+    ["gully-cricket-game", "Gully Cricket Game", 5.0, 6466],
+    ["cut-the-rope", "Cut The Rope", 5.0, 6439],
+    ["run-sausage-run", "Run Sausage Run", 3.8, 6429],
+    ["car-parking-pro-park-and-drive", "Car Parking Pro Park & Drive", 4.2, 6342],
+    ["daddy-long-legs", "Daddy Long Legs", 5.0, 6296],
+    ["grow-empire-rome", "Grow Empire Rome", 4.0, 6269],
+    ["doctor-911-hospital-simulator", "Doctor 911 Hospital Simulator", 4.0, 6248],
+    ["security-simulator", "Security Simulator", 4.2, 6240],
+    ["defense-legend-5-survivor-td", "Defense Legend 5 Survivor TD", 5.0, 6220],
+    ["yasa-pets-school", "Yasa Pets School", 4.3, 6169],
+    ["police-car-chase-cop-simulator", "Police Car Chase Cop Simulator", 5.0, 6134],
+    ["bus-simulator-ultimate-bus-game", "Bus Simulator - Ultimate Bus Game", 5.0, 6113],
+    ["car-eats-car-3-survival-racing", "Car Eats Car 3 Survival Racing", 4.3, 6108],
+    ["keep-on-mining-worlds", "Keep on Mining Worlds", 4.2, 6108],
+    ["johnny-trigger-action-shooter", "Johnny Trigger Action Shooter", 5.0, 6062],
+    ["ultimate-ant-simulator", "Ultimate Ant Simulator", 3.3, 6051],
+    ["beat-the-boss-4", "Beat the Boss 4", 3.9, 6044],
+    ["wild-elephant-simulator-animal-survival-game", "Wild Elephant Simulator", 5.0, 5963],
+    ["racing-in-city-2-car-driving", "Racing in City 2 - Car Driving", 5.0, 5957],
+    ["car-driving-simulator", "Car Driving Simulator", 3.0, 5948],
+    ["delicious-the-first-course", "Delicious The First Course", 4.0, 5916],
+    ["hill-climb-racing-2-adventure-game", "Hill Climb Racing 2 Adventure Game", 4.1, 5866],
+    ["it-girl-story-celebrity-life", "It Girl Story - Celebrity Life", 5.0, 5863],
+    ["street-fighter-ii", "Street Fighter II", 3.8, 5816],
+    ["beat-the-boss-3", "Beat the Boss 3", 4.2, 5658],
+    ["ultimate-car-driving-classics", "Ultimate Car Driving Classics", 5.0, 5654],
+    ["yasa-pets-hotel", "Yasa Pets Hotel", 5.0, 5643],
+    ["city-island-5-building-sim", "City Island 5 - Building Sim", 5.0, 5625],
+    ["wolfoo-a-day-at-school", "Wolfoo A Day At School", 3.9, 5605],
+    ["race-max-ultimate-racing-game", "Race Max Ultimate Racing Game", 3.3, 5597]
+  ];
 
-window.GAME_CATALOG = [
-  {
-    id: "snake",
-    title: "Snake",
-    tagline: "Eat, grow, and keep your tail out of trouble.",
-    category: "Arcade",
-    tags: ["snake", "classic", "retro", "grow", "arcade"],
-    ratio: 1,
-    controls: "Arrow keys / WASD · swipe",
-    scoreType: "high",
-    scoreLabel: "Best score",
-    scoreFormat: "number",
-    art: {
-      bg: "linear-gradient(145deg,#052e21 0%,#0b6b46 55%,#39d98a 100%)",
-      fg: "#06231a",
-      glyph:
-        '<path d="M14 50c0-12 10-14 18-12 10 3 16-2 16-10 0-7-6-11-13-9" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>' +
-        '<circle cx="35" cy="19" r="7" fill="currentColor"/><circle cx="37.5" cy="17" r="1.8" fill="#06231a"/>'
-    },
-    class: {
-      subject: "Biology",
-      section: "Period 1 · Lab B",
-      teacher: "Ms. Rivera",
-      email: "erivera@northfield.edu",
-      assignment: "Lab 7 — Predator & Prey Simulation",
-      due: "Friday, 11:59 PM",
-      points: 20,
-      color: "#188038",
-      instructions: [
-        "Run the simulation below for at least three minutes.",
-        "Each item consumed counts as one unit of energy. Record your final length and best score.",
-        "In one sentence, explain what limited the population from growing forever."
-      ]
-    }
-  },
-  {
-    id: "breakout",
-    title: "Brick Breaker",
-    tagline: "Clear the wall with one very busy ball.",
-    category: "Arcade",
-    tags: ["breakout", "bricks", "paddle", "ball", "arcade", "classic"],
-    ratio: 1.538,
-    controls: "Mouse / finger · ← → · click to serve",
-    scoreType: "high",
-    scoreLabel: "Best score",
-    scoreFormat: "number",
-    art: {
-      bg: "linear-gradient(145deg,#101a4d 0%,#2b4bff 55%,#7ce7ff 100%)",
-      fg: "#eaf2ff",
-      glyph:
-        '<g fill="currentColor"><rect x="10" y="15" width="12" height="7" rx="2"/><rect x="26" y="15" width="12" height="7" rx="2"/>' +
-        '<rect x="42" y="15" width="12" height="7" rx="2"/><rect x="18" y="26" width="12" height="7" rx="2"/>' +
-        '<rect x="34" y="26" width="12" height="7" rx="2"/><rect x="10" y="37" width="12" height="7" rx="2"/>' +
-        '<rect x="26" y="37" width="12" height="7" rx="2"/><rect x="42" y="37" width="12" height="7" rx="2"/>' +
-        '<circle cx="30" cy="51" r="4"/><rect x="20" y="57" width="24" height="4" rx="2"/></g>'
-    },
-    class: {
-      subject: "Physics",
-      section: "Period 3 · Room 204",
-      teacher: "Mr. Okafor",
-      email: "dokafor@northfield.edu",
-      assignment: "Unit 4 — Energy Transfer Practice",
-      due: "Thursday, 8:00 AM",
-      points: 15,
-      color: "#1967d2",
-      instructions: [
-        "Play one full round of the activity below.",
-        "Track how the ball's direction changes after each collision.",
-        "Describe one place where kinetic energy was transferred rather than created."
-      ]
-    }
-  },
-  {
-    id: "sky-dash",
-    title: "Sky Dash",
-    tagline: "One button, a lot of sky, and some very rude pipes.",
-    category: "Action",
-    tags: ["sky", "dash", "bird", "flappy", "one button", "action"],
-    ratio: 1.538,
-    controls: "Space / click / tap to flap",
-    scoreType: "high",
-    scoreLabel: "Best score",
-    scoreFormat: "number",
-    art: {
-      bg: "linear-gradient(150deg,#0b2a5b 0%,#2f7dd1 45%,#ffb75e 100%)",
-      fg: "#fff6e2",
-      glyph:
-        '<path d="M8 40c7-2 12-8 19-8 8 0 10 6 18 6 5 0 8-2 11-5-2 10-8 16-18 16-12 0-18-4-30-9z" fill="currentColor"/>' +
-        '<path d="M30 33c2-8 9-12 17-10-3 4-5 8-6 13" fill="currentColor" opacity=".62"/>' +
-        '<circle cx="43" cy="30" r="2.2" fill="#0b2a5b"/>'
-    },
-    class: {
-      subject: "Physical Education",
-      section: "Period 5 · Gym",
-      teacher: "Coach Bennett",
-      email: "jbennett@northfield.edu",
-      assignment: "Fitness Log — Endurance Unit",
-      due: "Monday, 9:00 AM",
-      points: 10,
-      color: "#e8710a",
-      instructions: [
-        "Complete three attempts of the activity below.",
-        "Log your best distance marker and how many attempts it took.",
-        "Compare steady effort with panic-tapping. Which lasted longer?"
-      ]
-    }
-  },
-  {
-    id: "2048",
-    title: "2048",
-    tagline: "Slide, merge, repeat. Do not think about the number 4096.",
-    category: "Puzzle",
-    tags: ["2048", "numbers", "merge", "slide", "puzzle", "math"],
-    ratio: 1.28,
-    controls: "Arrow keys / WASD · swipe",
-    scoreType: "high",
-    scoreLabel: "Best score",
-    scoreFormat: "number",
-    art: {
-      bg: "linear-gradient(145deg,#3b2410 0%,#bb6b1f 55%,#ffd76a 100%)",
-      fg: "#fff8e8",
-      glyph:
-        '<g fill="currentColor"><rect x="12" y="12" width="18" height="18" rx="4"/><rect x="34" y="12" width="18" height="18" rx="4" opacity=".72"/>' +
-        '<rect x="12" y="34" width="18" height="18" rx="4" opacity=".52"/><rect x="34" y="34" width="18" height="18" rx="4" opacity=".34"/></g>'
-    },
-    class: {
-      subject: "Mathematics",
-      section: "Period 2 · Room 112",
-      teacher: "Ms. Alvarez",
-      email: "malvarez@northfield.edu",
-      assignment: "Unit 4 — Powers of Two Warm-Up",
-      due: "Tomorrow, 8:00 AM",
-      points: 5,
-      color: "#8430ce",
-      instructions: [
-        "Play until you run out of moves or reach 2048.",
-        "Write down the sequence of tile values you created along the way.",
-        "Explain why every number on the board is a power of two."
-      ]
-    }
-  },
-  {
-    id: "minesweeper",
-    title: "Minesweeper",
-    tagline: "Numbers, guesses, and the occasional small explosion.",
-    category: "Puzzle",
-    tags: ["minesweeper", "mines", "logic", "flags", "puzzle", "classic"],
-    ratio: 1.28,
-    controls: "Click to open · right-click to flag",
-    scoreType: "low",
-    scoreLabel: "Best time",
-    scoreFormat: "time",
-    art: {
-      bg: "linear-gradient(145deg,#3a0b0b 0%,#a3231d 55%,#ff8a5c 100%)",
-      fg: "#fff1ea",
-      glyph:
-        '<circle cx="32" cy="34" r="13" fill="currentColor"/>' +
-        '<g stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M32 12v8M32 48v8M12 34h8M44 34h8M18 20l6 6M40 42l6 6M46 20l-6 6M24 42l-6 6"/></g>'
-    },
-    class: {
-      subject: "Chemistry",
-      section: "Period 6 · Lab C",
-      teacher: "Dr. Whitfield",
-      email: "awhitfield@northfield.edu",
-      assignment: "Lab 3 — Periodic Trends Review",
-      due: "Wednesday, 11:59 PM",
-      points: 25,
-      color: "#c5221f",
-      instructions: [
-        "Clear the board without setting off a reaction.",
-        "Use the neighbouring counts to rule out options before guessing.",
-        "Note the fastest time you achieved and how many flags you used."
-      ]
-    }
-  },
-  {
-    id: "memory",
-    title: "Memory Match",
-    tagline: "Sixteen cards, eight pairs, one suspiciously good memory.",
-    category: "Puzzle",
-    tags: ["memory", "match", "pairs", "recall", "puzzle", "cards"],
-    ratio: 1.28,
-    controls: "Click / tap to flip",
-    scoreType: "low",
-    scoreLabel: "Fewest moves",
-    scoreFormat: "moves",
-    art: {
-      bg: "linear-gradient(145deg,#052b2d 0%,#0e7772 55%,#7ef0d1 100%)",
-      fg: "#ecfff9",
-      glyph:
-        '<rect x="10" y="16" width="20" height="32" rx="4" fill="currentColor"/>' +
-        '<rect x="34" y="16" width="20" height="32" rx="4" fill="currentColor" opacity=".55"/>' +
-        '<path d="M18 34l5 5 8-10" stroke="#0b3b3a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
-    },
-    class: {
-      subject: "English Literature",
-      section: "Period 4 · Room 210",
-      teacher: "Ms. Chen",
-      email: "lchen@northfield.edu",
-      assignment: "Vocabulary — Week 8 Flashcards",
-      due: "Friday, 8:00 AM",
-      points: 10,
-      color: "#007b83",
-      instructions: [
-        "Complete the matching activity at least twice.",
-        "Record your fewest moves and the time it took.",
-        "Pick two words and use each in a sentence about the novel."
-      ]
-    }
-  },
-  {
-    id: "pong",
-    title: "Paddle Duel",
-    tagline: "The original sports game. First to seven.",
-    category: "Sports",
-    tags: ["pong", "paddle", "tennis", "table tennis", "sports", "classic"],
-    ratio: 1.6,
-    controls: "Mouse / finger · ↑ ↓",
-    scoreType: "high",
-    scoreLabel: "Best rally",
-    scoreFormat: "number",
-    art: {
-      bg: "linear-gradient(145deg,#231047 0%,#5c2ecc 55%,#c9a7ff 100%)",
-      fg: "#f4eeff",
-      glyph:
-        '<g fill="currentColor"><rect x="12" y="18" width="5" height="22" rx="2.5"/><rect x="47" y="28" width="5" height="22" rx="2.5"/>' +
-        '<circle cx="35" cy="27" r="5"/></g><path d="M32 12v40" stroke="currentColor" stroke-width="2" stroke-dasharray="4 6" opacity=".4"/>'
-    },
-    class: {
-      subject: "Computer Science",
-      section: "Period 7 · Room 301",
-      teacher: "Mr. Park",
-      email: "jpark@northfield.edu",
-      assignment: "Unit 2 — Event Loops & Collision",
-      due: "Next Tuesday, 11:59 PM",
-      points: 20,
-      color: "#7627bb",
-      instructions: [
-        "Play a full match against the computer.",
-        "Watch how input, position updates, and collisions happen every frame.",
-        "Describe the game loop in three steps, using your own words."
-      ]
-    }
-  }
-];
-
-/* ---------- the rest of the Classroom dressing ---------- */
-window.CLASSROOM_META = {
-  student: { name: "Sam Carter", initial: "S", email: "scarter@northfield.edu" },
-  school: "Northfield High School",
-  year: "2026–27",
-  roster: [
-    "Ava Patel", "Noah Brooks", "Mia Delgado", "Liam O'Connor",
-    "Zoe Nakamura", "Ethan Cole", "Priya Raman", "Lucas Meyer",
-    "Amara Osei", "Diego Santos"
-  ],
-  streamExtras: [
-    "Reminder: bring a charged Chromebook on Thursday. We are using the lab carts.",
-    "The study guide for this unit is posted under Classwork. Ask before Friday if anything is unclear.",
-    "No food or drinks near the equipment, please. Yes, that includes the suspiciously large iced coffee."
-  ],
-  // Assigned to every class, in the order shown on the card grid.
-  generalAnnouncements: [
-    {
-      author: "Northfield High School",
-      initial: "N",
-      color: "#5f6368",
-      when: "Monday",
-      text: "Semester 2 begins next week. Check the Classwork tab for the updated syllabus and room assignments."
-    }
-  ]
-};
+  window.CATALOG = RAW.map(function (row) {
+    return {
+      slug: row[0],
+      title: row[1],
+      rating: row[2],
+      plays: row[3],
+      thumb: "https://www.madkidgames.com/games/" + row[0] + "/thumb_2.jpg",
+      embed: "https://www.madkidgames.com/full/" + row[0]
+    };
+  });
+  window.CATALOG_SOURCE = "https://www.madkidgames.com/html5-games";
+}());
