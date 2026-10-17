@@ -107,7 +107,20 @@ function titles(document) {
     check("logo is present", document.querySelector(".logo").textContent.trim().length > 0);
     check("count matches the catalogue", document.querySelector("[data-count]").textContent === String(total));
     check("the whole catalogue is loaded", total === dom.window.CATALOG.length, String(total));
-    check("every title is rendered", document.querySelectorAll(".tile").length === total);
+    check(
+      "the first page is rendered",
+      document.querySelectorAll(".tile").length === Math.min(120, total)
+    );
+    check("a show-more button appears", !document.querySelector("[data-more]").hidden);
+    click(dom.window, document.querySelector("[data-more]"));
+    check(
+      "show more adds another page",
+      document.querySelectorAll(".tile").length === Math.min(240, total)
+    );
+    if (total > 240) {
+      const more = document.querySelector("[data-more]");
+      check("the button counts what is left", /\d+ left/.test(more.textContent) || /Show 120 more/.test(more.textContent));
+    }
     check(
       "thumbnails come from a portal",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
@@ -118,15 +131,16 @@ function titles(document) {
       "tiles name themselves for screen readers",
       Array.from(document.querySelectorAll(".tile-open")).every((b) => /^Play /.test(b.getAttribute("aria-label")))
     );
+    const shown = document.querySelectorAll(".tile").length;
     check(
       "only the first screenful loads eagerly",
-      document.querySelectorAll('.tile-thumb img[loading="lazy"]').length === total - 24 &&
-        document.querySelectorAll('.tile-thumb img:not([loading])').length === 24
+      document.querySelectorAll('.tile-thumb img[loading="lazy"]').length === Math.max(0, shown - 24) &&
+        document.querySelectorAll('.tile-thumb img:not([loading])').length === Math.min(24, shown)
     );
     check(
-      "rated titles carry a badge",
+      "rated titles on screen carry a badge",
       document.querySelectorAll(".tile-rating").length ===
-        dom.window.CATALOG.filter((t) => t.rating > 0).length
+        Array.from(document.querySelectorAll(".tile")).filter((t) => Number(t.dataset.rating) > 0).length
     );
 
     const chrome = Array.from(document.querySelectorAll(".bar, .toolbar, .foot"))
@@ -177,7 +191,13 @@ function titles(document) {
     check("A–Z sorts", sortedPart.length === alphabetical.length);
 
     click(window, buttons.find((b) => b.dataset.sort === "top"));
-    check("top rated starts at five", document.querySelector(".tile-rating").textContent === "5.0");
+    const ratings = Array.from(document.querySelectorAll(".tile"))
+      .map((t) => Number(t.getAttribute("data-rating")));
+    check(
+      "top rated descends",
+      ratings.every((r, i) => i === 0 || ratings[i - 1] >= r),
+      ratings.slice(0, 5).join(",")
+    );
     check("one sort at a time", document.querySelectorAll('[data-sort][aria-pressed="true"]').length === 1);
     dom.window.close();
   }
@@ -201,7 +221,10 @@ function titles(document) {
     check("message quotes the term", document.querySelector("[data-empty-q]").textContent.includes("zzzz-nothing"));
 
     click(window, document.querySelector("[data-clear]"));
-    check("clearing restores the wall", document.querySelectorAll(".tile").length === window.CATALOG.length);
+    check(
+      "clearing restores the wall",
+      document.querySelectorAll(".tile").length === Math.min(120, window.CATALOG.length)
+    );
     check("clear button hides when empty", document.querySelector("[data-search-clear]").hidden);
     dom.window.close();
   }
@@ -480,7 +503,7 @@ function titles(document) {
     press(window, "Escape");
     check(
       "escape clears search first",
-      search.value === "" && document.querySelectorAll(".tile").length === window.CATALOG.length
+      search.value === "" && document.querySelectorAll(".tile").length === Math.min(120, window.CATALOG.length)
     );
     dom.window.close();
   }
@@ -492,7 +515,7 @@ function titles(document) {
     const seed = (() => {
       click(first.window, first.window.document.querySelector('.tile[data-playable="1"] .tile-open'));
       press(first.window, "Escape");
-      click(first.window, first.window.document.querySelector('[data-fav="subway-surfers"]'));
+      click(first.window, first.window.document.querySelector(".tile [data-fav]"));
       click(first.window, first.window.document.querySelector('[data-sort="az"]'));
       first.window.scrollTo(0, 640);
       first.window.dispatchEvent(new first.window.Event("scroll"));
@@ -501,7 +524,7 @@ function titles(document) {
     first.window.close();
 
     check("store records the sort", seed.sort === "az", JSON.stringify(seed.sort));
-    check("store records the pick", seed.saved.includes("subway-surfers"));
+    check("store records the pick", seed.saved.length === 1);
     check("store records the visit", seed.recent.length === 1);
 
     const second = boot("", seed);
@@ -515,7 +538,8 @@ function titles(document) {
     );
     check(
       "saved survives a reload",
-      document.querySelector('[data-fav="subway-surfers"]').getAttribute("aria-pressed") === "true"
+      document.querySelector('[data-fav="' + seed.saved[0] + '"]') &&
+        document.querySelector('[data-fav="' + seed.saved[0] + '"]').getAttribute("aria-pressed") === "true"
     );
     check(
       "sort survives a reload",
@@ -604,7 +628,10 @@ function titles(document) {
     const { document } = dom.window;
     click(dom.window, document.querySelector(".tile-open"));
     press(dom.window, "Escape");
-    check("blocked storage still plays", document.querySelectorAll(".tile").length === dom.window.CATALOG.length);
+    check(
+      "blocked storage still plays",
+      document.querySelectorAll(".tile").length === Math.min(120, dom.window.CATALOG.length)
+    );
     check(
       "blocked storage is announced",
       /blocking storage/i.test(document.querySelector("[data-storage-note]").textContent)

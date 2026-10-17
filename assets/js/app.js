@@ -15,6 +15,7 @@
   var SLOW_LOAD_MS = 9000;
   var GIVE_UP_MS = 12000;
   var EAGER_IMAGES = 24;
+  var BATCH = 120;
   var SCROLL_SAVE_MS = 350;
 
   var state = {
@@ -174,6 +175,7 @@
     tile.className = "tile";
     tile.setAttribute("data-id", item.id);
     tile.setAttribute("data-playable", playable(item) ? "1" : "0");
+    tile.setAttribute("data-rating", item.rating.toFixed(1));
 
     var open = document.createElement("button");
     open.type = "button";
@@ -254,19 +256,35 @@
   }
 
   function renderGrid() {
-    var list = visible();
-    var frag = document.createDocumentFragment();
-    list.forEach(function (item, index) { frag.appendChild(buildTile(item, index)); });
+    state.list = visible();
+    state.rendered = 0;
     dom.grid.innerHTML = "";
-    dom.grid.appendChild(frag);
+    appendBatch();
 
-    dom.shown.textContent = list.length === ALL.length ? "" : list.length + " of " + ALL.length;
-    dom.empty.hidden = list.length !== 0;
-    dom.grid.hidden = list.length === 0;
+    dom.shown.textContent = state.list.length === ALL.length ? "" : state.list.length + " of " + ALL.length;
+    dom.empty.hidden = state.list.length !== 0;
+    dom.grid.hidden = state.list.length === 0;
 
-    if (!list.length) {
+    if (!state.list.length) {
       var term = state.q.trim();
       dom.emptyQ.textContent = term ? '"' + term + '"' : "this filter";
+    }
+  }
+
+  function appendBatch() {
+    var list = state.list || [];
+    var start = state.rendered;
+    var end = Math.min(start + BATCH, list.length);
+    var frag = document.createDocumentFragment();
+    for (var i = start; i < end; i += 1) frag.appendChild(buildTile(list[i], i));
+    dom.grid.appendChild(frag);
+    state.rendered = end;
+
+    var left = list.length - end;
+    dom.more.hidden = left <= 0;
+    if (left > 0) {
+      dom.more.textContent = "Show " + Math.min(BATCH, left) + " more" +
+        (left > BATCH ? " (" + left + " left)" : "");
     }
   }
 
@@ -690,6 +708,7 @@
     dom.empty = $("[data-empty]");
     dom.emptyQ = $("[data-empty-q]");
     dom.shown = $("[data-shown]");
+    dom.more = $("[data-more]");
     dom.count = $("[data-count]");
     dom.savedToggle = $("[data-saved-toggle]");
     dom.savedCount = $("[data-saved-count]");
@@ -789,6 +808,7 @@
       dom.q.focus();
     });
 
+    dom.more.addEventListener("click", appendBatch);
     $("[data-shuffle]").addEventListener("click", shuffle);
     dom.close.addEventListener("click", function () { closePlayer(); });
     dom.next.addEventListener("click", function () { nextSource(false); });

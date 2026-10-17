@@ -11,7 +11,7 @@ Two sources, merged into one wall by title:
 
 | source | titles | plays inside the page? |
 | --- | --- | --- |
-| GameMonetize's public embed feed | up to ~13,000 | yes — `html5.gamemonetize.co/<id>/` answers 200 with no frame rule |
+| GameMonetize's public embed feed | ~15,800 | yes — `html5.gamemonetize.co/<id>/` answers 200 with no frame rule |
 | MadKidGames sitemap | 506 | no — the site sends `X-Frame-Options: SAMEORIGIN` and says "Embedding unavailable" |
 
 Every title appears once. A tile only carries more than one source when the
@@ -77,6 +77,8 @@ game.
 ## The page
 
 - Search, plus Popular / Top rated / A–Z
+- 120 tiles to a page, with a **Show more** button, so a 16,000-title wall
+  still paints in one frame
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame

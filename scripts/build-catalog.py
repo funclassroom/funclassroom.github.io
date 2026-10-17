@@ -7,6 +7,7 @@ others become fallbacks: the player tries them in order until one loads.
 Run by .github/workflows/catalog.yml, on runners with real network access.
 """
 
+import html
 import json
 import re
 import sys
@@ -48,6 +49,13 @@ def read_existing():
     return rows
 
 
+def clean_title(text):
+    """Feeds carry HTML entities and zero-width joiners; browsers should not."""
+    text = html.unescape(text or "")
+    text = re.sub(r"[\u200b-\u200f\u202a-\u202e\ufeff\u2060]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def count_playable(path):
     try:
         with open(path, encoding="utf-8") as handle:
@@ -85,6 +93,9 @@ def main():
     for game in collected:
         key = portals.norm(game["title"])
         if not key:
+            continue
+        game["title"] = clean_title(game["title"])
+        if not game["title"]:
             continue
         if is_ai(game.get("slug", ""), game["title"]):
             continue

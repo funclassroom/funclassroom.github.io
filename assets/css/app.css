@@ -815,6 +815,17 @@ a { color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
+.more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 22px 0 8px;
+}
+
+.more-wrap .btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
 .tile-mirrors {
   position: absolute;
   top: 6px;
@@ -828,7 +839,18 @@ a { color: inherit; }
   line-height: 15px;
 }
 
-.tile:hover .tile-mirrors { opacity: 0; }
+.tile:hover .more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 22px 0 8px;
+}
+
+.more-wrap .btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
+.tile-mirrors { opacity: 0; }
 
 /* small screens */
 
