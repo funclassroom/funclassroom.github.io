@@ -9,6 +9,7 @@ Run by .github/workflows/catalog.yml, on runners with real network access.
 
 import html
 import json
+import os
 import re
 import sys
 import urllib.error
@@ -114,6 +115,15 @@ def verify(entries, workers=24):
     return kept
 
 
+def load_dead():
+    """URLs a real browser found empty, from scripts/validate.mjs."""
+    try:
+        with open("data/dead-sources.json", encoding="utf-8") as handle:
+            return set(json.load(handle).get("urls") or [])
+    except (FileNotFoundError, ValueError):
+        return set()
+
+
 def js(value):
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
@@ -206,6 +216,14 @@ def main():
                 for item in sources
             ],
         })
+
+    dead = load_dead()
+    if dead:
+        before = sum(len(e["sources"]) for e in entries)
+        for entry in entries:
+            entry["sources"] = [s for s in entry["sources"] if s["url"] not in dead]
+        entries = [e for e in entries if e["sources"]]
+        print("dropped %d sources a browser found empty" % (before - sum(len(e["sources"]) for e in entries)))
 
     if do_verify:
         entries = verify(entries)
