@@ -31,7 +31,7 @@ jobs:
       - name: Build the catalogue
         run: |
           set -o pipefail
-          python3 scripts/build-catalog.py 2>&1 | tee build.log
+          python3 scripts/build-catalog.py --verify 2>&1 | tee build.log
           exit ${PIPESTATUS[0]}
 
       - name: Report

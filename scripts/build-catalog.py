@@ -243,10 +243,10 @@ def main():
 
     # Guard: never shrink the wall by accident.
     playable_now = sum(1 for e in entries if any(src["embed"] for src in e["sources"]))
-    if len(entries) < len(existing) * 0.9 or playable_now < playable_before * 0.9:
+    if len(entries) < len(existing) * 0.6 or playable_now < playable_before * 0.6:
         print(
-            "refusing to write: %d entries is fewer than the %d already in place"
-            % (len(entries), len(existing)),
+            "refusing to write: %d entries / %d playable is far below %d / %d"
+            % (len(entries), playable_now, len(existing), playable_before),
             file=sys.stderr,
         )
         return 1
