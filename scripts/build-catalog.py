@@ -170,12 +170,12 @@ def main():
     # Sources that can actually play inside the page come first; a tile whose
     # only source forbids framing is still kept, it just opens in a new tab.
     def rank(game):
-        # The source most likely to render goes first: GameMonetize's CDN
-        # answers 200, MadKid is behind a bot wall we cannot see through.
+        # The first source is what the tile opens; prefer the one with real
+        # metadata, then the one that can be framed.
         return (
-            0 if game["portal"] == "gamemonetize.com" else 1,
             0 if game.get("embed") else 1,
             0 if game.get("thumb") else 1,
+            0 if game["portal"] == "madkidgames.com" else 1,
             game["portal"],
         )
 
@@ -199,9 +199,7 @@ def main():
         entries = verify(entries)
 
     def order_key(entry):
-        # Tiles we know can render lead the wall.
-        trusted = entry["sources"][0]["portal"] == "gamemonetize.com"
-        return (0 if trusted else 1, -entry["plays"], entry["title"].lower())
+        return (-entry["plays"], entry["title"].lower())
 
     entries.sort(key=order_key)
 

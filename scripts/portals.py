@@ -90,15 +90,14 @@ def madkidgames(existing):
         games.append({
             "portal": "madkidgames.com",
             "title": existing.get(slug, {}).get("title") or title_from_slug(slug),
-            "url": "https://www.madkidgames.com/game/" + slug,
+            "url": "https://www.madkidgames.com/full/" + slug,
             "thumb": "https://www.madkidgames.com/games/%s/thumb_2.jpg" % slug,
             "slug": slug,
             "rating": existing.get(slug, {}).get("rating", 0.0),
             "plays": existing.get(slug, {}).get("plays", 0),
-            # Two ways in: the game page (the one with the player on it) and
-            # the /full/ route. Both are tried in the frame before giving up.
+            # /full/ is the bare player — the same thing the site shows once
+            # you strip its header, menu and footer.
             "embed": True,
-            "alt": "https://www.madkidgames.com/full/" + slug,
         })
     return games
 

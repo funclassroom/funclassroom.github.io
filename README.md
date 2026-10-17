@@ -12,7 +12,7 @@ Two sources, merged into one wall by title:
 | source | titles | routes per title |
 | --- | --- | --- |
 | GameMonetize's public embed feed | ~15,800 | 2 — the CDN embed and the publisher's redirect wrapper |
-| MadKidGames sitemap | 506 | 2 — the game page and the `/full/` player |
+| MadKidGames sitemap | 506 | 1–3 — the bare `/full/` player, plus the same title on GameMonetize where it exists |
 
 Every tile now carries at least two routes and the player walks them in order.
 No source is marked unplayable ahead of time: the frame is attempted, and only
@@ -24,11 +24,11 @@ same game exists on more than one portal, and the extra sources are never shown
 as separate tiles — the player walks down them only when the one above refuses
 to load.
 
-MadKidGames is the catalogue the site started from. Its public pages are behind
-a bot wall that answers our build servers with a Cloudflare challenge, so they
-cannot be judged from the outside — their `/game/<slug>` page and their
-`/full/<slug>` player are both tried in the frame, in that order. Tiles whose
-first route is a publisher we can verify lead the wall.
+MadKidGames is the catalogue the site started from. `/full/<slug>` is the bare
+player — the same thing you get on their site once the header, menu and footer
+are stripped — so that is what the frame loads. Their pages sit behind a bot
+wall that answers automated checks with a Cloudflare challenge, which is why
+the build cannot verify them; the browser can.
 
 ### Why not hundreds of portals
 
