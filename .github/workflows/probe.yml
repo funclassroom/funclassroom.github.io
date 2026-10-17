@@ -1,0 +1,41 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm i playwright@1.47.2 --no-audit --no-fund >/dev/null 2>&1
+      - run: npx playwright install chromium --with-deps >/dev/null 2>&1
+      - run: |
+          cat > p.mjs <<'JS'
+          import { chromium } from "playwright";
+          const b = await chromium.launch();
+          const page = await b.newPage({ viewport: { width: 1100, height: 780 } });
+          await page.goto("https://socks275.github.io/ClassroomGames/?v=14", { waitUntil: "domcontentloaded", timeout: 90000 });
+          await page.waitForTimeout(3000);
+          const out = [];
+          for (const q of ["offroad", "stick war", "geometry dash"]) {
+            await page.fill("#q", q);
+            await page.waitForTimeout(1200);
+            const t = page.locator('.tile[data-playable="1"]').first();
+            if (!(await t.count())) { out.push({ q, none: true }); continue; }
+            await t.locator(".tile-open").click();
+            await page.waitForTimeout(9000);
+            out.push({
+              q,
+              blocked: await page.evaluate(() => !document.querySelector("[data-blocked]").hidden),
+              frames: await page.evaluate(() => document.querySelectorAll("iframe").length),
+              loading: await page.evaluate(() => !document.querySelector("[data-loading]").hidden),
+              src: await page.evaluate(() => document.querySelector("iframe")?.src || ""),
+            });
+            await page.keyboard.press("Escape");
+            await page.waitForTimeout(400);
+          }
+          console.log(JSON.stringify(out, null, 1));
+          await b.close();
+          JS
+          node p.mjs
