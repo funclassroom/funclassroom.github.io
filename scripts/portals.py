@@ -98,7 +98,7 @@ def madkidgames(existing):
     return games
 
 
-def gamemonetize(limit_pages=120, num=100):
+def gamemonetize(limit_pages=400, num=100):
     """GameMonetize publishes a paginated JSON feed meant for embedding."""
     games = []
     for page in range(1, limit_pages + 1):
@@ -135,7 +135,46 @@ def gamemonetize(limit_pages=120, num=100):
     return games
 
 
-PORTALS = [madkidgames, gamemonetize]
+def kbhgames(existing):
+    """KBH Games lists thousands of titles across 30 post sitemaps.
+
+    It is a mirrors-only portal: its pages are added as extra sources for
+    games we already show, never as new tiles, because its catalogue is huge
+    and its thumbnails would need a second request per game.
+    """
+    games = []
+    seen = set()
+
+    sitemaps = ["https://kbhgames.com/post-sitemap.xml"] + [
+        "https://kbhgames.com/post-sitemap%d.xml" % i for i in range(2, 31)
+    ]
+
+    for sitemap in sitemaps:
+        try:
+            xml = get(sitemap)
+        except Exception:  # noqa: BLE001 - keep the rest of the sitemaps
+            continue
+
+        for slug in re.findall(r"https://kbhgames\.com/game/([a-z0-9][a-z0-9-]*)", xml):
+            if slug in seen:
+                continue
+            seen.add(slug)
+            games.append({
+                "portal": "kbhgames.com",
+                "title": title_from_slug(slug),
+                "url": "https://kbhgames.com/game/" + slug,
+                "thumb": "",
+                "slug": slug,
+                "rating": 0.0,
+                "plays": 0,
+            })
+    return games
+
+
+PORTALS = [madkidgames, gamemonetize, kbhgames]
+
+# Portals that only contribute fallback sources for titles we already list.
+MIRROR_ONLY = {"kbhgames.com"}
 
 
 # ---------------------------------------------------------------- titles

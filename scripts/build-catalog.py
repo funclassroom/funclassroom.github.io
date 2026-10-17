@@ -78,11 +78,21 @@ def main():
             continue
         if is_ai(game.get("slug", ""), game["title"]):
             continue
+
+        mirror_only = game["portal"] in portals.MIRROR_ONLY
+        if mirror_only and key not in groups:
+            # Mirrors only attach to titles another portal already provides.
+            continue
+
         if key not in groups:
             groups[key] = []
             order.append(key)
         bucket = groups[key]
         if any(item["url"] == game["url"] for item in bucket):
+            continue
+        # One source per portal per title: two copies on the same site are
+        # not a fallback.
+        if any(item["portal"] == game["portal"] for item in bucket):
             continue
         bucket.append(game)
 
