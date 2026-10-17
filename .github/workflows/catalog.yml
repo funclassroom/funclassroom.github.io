@@ -67,4 +67,5 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh catalogue from the portal feeds"
+          git pull --rebase --autostash
           git push
