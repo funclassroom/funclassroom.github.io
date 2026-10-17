@@ -170,12 +170,14 @@ def main():
     # Sources that can actually play inside the page come first; a tile whose
     # only source forbids framing is still kept, it just opens in a new tab.
     def rank(game):
-        # The first source is what the tile opens; prefer the one with real
-        # metadata, then the one that can be framed.
+        # The first source is what the tile opens. MadKid's embed refuses
+        # pages that are not madkidgames.com (it renders black), so a title
+        # that also exists on a feed we can frame opens that one first and
+        # keeps MadKid as the backup.
         return (
+            0 if game["portal"] == "gamemonetize.com" else 1,
             0 if game.get("embed") else 1,
             0 if game.get("thumb") else 1,
-            0 if game["portal"] == "madkidgames.com" else 1,
             game["portal"],
         )
 

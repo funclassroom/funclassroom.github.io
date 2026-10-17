@@ -195,8 +195,15 @@
     img.decoding = "async";
     if (index >= EAGER_IMAGES) img.setAttribute("loading", "lazy");
     img.addEventListener("error", function () {
+      // Keep the wall readable when a thumbnail host is unreachable.
       thumb.classList.add("is-broken");
       img.remove();
+      if (!thumb.querySelector(".tile-fallback")) {
+        var fallback = document.createElement("span");
+        fallback.className = "tile-fallback";
+        fallback.textContent = item.title.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase();
+        thumb.appendChild(fallback);
+      }
     });
     thumb.appendChild(img);
 

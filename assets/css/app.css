@@ -828,6 +828,18 @@ a { color: inherit; }
 
 .more-wrap .btn[hidden] { display: none; }
 
+.tile-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #eceef1;
+  color: #9a9ea8;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .tile-mirrors {
   position: absolute;
   top: 6px;
@@ -853,6 +865,18 @@ a { color: inherit; }
 }
 
 .more-wrap .btn[hidden] { display: none; }
+
+.tile-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #eceef1;
+  color: #9a9ea8;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
 
 .tile-mirrors { opacity: 0; }
 

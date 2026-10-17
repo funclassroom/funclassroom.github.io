@@ -25,8 +25,9 @@ as separate tiles — the player walks down them only when the one above refuses
 to load.
 
 MadKidGames is the catalogue the site started from. `/full/<slug>` is the bare
-player — the same thing you get on their site once the header, menu and footer
-are stripped — so that is what the frame loads. Their pages sit behind a bot
+player, but it only renders for pages on madkidgames.com — from anywhere else it
+shows an empty frame. So when a title also exists on GameMonetize, that route
+opens first and MadKid becomes the backup. Their pages sit behind a bot
 wall that answers automated checks with a Cloudflare challenge, which is why
 the build cannot verify them; the browser can.
 
