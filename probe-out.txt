@@ -1,0 +1,6 @@
+=== madkid sitemap: ai/veo slugs
+=== gamemonetize feed: AI titles (pages 1-3)
+=== htmlgames index: AI titles
+"name":"Robot Cross Road"
+"name":"Robot Master"
+=== done
