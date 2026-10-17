@@ -110,11 +110,15 @@ def verify(entries, workers=32):
             kept.append(entry)
 
     print("sources alive %d, gone %d, unknown %d" % (alive, gone, unknown))
+    verify_stats.update({"checked": len(urls), "alive": alive, "gone": gone, "unknown": unknown})
     return kept
 
 
 def js(value):
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+verify_stats = {}
 
 
 def main():
@@ -153,6 +157,8 @@ def main():
             groups[key] = []
             order.append(key)
         bucket = groups[key]
+        if not any(item["url"] == game["url"] for item in bucket):
+            bucket.append(game)
         if game.get("alt"):
             alt = dict(game)
             alt["url"] = game["alt"]
@@ -160,9 +166,6 @@ def main():
             alt["embed"] = True
             if not any(item["url"] == alt["url"] for item in bucket):
                 bucket.append(alt)
-        if any(item["url"] == game["url"] for item in bucket):
-            continue
-        bucket.append(game)
 
     # Sources that can actually play inside the page come first; a tile whose
     # only source forbids framing is still kept, it just opens in a new tab.
@@ -253,6 +256,20 @@ def main():
 
     with open(OUT, "w", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
+
+    report = {
+        "tiles": len(entries),
+        "routes": {},
+        "sources": {},
+        "verified": verify_stats,
+    }
+    for entry in entries:
+        key = str(len(entry["sources"]))
+        report["routes"][key] = report["routes"].get(key, 0) + 1
+        for src in entry["sources"]:
+            report["sources"][src["portal"]] = report["sources"].get(src["portal"], 0) + 1
+    with open("catalog-report.json", "w", encoding="utf-8") as handle:
+        json.dump(report, handle, indent=2, sort_keys=True)
 
     print("tiles: %d" % len(entries))
     print("with a fallback: %d" % multi)

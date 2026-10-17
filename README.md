@@ -9,20 +9,26 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 Two sources, merged into one wall by title:
 
-| source | titles | plays inside the page? |
+| source | titles | routes per title |
 | --- | --- | --- |
-| GameMonetize's public embed feed | ~15,800 | yes — `html5.gamemonetize.co/<id>/` answers 200 with no frame rule |
-| MadKidGames sitemap | 506 | no — the site sends `X-Frame-Options: SAMEORIGIN` and says "Embedding unavailable" |
+| GameMonetize's public embed feed | ~15,800 | 2 — the CDN embed and the publisher's redirect wrapper |
+| MadKidGames sitemap | 506 | 2 — the game page and the `/full/` player |
+
+Every tile now carries at least two routes and the player walks them in order.
+No source is marked unplayable ahead of time: the frame is attempted, and only
+a real failure moves on to the next route. When all of them fail, the player
+says the title would not load and offers the publisher in a new tab.
 
 Every title appears once. A tile only carries more than one source when the
 same game exists on more than one portal, and the extra sources are never shown
 as separate tiles — the player walks down them only when the one above refuses
 to load.
 
-MadKidGames is kept because it is the catalogue the site started from, but it
-cannot be framed by anyone. Those tiles are still listed, at the end of the
-wall, and open in a new tab with a one-line explanation rather than an
-apologetic blank frame.
+MadKidGames is the catalogue the site started from. Its public pages are behind
+a bot wall that answers our build servers with a Cloudflare challenge, so they
+cannot be judged from the outside — their `/game/<slug>` page and their
+`/full/<slug>` player are both tried in the frame, in that order. Tiles whose
+first route is a publisher we can verify lead the wall.
 
 ### Why not hundreds of portals
 
@@ -30,7 +36,8 @@ Most portals do not publish a keyless embed feed, and the ones that do guard it
 hard:
 
 - **GameMonetize** — public JSON feed, embeddable. Used.
-- **MadKidGames** — full sitemap, but framing is forbidden. Listed, not framed.
+- **MadKidGames** — full sitemap; the pages sit behind a bot wall, so they are
+  offered as routes but cannot be verified from CI.
 - **KBH Games** — sitemap readable, pages behind Cloudflare's bot challenge.
 - **GamePix, Gameflare, CrazyGames, Poki, Y8** — no keyless feed, or a 404
   sitemap; they need a partner key or an approved domain.
@@ -82,9 +89,9 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
-- A fallback chain: if a source will not load, the next one for that game is
-  tried automatically; if every one refuses, the player says so, apologises,
-  and offers the portal in a new tab
+- A fallback chain: if a route will not load, the next one for that game is
+  tried automatically; if every one fails, the player says so, apologises, and
+  offers the portal in a new tab
 
 No frameworks, no build step, no backend. `localStorage` holds saves and
 recents; nothing is sent anywhere.
