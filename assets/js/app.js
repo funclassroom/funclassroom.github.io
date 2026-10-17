@@ -234,7 +234,9 @@
     var meta = document.createElement("span");
     meta.className = "tile-meta";
     var visits = store.plays[item.id] || 0;
-    meta.textContent = visits > 1 ? "Played " + visits + " times" : shortNum(item.plays) + " plays";
+    if (visits > 1) meta.textContent = "Played " + visits + " times";
+    else if (item.plays > 0) meta.textContent = shortNum(item.plays) + " plays";
+    else meta.textContent = "New";
 
     open.appendChild(thumb);
     open.appendChild(title);
@@ -422,7 +424,7 @@
 
     dom.playerTitle.textContent = item.title;
     dom.playerSub.textContent = (item.rating > 0 ? item.rating.toFixed(1) + " stars · " : "") +
-      shortNum(item.plays) + " plays";
+      (item.plays > 0 ? shortNum(item.plays) + " plays" : "new arrival");
 
     dom.blocked.hidden = true;
     dom.player.hidden = false;

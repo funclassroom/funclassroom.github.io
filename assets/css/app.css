@@ -826,6 +826,8 @@ a { color: inherit; }
   justify-content: center;
 }
 
+.more-wrap .btn[hidden] { display: none; }
+
 .tile-mirrors {
   position: absolute;
   top: 6px;
@@ -849,6 +851,8 @@ a { color: inherit; }
   min-width: 180px;
   justify-content: center;
 }
+
+.more-wrap .btn[hidden] { display: none; }
 
 .tile-mirrors { opacity: 0; }
 
