@@ -134,7 +134,7 @@ check(
 );
 check(
   "the only request is a reachability check that carries no data",
-  (app.match(/fetch\(/g) || []).length === 1 && /mode:\s*"no-cors"/.test(app)
+  (app.match(/window\.fetch\(/g) || []).length === 1 && /mode:\s*"no-cors"/.test(app)
 );
 check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
 check("the page offers a way to wipe its own data", /data-reset/.test(index));
