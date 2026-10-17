@@ -1,13 +1,13 @@
 {
   "name": "madkid-classroom",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "HTML5 game library with a Google Classroom disguise mode.",
+  "description": "A self-contained HTML5 arcade wearing a Google Classroom disguise.",
   "scripts": {
     "start": "python3 -m http.server 8000 --bind 0.0.0.0",
-    "test": "node tests/app.test.js && node tests/embed.test.js"
+    "test": "node tests/ui.test.js && node tests/games.test.js"
   },
   "devDependencies": {
-    "jsdom": "^30.0.0"
+    "jsdom": "^30.1.3"
   }
 }

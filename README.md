@@ -1,205 +1,255 @@
 # MadKid Classroom
 
-A static HTML5 game library that doubles as a **Google Classroom clone**.
-One keyboard shortcut flips the whole page — tab title, favicon, layout and
-all — between the real games view and a convincing Classroom disguise.
+A **self-contained HTML5 arcade** wearing a **Google Classroom disguise**.
+One shortcut flips the whole page — tab title, favicon, layout and all —
+between seven playable games and a convincing Classroom account.
 
-No build step, no dependencies to serve, no framework. Plain HTML/CSS/JS that
-runs from GitHub Pages, Netlify, or `file://`.
+No build step. No framework. No external requests at runtime — not even a
+font CDN. Open `index.html` from `file://`, serve it from GitHub Pages, or
+drop the folder on any static host.
 
 ---
 
 ## The two modes
 
-| | **Games mode** | **Classroom mode** |
+|  | **Games mode** | **Classroom mode** |
 |---|---|---|
-| What you see | Real game names, thumbnails, categories, search | Subjects, teachers, periods, announcements |
-| Tab title | `MadKid Games — Play HTML5 Games` | `Classes` → the subject → the assignment |
+| Looks like | A dark arcade library | Google Classroom on a student account |
+| Tab title | `MadKid Games — Play free HTML5 games` | `Classes` → class → assignment |
 | Favicon | Purple gamepad | Green Classroom cap |
-| A game appears as | Its actual title | A class card, then an "assignment" |
+| A game is | A card with its real title | An assignment in a class |
 
 ### Switching
 
 | Control | Action |
 |---|---|
-| **Ctrl + Shift + K** | Instantly toggle between modes |
+| **Ctrl / ⌘ + Shift + K** | Toggle modes instantly, from anywhere |
 | **`` ` ``** (backtick) | Same toggle, when not typing in a field |
-| **Esc** | Close the open game → then back out of the class |
-| Header **Apps** button | Toggles mode (labelled to match Google Workspace) |
-| Games-mode **Hide** button | Jumps straight to Classroom mode |
+| **Apps icon** in the Classroom header | Toggles to games without advertising it |
+| **Games view** at the bottom of the drawer | Same toggle, deliberately labelled |
+| **Classroom mode** in the games header | Toggle back |
+| **Esc** | Close drawer → close activity → leave class → home |
 
-A running game survives the switch: it stays open and is simply re-skinned,
-so you do not lose your place. Only one iframe is ever live at a time.
-
-### Classroom navigation
-
-Mirrors the real product's depth so it reads as genuine at a glance:
-
-```
-Classes grid  →  Class page (Stream / Classwork / People)  →  Assignment (the game)
-```
-
-- **Stream** — announcement composer, an "assignment posted" card, the pinned
-  notice below, decorative teacher announcements, and an *Upcoming* sidebar.
-- **Classwork** — the real assignment (opens the game) plus filler rows.
-- **People** — teacher and a roster of students.
-- **Hamburger menu** — Classes / Calendar / To-do drawer.
+Switching while a game is open **does not remount it**. The same stage element
+is moved into the other skin, so the canvas, score and physics keep running.
+Only one game is ever mounted at a time.
 
 ---
 
-## ⚠️ Before it works: add your real game URLs
+## The seven games
 
-`assets/js/games.js` ships with **placeholder URLs** — the build sandbox had
-no access to `madkidgames.com`, so nothing could be scraped. Replace the
-`url` field on each entry:
+| Game | Genre | Controls | Classroom disguise |
+|---|---|---|---|
+| **Snake** | Arcade | Arrows / WASD · swipe | Biology — *Lab 7, Predator & Prey* |
+| **Brick Breaker** | Arcade | Mouse / finger · ← → · click to serve | Physics — *Unit 4, Energy Transfer* |
+| **Sky Dash** | Action | Space / click / tap | PE — *Fitness Log, Endurance Unit* |
+| **2048** | Puzzle | Arrows / WASD · swipe | Maths — *Powers of Two Warm-Up* |
+| **Minesweeper** | Puzzle | Click · right-click to flag | Chemistry — *Periodic Trends Review* |
+| **Memory Match** | Puzzle | Click / tap | English — *Vocabulary Week 8* |
+| **Paddle Duel** | Sports | Mouse / finger · ↑ ↓ | CS — *Event Loops & Collision* |
 
-```js
-{
-  id: "slope",                                   // unique slug
-  title: "Slope",                                // shown in Games mode
-  url: "https://www.madkidgames.com/html5-games/slope/",   // <-- your real URL
-  thumb: "https://www.madkidgames.com/…/slope.jpg",        // optional
-  category: "Arcade",
-  tags: ["slope", "3d", "running"],
-  class: {                                       // the disguise, Classroom mode only
-    subject: "Mathematics",
-    section: "Period 3 · Room 204",
-    teacher: "Mr. Anderson",
-    assignment: "Unit 4 — Practice Set (Due Friday)",
-    color: "#1e8e3e"
-  }
-}
-```
+Everything is original code in this repo. Best scores are saved per game in
+`localStorage` (`madkid.arcade.best.v1`) and shown on the cards and in the
+games player. Times and move counts use lowest-is-best; everything else uses
+highest-is-best.
 
-Prefer not to touch code? Use **+ Add game** in the header. Paste a URL and
-it is saved to `localStorage` in that browser. Leave the disguise fields blank
-and a plausible subject, teacher and period are generated from the category —
-**never** from the game's real title, so a blank form cannot leak what it is
-hiding.
+### Classroom details that matter
 
-> `localStorage` entries are per-browser. Anything you want on every device
-> belongs in `games.js`.
-
-### If a game shows up blank
-
-Some hosts send `X-Frame-Options: DENY` or a CSP `frame-ancestors` directive,
-which makes an iframe render empty. Cross-origin blocking cannot be detected
-from JavaScript, so after 8 seconds the player shows an explanation. Two ways
-out:
-
-1. Click **Open in a new tab** (present in both player skins).
-2. Point the entry at the game's direct embed URL instead of the page that
-   wraps it — usually something ending in `index.html`, or an `/embed/` path.
-
-Games served from your own domain will not have this problem.
+- **Home** — seven class cards, Join class (asks for the code), Archived classes.
+- **Class** — a coloured banner, Stream / Classwork / People tabs, a real
+  assignment posted by the teacher, an announcement feed and an *Upcoming*
+  sidebar.
+- **Classwork** — the playable assignment plus filler rows that politely
+  explain they have no attachment.
+- **People** — the teacher and an eleven-student roster, with the signed-in
+  student marked *(you)*.
+- **Drawer** — Classes, Calendar, To-do; the calendar and to-do entries are
+  empty because it is a demo.
+- **Composer** — clicking “Announce something to your class” explains that
+  only teachers can post. The account is a student, so it should refuse.
+- **Disguise discipline** — Classroom mode names activities after the
+  *assignment*, never after the game. Real game titles only appear once you
+  are in Games mode or inside the activity itself.
 
 ---
 
-## Embedding a single game on another site
-
-`embed.html` exists for this. From any page on `madkidgames.com` or elsewhere:
-
-```html
-<iframe
-  src="https://<your-username>.github.io/Classroom/embed.html?game=slope"
-  style="width: 100%; aspect-ratio: 16 / 9; border: 0;"
-  allow="autoplay; fullscreen; gamepad"
-  allowfullscreen
-  loading="lazy">
-</iframe>
-```
-
-| Parameter | Meaning |
-|---|---|
-| `?game=<id>` | An `id` from `games.js`, or a browser-saved custom game |
-| `?src=<url>` | A direct URL — **must** be on an allowed host |
-| `?title=<text>` | Override the tab title when using `?src` |
-| `?chrome=1` | Keep the fullscreen button always visible |
-
-`?src=` is checked against `ALLOWED_HOSTS` at the top of `embed.html`
-(`www.madkidgames.com`, `madkidgames.com` by default). Anything else —
-including `javascript:` URLs — is refused with a visible error. Add your own
-domains to that array. This stops your embed page from becoming an open
-proxy for arbitrary third-party content.
-
----
-
-## The "Securly" notice
-
-You asked for a line saying a filter that blocks the site owes you money or
-can be sued. It appears in two places:
-
-- as a **pinned announcement** in every Classroom Stream, and
-- as a **banner** at the top of the Games library.
-
-Both are written as obvious satire and both carry a visible disclaimer
-(`Satire · not legal advice · do your homework anyway`).
-
-Straight answer on that: it is a joke and it works as a joke. It has **zero**
-legal effect. A page cannot create a debt or a cause of action by declaring
-one, and a real dispute with a school's filtering vendor would need an actual
-lawyer — and, for a minor, a parent or guardian to sign anything. Worth
-knowing too that a UI disguise does not defeat a network filter at all:
-Securly blocks by domain and DNS, which happens long before your page's
-JavaScript runs. If the domain is blocked, this page never loads in the first
-place, notice included. Keep it for the laugh, not as a strategy.
-
----
-
-## Deploy to GitHub Pages
+## Run it
 
 ```bash
-git push origin main
+npm start          # python3 -m http.server 8000 --bind 0.0.0.0
+# open http://localhost:8000
 ```
 
-Then **Settings → Pages → Source: Deploy from a branch → main / (root)**.
-Your site lands at `https://<your-username>.github.io/Classroom/`.
+Or just open `index.html`. There is no build, no bundler and no server-side
+anything.
 
-`.nojekyll` is included so Pages serves the files as-is.
-
-Run it locally instead:
-
-```bash
-npm start          # python3 -m http.server 8000
-# then open http://localhost:8000
-```
-
----
-
-## Tests
-
-Both suites drive the real DOM through jsdom — they click, type and press
-keys rather than calling functions directly.
+### Tests
 
 ```bash
 npm install
 npm test
 ```
 
-| Suite | Covers |
-|---|---|
-| `tests/app.test.js` | **79 checks** — first paint, all three Classroom levels, iframe mount/teardown, mode switching with a game running, search, filters, hotkeys, the add-game modal, validation, and XSS escaping |
-| `tests/embed.test.js` | **9 checks** — catalog lookup, host allowlist, `javascript:` refusal, unknown-id and missing-param errors |
+| Suite | Checks | Covers |
+|---|---|---|
+| `tests/ui.test.js` | 76 | First paint, all Classroom levels, player mount/teardown, live mode switching, title/favicon, search, chips, drawer, hotkeys, escaping, score cards |
+| `tests/games.test.js` | 40 | Catalog integrity, registry wiring, high/low score records, every game mounting, DOM game interactions, animation loops for all four canvas games |
 
-Two of those checks matter more than they look. Every value that reaches the
-DOM passes through an `esc()` helper, and a hostile `title` or `subject`
-containing `<script>` or `<img onerror=…>` is asserted to render as literal
-text. That is worth keeping, because game titles and thumbnails are exactly
-the kind of data that eventually comes from somewhere you do not control.
+Both suites drive the real DOM through jsdom. That is 116 checks in total. jsdom has no canvas, so the
+tests exercise both paths: the visible fallback when `getContext` is missing,
+and the actual game loop with a stub 2D context. That is how a broken draw
+call gets caught without a browser in CI.
+
+---
+
+## Deploy to GitHub Pages
+
+1. Push the branch you want to serve.
+2. **Settings → Pages → Build and deployment → Source: Deploy from a branch**.
+3. Pick that branch and `/ (root)`.
+
+`.nojekyll` is included so Pages serves the files untouched. If you make a
+non-`main` branch the repository default, GitHub Pages does **not** follow
+automatically — the Pages source is a separate setting and must be changed as
+well.
+
+---
+
+## Adding a game
+
+A game is a small file that registers an id, plus one catalog entry.
+
+**1. Create `assets/js/games/my-game.js`:**
+
+```js
+Arcade.register({
+  id: "my-game",
+  mount: function (root) {
+    const g = GameKit.canvas(root, 800, 520);   // fixed logical size
+    if (!g.ctx) return { destroy() {} };        // jsdom / no-canvas fallback
+
+    const stop = GameKit.loop((dt) => {
+      // update(dt); draw(ctx);  dt is seconds, clamped to 0.05
+    });
+
+    return { destroy: stop };                   // called on close
+  },
+});
+```
+
+**2. Add `<script src="assets/js/games/my-game.js"></script>`** in
+`index.html`, before `app.js`.
+
+**3. Add an entry to `assets/js/catalog.js`:**
+
+```js
+{
+  id: "my-game",
+  title: "My Game",
+  tagline: "One line for the card.",
+  category: "Arcade",                 // All | Arcade | Action | Puzzle | Sports
+  tags: ["search", "words"],
+  ratio: 1.538,                       // width / height of the play surface
+  controls: "Arrows · swipe",
+  scoreType: "high",                  // "high" or "low"
+  scoreLabel: "Best score",
+  scoreFormat: "number",              // "number" | "time" | "moves"
+  art: { bg: "linear-gradient(...)", fg: "#fff", glyph: "<svg ...>" },
+  class: {
+    subject: "Geography",
+    section: "Period 2 · Room 118",
+    teacher: "Mr. Bell",
+    email: "dbell@northfield.edu",
+    assignment: "Map Skills — Contour Practice",
+    due: "Friday, 11:59 PM",
+    points: 10,
+    color: "#1967d2",
+    instructions: ["First step.", "Second step.", "Third step."],
+  },
+}
+```
+
+The class card, Stream post, Classwork row, assignment page and tab titles all
+come from that one object.
+
+### GameKit
+
+`assets/js/gamekit.js` is intentionally small:
+
+| Helper | Does |
+|---|---|
+| `GameKit.canvas(root, W, H)` | DPR-aware canvas at a fixed logical size; returns `{ canvas, ctx, wrap, W, H }` |
+| `GameKit.loop(fn)` | requestAnimationFrame loop, `dt` in seconds, capped at 50ms; returns `stop()` |
+| `GameKit.keys({ down, up, prevent })` | Window key handling that ignores form fields; returns `off()` |
+| `GameKit.swipe(el, fn)` | Swipe direction helper for touch; returns `off()` |
+| `GameKit.overlay(root)` | Start / pause / game-over panel |
+| `GameKit.getBest(id)` / `setBest(id, value, mode)` | Persistent records; `mode` is `"high"` or `"low"` |
+| `GameKit.formatTime(seconds)` | `0:07`, `1:05` |
+| `GameKit.roundedRect`, `point`, `clamp`, `randInt`, `announce` | The usual small stuff |
+
+---
+
+## What changed from v1
+
+The first version of this site **did not contain any games**. It shipped
+placeholder `madkidgames.com` URLs in an iframe catalog; every card opened a
+blank frame, and external game portals commonly send `X-Frame-Options` or a
+CSP `frame-ancestors` rule that will block an iframe no matter what the page
+does.
+
+This rebuild removes that whole approach:
+
+- **No iframes.** Seven games are implemented in this repo, so they work on
+  Pages, offline, on a school Chromebook, and behind a filter once the page
+  has loaded.
+- **No placeholder URLs.** Nothing to fill in before the site works.
+- **No external assets.** Icons are an inline SVG sprite, favicons are data
+  URIs, and the font stack is local. The page makes zero network requests
+  after the HTML/CSS/JS is loaded.
+- **No add-game modal.** The catalog is a plain array in `catalog.js`; the
+  README shows the shape. Custom `localStorage` entries are gone because they
+  cannot be shared between devices and half the old ones pointed at dead
+  iframes.
+- **The joke stays out of the disguise.** The old “a filter owes you money”
+  notice sat in every Classroom Stream, which made the disguise look fake.
+  It now lives once, in the games-mode footer, clearly marked as satire.
+- **Rewritten tests.** 116 DOM checks including a live mode switch with a game
+  running, hostile-input escaping, and all four canvas loops.
+
+### A note on the satire
+
+The games footer still contains the one-line “a filter owes you one (1)
+unpaid debt” joke. It is satire, not legal advice, and it has no legal effect.
+A page cannot create a debt, and network filters block by domain long before
+this JavaScript runs. It is there because it is funny.
 
 ---
 
 ## File map
 
 ```
-index.html              app shell: both modes, drawer, add-game modal
-embed.html              single-game embeddable widget with a host allowlist
-assets/js/games.js      ← EDIT THIS: the game catalog + Classroom metadata
-assets/js/app.js        state, rendering, mode switching, hotkeys
-assets/css/style.css    both skins (Google Classroom clone + games library)
-tests/                  jsdom smoke suites
-.nojekyll               disables Jekyll processing on GitHub Pages
+index.html                 both skins, icon sprite, drawer, player host
+404.html                   Classroom-styled not-found page
+assets/css/app.css         both skins, game surfaces, responsive rules
+assets/js/gamekit.js       tiny toolkit + Arcade registry
+assets/js/catalog.js       game catalog + Classroom cast/roster
+assets/js/app.js           views, routing, player, mode switching, hotkeys
+assets/js/games/snake.js
+assets/js/games/breakout.js
+assets/js/games/skydash.js
+assets/js/games/g2048.js
+assets/js/games/minesweeper.js
+assets/js/games/memory.js
+assets/js/games/pong.js
+tests/ui.test.js
+tests/games.test.js
 ```
 
-Fonts and Material Icons load from Google's CDN with system fallbacks, so the
-page still works if that request is blocked.
+---
+
+## Browser support
+
+Current Chrome, Edge, Firefox and Safari. Uses `aspect-ratio`, CSS custom
+properties, `inert`, `localStorage`, pointer events and `requestFullscreen`
+(with a graceful toast if it is unavailable). Keyboard focus rings and
+`prefers-reduced-motion` are respected.
