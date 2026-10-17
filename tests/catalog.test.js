@@ -49,12 +49,19 @@ check(
   CATALOG.every((g) => Number.isInteger(g.plays) && g.plays >= 0)
 );
 check(
-  "a title that exists on two sites opens the one that renders",
+  "routes never repeat a domain",
   CATALOG.every((g) => {
-    const portals = new Set(g.sources.map((s) => s.portal));
-    if (portals.size < 2) return true;
-    return g.sources[0].portal === "gamemonetize.com";
+    const domains = new Set(g.sources.map((s) => new URL(s.url).hostname.split(".").slice(-2).join(".")));
+    return domains.size === g.sources.length;
   })
+);
+check(
+  "at most three routes per title",
+  CATALOG.every((g) => g.sources.length <= 3)
+);
+check(
+  "several independent embed hosts are in use",
+  new Set(CATALOG.flatMap((g) => g.sources.map((s) => new URL(s.url).hostname))).size >= 3
 );
 check(
   "MadKid is kept as the backup, not dropped",
