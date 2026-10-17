@@ -6,6 +6,10 @@ name: Refresh catalogue
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - scripts/build-catalog.py
+      - .github/workflows/catalog.yml
 
 permissions:
   contents: write
