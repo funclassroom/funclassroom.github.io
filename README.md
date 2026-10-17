@@ -62,7 +62,7 @@ npm install
 npm test
 ```
 
-Two jsdom suites, 83 checks total. They drive the real DOM: first paint, sort
+Two jsdom suites, 85 checks total. They drive the real DOM: first paint, sort
 order, search and empty states, saves and persistence, the player lifecycle
 (only one iframe, correct `src`, teardown on `Esc`, focus return), deep links,
 shuffle, shortcuts, and the catalogue’s shape.
