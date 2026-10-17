@@ -1,6 +1,0 @@
-htmlgames-cdn	status=200	err=null	subs=3	canvas=0	text="Klondike\n\nBuild the four piles (top right) up in suit from Ace to King. Cards on"
-gamesnacks	status=301	err=null	subs=1	canvas=0	text=""
-silvergames	status=404	err=null	subs=1	canvas=0	text="SILVERGAMES.COM\n \n404 — GAME NOT FOUND\n\nThe page you were looking for isn’t here"
-y8-page	status=404	err=net::ERR_BLOCKED_BY_RESPONSE	subs=1	canvas=0	text=""
-gameflare-embed2	status=403	err=net::ERR_BLOCKED_BY_RESPONSE	subs=1	canvas=0	text=""
-gamedistribution	status=200	err=null	subs=1	canvas=0	text="ARROW GO IS NOT AVAILABLE HERE.\nIF YOU WANT TO PLAY ARROW GO, CLICK HERE TO PLAY"
