@@ -14,7 +14,12 @@ Two sources, merged into one wall by title:
 | GameMonetize's public embed feed | ~15,800 | 2 — the CDN embed and the publisher's redirect wrapper |
 | MadKidGames sitemap | 506 | 1–3 — the bare `/full/` player, plus the same title on GameMonetize where it exists |
 
-Every tile now carries at least two routes and the player walks them in order.
+The player also learns this device: on load it pings one game per portal, and
+whichever host answers is put first for every tile. A portal that fails moves to
+the back. So the same catalogue works on a network that blocks one CDN and not
+the other.
+
+Every tile carries at least one route and most carry two, tried in order.
 No source is marked unplayable ahead of time: the frame is attempted, and only
 a real failure moves on to the next route. When all of them fail, the player
 says the title would not load and offers the publisher in a new tab.
@@ -40,6 +45,9 @@ hard:
 - **MadKidGames** — full sitemap; the pages sit behind a bot wall, so they are
   offered as routes but cannot be verified from CI.
 - **KBH Games** — sitemap readable, pages behind Cloudflare's bot challenge.
+- **GameDistribution** — 19,000 games and a clean player, but it serves
+  `blocked.html?unregistered=true` to any domain that has not registered with
+  them. One free dashboard signup would unlock it.
 - **GamePix, Gameflare, CrazyGames, Poki, Y8** — no keyless feed, or a 404
   sitemap; they need a partner key or an approved domain.
 

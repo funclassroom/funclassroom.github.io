@@ -12,8 +12,8 @@
   var LEGACY_SAVED = "gams.saved.v1";
   var LEGACY_RECENT = "gams.recent.v1";
   var MAX_RECENT = 8;
-  var SLOW_LOAD_MS = 9000;
-  var GIVE_UP_MS = 12000;
+  var SLOW_LOAD_MS = 12000;
+  var GIVE_UP_MS = 22000;
   var REACH_MS = 6000;
   var EAGER_IMAGES = 24;
   var BATCH = 120;
@@ -43,7 +43,7 @@
   function emptyStore() {
     return {
       v: 2, saved: [], recent: [], sort: "hot",
-      plays: {}, last: {}, scroll: 0, good: {}, bad: {}
+      plays: {}, last: {}, scroll: 0, good: {}, bad: {}, reach: {}
     };
   }
 
@@ -60,12 +60,12 @@
     if (/^(hot|top|az)$/.test(raw.sort)) fresh.sort = raw.sort;
     if (typeof raw.scroll === "number" && raw.scroll >= 0) fresh.scroll = Math.round(raw.scroll);
 
-    ["plays", "last", "good", "bad"].forEach(function (field) {
+    ["plays", "last", "good", "bad", "reach"].forEach(function (field) {
       if (!raw[field] || typeof raw[field] !== "object") return;
       Object.keys(raw[field]).forEach(function (key) {
         var value = raw[field][key];
         if (!isId(key) || typeof value !== "number" || !isFinite(value)) return;
-        fresh[field][key] = Math.max(0, Math.round(value));
+        fresh[field][key] = field === "good" ? value : Math.max(0, Math.round(value));
       });
     });
 
@@ -390,10 +390,12 @@
   function sourcesFor(item) {
     var list = embeddable(item);
 
-    // Portals that already failed on this device go to the back of the queue,
-    // so a blocked host does not cost a wait on every single tile.
+    // Portals this device cannot reach go to the back of the queue, so a
+    // blocked host does not cost a wait on every single tile.
     list.sort(function (a, b) {
-      return (store.bad[a.portal] ? 1 : 0) - (store.bad[b.portal] ? 1 : 0);
+      var rankA = store.bad[a.portal] ? 2 : store.reach[a.portal] === 0 ? 1 : 0;
+      var rankB = store.bad[b.portal] ? 2 : store.reach[b.portal] === 0 ? 1 : 0;
+      return rankA - rankB;
     });
 
     // A portal that played last time comes first for the same title.
@@ -439,6 +441,36 @@
         cache: "no-store",
         signal: controller.signal
       }).then(function () { finish(true); }, function () { finish(false); });
+    });
+  }
+
+  function probePortals() {
+    var seen = {};
+    var portals = [];
+    ALL.forEach(function (item) {
+      item.sources.forEach(function (source) {
+        if (seen[source.portal]) return;
+        seen[source.portal] = true;
+        portals.push(source.portal);
+      });
+    });
+
+    portals.forEach(function (portal) {
+      var sample = null;
+      ALL.some(function (item) {
+        item.sources.some(function (source) {
+          if (source.portal !== portal) return false;
+          sample = source.url;
+          return true;
+        });
+        return sample !== null;
+      });
+      if (!sample) return;
+      reachable(sample).then(function (ok) {
+        if (store.reach[portal] === (ok ? 1 : 0)) return;
+        store.reach[portal] = ok ? 1 : 0;
+        save();
+      });
     });
   }
 
@@ -543,6 +575,7 @@
 
   function mountFrame(item, source, sources, index) {
     var startedAt = Date.now();
+    state.loadingFrame = true;
 
     var frame = document.createElement("iframe");
     frame.className = "player-frame";
@@ -565,6 +598,7 @@
       }
 
       state.loaded = true;
+      state.loadingFrame = false;
       dom.loading.hidden = true;
 
       if (instant) {
@@ -584,7 +618,7 @@
       }
       dom.loadingText.textContent = "That source is not answering";
       window.setTimeout(function () {
-        if (state.active && !state.loaded && state.sourceIndex === index) {
+        if (state.active && !state.loaded && state.loadingFrame && state.sourceIndex === index) {
           noteBad(source.portal);
           nextSource(true);
         }
@@ -674,6 +708,7 @@
     state.sourceIndex = -1;
     state.queue = null;
     state.loaded = false;
+    state.loadingFrame = false;
     clearStage();
     dom.loading.hidden = false;
     dom.loadingText.textContent = "Loading";
@@ -825,6 +860,7 @@
 
     state.persist = storageWorks();
     state.sort = store.sort;
+    probePortals();
 
     dom.count.textContent = String(ALL.length);
     dom.sorts.forEach(function (button) {
