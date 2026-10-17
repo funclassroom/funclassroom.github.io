@@ -9,10 +9,15 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 Two sources, merged into one wall by title:
 
-| source | titles | routes per title |
+| source | titles | embed host |
 | --- | --- | --- |
-| GameMonetize's public embed feed | ~15,800 | 2 — the CDN embed and the publisher's redirect wrapper |
-| MadKidGames sitemap | 506 | 1–3 — the bare `/full/` player, plus the same title on GameMonetize where it exists |
+| GameMonetize's public feed | ~15,800 | `html5.gamemonetize.co` (+ `gamemonetize.com` wrapper) |
+| HTMLGames' public embed index | 1,244 | `cdn.htmlgames.com` |
+| MadKidGames sitemap | 506 | `www.madkidgames.com` |
+
+Routes are chosen **one per domain**, so a block on one host never takes the
+backup with it. That is why `html5.gamemonetize.co` and `gamemonetize.com` are
+not both listed for the same title unless a second domain exists.
 
 The player learns from real attempts only: a portal that actually failed in the
 frame moves to the back for that device. It never pre-judges a host — a
@@ -45,6 +50,8 @@ hard:
 - **MadKidGames** — full sitemap; the pages sit behind a bot wall, so they are
   offered as routes but cannot be verified from CI.
 - **KBH Games** — sitemap readable, pages behind Cloudflare's bot challenge.
+- **HTMLGames** — public JSON index, free embedding, own CDN. Used.
+- **GamePix** — `/embed/` answers 403 to a foreign referrer. Needs a key.
 - **GameDistribution** — 19,000 games and a clean player, but it serves
   `blocked.html?unregistered=true` to any domain that has not registered with
   them. One free dashboard signup would unlock it.
