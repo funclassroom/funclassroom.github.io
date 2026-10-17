@@ -262,9 +262,17 @@ def main():
     # actually found those routes dead. Genuine removals still happen through
     # data/dead-sources.json.
     have = {entry["id"] for entry in entries}
+    routed = {src["url"] for entry in entries for src in entry["sources"]}
+    titles = {portals.norm(entry["title"]) for entry in entries}
     carried = 0
     for slug, old in existing.items():
         if slug in have or not old.get("sources"):
+            continue
+        # If the feeds returned this game under another id, it is already on
+        # the wall; adding it again would show the same title twice.
+        if any(src["url"] in routed for src in old["sources"]):
+            continue
+        if portals.norm(old["title"]) in titles:
             continue
         entries.append({
             "id": slug,
@@ -275,6 +283,8 @@ def main():
             "sources": old["sources"],
             "carried": True,
         })
+        titles.add(portals.norm(old["title"]))
+        routed.update(src["url"] for src in old["sources"])
         carried += 1
     if carried:
         print("kept %d earlier tiles the feeds did not return today" % carried)
