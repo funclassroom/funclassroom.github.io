@@ -1,19 +1,24 @@
 {
+  "fetched": {
+    "gamemonetize": 16000,
+    "htmlgames": 1245,
+    "madkidgames": 507
+  },
   "routes": {
-    "1": 1712,
-    "2": 11910,
-    "3": 38
+    "1": 1701,
+    "2": 15833,
+    "3": 56
   },
   "sources": {
-    "gamemonetize.com": 23895,
-    "htmlgames.com": 1244,
+    "gamemonetize.com": 31777,
+    "htmlgames.com": 1251,
     "madkidgames.com": 507
   },
-  "tiles": 13660,
+  "tiles": 17590,
   "verified": {
-    "alive": 13653,
-    "checked": 13662,
+    "alive": 17580,
+    "checked": 17566,
     "gone": 2,
-    "unknown": 7
+    "unknown": 10
   }
 }
