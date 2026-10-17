@@ -1,4 +1,0 @@
-real	status=200	err=null	frames=9	canvas=1	text="."
-fake	status=404	err=null	frames=1	canvas=1	text="Game not found!\nPlease upload your game."
-real2	status=200	err=null	frames=8	canvas=1	text="Bowling Hit 3D\nYou can skip this in 3 secs\nPowered by\nPowere"
-fake2	status=404	err=null	frames=1	canvas=1	text="Game not found!\nPlease upload your game."
