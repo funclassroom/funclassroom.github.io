@@ -129,8 +129,8 @@ check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "as
 check(
   "saved state never leaves the device",
   !/sendBeacon|XMLHttpRequest|navigator\.send/.test(app) &&
-    !/fetch\([^)]*store/.test(app) &&
-    !/fetch\([^)]*JSON\.stringify/.test(app)
+    !/fetch\([\s\S]{0,200}body:/.test(app) &&
+    !/fetch\([\s\S]{0,200}JSON\.stringify/.test(app)
 );
 check(
   "the only request is a reachability check that carries no data",
