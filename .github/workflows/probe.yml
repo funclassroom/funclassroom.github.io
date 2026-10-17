@@ -1,0 +1,28 @@
+name: probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          exec > probe-out.txt 2>&1
+          echo "=== madkid sitemap: ai/veo slugs"
+          curl -sS --max-time 60 https://www.madkidgames.com/sitemap.xml | grep -oE 'game/[a-z0-9-]*(ai|veo|gpt|gemini|midjourney)[a-z0-9-]*' | sort -u | head -30
+          echo "=== gamemonetize feed: AI titles (pages 1-3)"
+          for p in 1 2 3; do
+            curl -sS --max-time 60 "https://gamemonetize.com/feed.php?format=0&num=1000&page=$p" \
+              | grep -oE '"title":"[^"]*"' | grep -iE '\bai\b|veo|gpt|gemini|midjourney|artificial' | head -20
+            sleep 8
+          done
+          echo "=== htmlgames index: AI titles"
+          curl -sS --max-time 60 "https://www.htmlgames.com/rss/games.php?json" | grep -oE '"name":"[^"]*"' | grep -iE '\bai\b|veo|robot|chatbot' | head -20
+          echo "=== done"
+      - name: Save
+        run: |
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -f probe-out.txt && git commit -q -m "probe ai titles" && git push
