@@ -1,21 +1,38 @@
-=== HEAD https://www.madkidgames.com/full/subway-surfers
-HTTP/2 403 
-content-security-policy: default-src 'none'; script-src 'nonce-SHlOccNxCCIgheVl71hTwI' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
-x-frame-options: SAMEORIGIN
-=== HEAD https://www.madkidgames.com/full/stick-war-legacy
-HTTP/2 403 
-content-security-policy: default-src 'none'; script-src 'nonce-BKICS2lk8oQKMRe1WsWOkj' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
-x-frame-options: SAMEORIGIN
-=== BODY https://www.madkidgames.com/game/stick-war-legacy
-=== BODY https://www.madkidgames.com/full/stick-war-legacy
-=== HEAD https://html5.gamemonetize.com/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
-HTTP/2 301 
-location: https://gamemonetize.com/gameshtml5.php?gmdidco=ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
-=== HEAD https://html5.gamemonetize.co/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
+=== https://gamemonetize.com/gameshtml5.php?gmdidco=ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
+HTTP/2 302 
+location: https://html5.gamemonetize.co/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/
+=== https://html5.gamemonetize.co/ngvzpif8dvzq12mkj1iqrzsfy519tzu2/index.html
 HTTP/2 200 
-=== HEAD https://kbhgames.com/game/stick-war-legacy
-HTTP/2 403 
-content-security-policy: default-src 'none'; script-src 'nonce-MaI8fXwR2GAp8YNucWIQ22' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
-x-frame-options: SAMEORIGIN
-=== BODY https://kbhgames.com/game/stick-war-legacy
+=== feed pagination ids
+page 1: [{"id":"88760","title":"Skibidi Vent Jumper","description":"Skibidi Vent Jumper is a chaotic, stealthy creature lurking 
+page 2: [{"id":"83469","title":"Slingshot Shooting Game","description":"Get ready for an exciting slingshot shooting adventure! 
+page 3: [{"id":"87087","title":"Euro Truck Parking","description":"Euro Truck Parking is an exciting truck-driving and parking s
+page 5: [{"id":"88627","title":"Spooky Racing","description":"Spooky Racing is a Halloween kart race in full 3D! Pick one of 8 c
+page 10: [{"id":"88583","title":"Midnight Taxi Hustle","description":"Navigate neon-lit streets in Midnight Taxi Hustle, a thrill
+page 50: error code: 1015
+
+=== feed total
+num=1 count: 0
+num=500 count: 0
+num=2000 count: 0
+=== sitemap sample
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xhtml="http://www.w3.org/1999/xhtml"
+      xsi:schemaLocation="
+            http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <url>
+       <loc>https://gamemonetize.com/</loc>
+       <lastmod>2024-11-23T04:48:56+00:00</lastmod>
+       <changefreq>daily</changefreq>
+       <priority>1.0000</priority>
+  </url>
+  <url>
+       <loc>https://gamemonetize.com/gcurl: (23) Failure writing output to destination
+
+=== one game page
 === done
