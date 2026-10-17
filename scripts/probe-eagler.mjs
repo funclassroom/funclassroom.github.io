@@ -1,6 +1,6 @@
 /* One-off probe: does the Eaglercraft build load, and will it sit in a frame?
-   Writes probe/eagler.json and two screenshots, then the workflow commits them
-   so the sandbox can read the answer back over git. */
+   Writes probe/eagler.json and screenshots, then the workflow commits them so
+   the sandbox can read the answer back over git. */
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
@@ -13,7 +13,7 @@ const browser = await chromium.launch({
   args: ["--enable-unsafe-swiftshader", "--use-gl=swiftshader", "--enable-webgl"],
 });
 
-async function run(label, target) {
+async function run(label, target, walk) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const logs = [];
   page.on("console", (m) => {
@@ -39,19 +39,36 @@ async function run(label, target) {
       const c = document.querySelector("canvas");
       return c ? { w: c.width, h: c.height, visible: !!(c.offsetWidth || c.offsetHeight) } : null;
     });
-    info.bodyText = (await page.evaluate(() => (document.body ? document.body.innerText : ""))).slice(0, 800);
+    if (walk) {
+      await walk(page);
+      await page.waitForTimeout(6000);
+    }
+    await page.screenshot({ path: path.join(OUT, label + ".png") });
     await page.setViewportSize({ width: 512, height: 384 });
+    await page.waitForTimeout(500);
     await page.screenshot({ path: path.join(OUT, label + "-small.png") });
     await page.setViewportSize({ width: 1280, height: 800 });
   } catch (err) {
     logs.push("inspect: " + String(err.message).slice(0, 400));
   }
-  await page.screenshot({ path: path.join(OUT, label + ".png") }).catch(() => {});
   await page.close();
   return { status, info, logs };
 }
 
-const direct = await run("eagler-direct", URL);
+// The client paints its own UI on a canvas, so "clicking" is a mouse event at
+// a spot: Done closes the first-run profile screen and lands on the menu.
+async function walkToMenu(page) {
+  const click = async (x, y) => {
+    await page.mouse.click(x, y);
+    await page.waitForTimeout(2500);
+  };
+  await click(640, 665); // Done
+  await page.screenshot({ path: path.join(OUT, "eagler-menu.png") });
+  await click(470, 380); // Singleplayer, if the menu is where we think
+  await page.screenshot({ path: path.join(OUT, "eagler-worlds.png") });
+}
+
+const direct = await run("eagler-direct", URL, walkToMenu);
 
 // Our own page shaping up around it: a bare iframe, exactly like the player.
 const harness = `<!doctype html><meta charset="utf-8">
@@ -71,9 +88,6 @@ try {
   got.headers = res.headers();
   const html = (await res.text()).slice(0, 200000);
   got.htmlBytes = html.length;
-  got.metas = Array.from(html.matchAll(/<meta[^>]+(?:og:image|twitter:image|og:title)[^>]*>/gi)).map((m) => m[0]);
-  got.icons = Array.from(html.matchAll(/<link[^>]+rel=["'](?:icon|apple-touch-icon)[^>]*>/gi)).map((m) => m[0]);
-  got.images = Array.from(new Set(Array.from(html.matchAll(/["']([^"']+\.(?:png|jpe?g|webp|gif|svg))["']/gi)).map((m) => m[1]))).slice(0, 40);
   got.head = html.slice(0, 1200);
 } catch (err) {
   got.error = String(err.message).slice(0, 400);
