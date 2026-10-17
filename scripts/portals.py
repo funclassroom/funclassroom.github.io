@@ -10,6 +10,7 @@ X-Frame-Options / frame-ancestors before it is trusted.
 """
 
 import json
+import sys
 import re
 import time
 import urllib.error
@@ -111,31 +112,32 @@ def gamemonetize(limit_pages=4, num=4000, pause=20):
     1015) after about five calls, so it asks for a big page and pauses.
     """
     games = []
-    failures = 0
-
-    for page in range(1, limit_pages + 1):
+    page = 1
+    while page <= limit_pages:
         url = "https://gamemonetize.com/feed.php?format=0&num=%d&page=%d" % (num, page)
-        try:
-            payload = get(url)
-        except Exception:  # noqa: BLE001 - rate limit or flake
-            payload = ""
-
-        match = re.search(r"\[.*\]", payload, re.S)
         batch = None
-        if match:
+        for attempt in range(3):
             try:
-                batch = json.loads(match.group(0))
-            except ValueError:
-                batch = None
+                payload = get(url)
+            except Exception:  # noqa: BLE001 - rate limit or flake
+                payload = ""
+
+            match = re.search(r"\[.*\]", payload, re.S)
+            if match:
+                try:
+                    batch = json.loads(match.group(0))
+                except ValueError:
+                    batch = None
+            if batch:
+                break
+            # Rate limited. Wait longer and ask for the same page again; never
+            # skip it, or a whole chunk of the catalogue silently disappears.
+            time.sleep(pause * (attempt + 2))
 
         if not batch:
-            failures += 1
-            if failures >= 3:
-                break
-            time.sleep(pause * 3)
-            continue
+            print("gamemonetize page %d never answered; stopping there" % page, file=sys.stderr)
+            break
 
-        failures = 0
         for entry in batch:
             embed = (entry.get("url") or "").strip()
             title = (entry.get("title") or "").strip()
@@ -158,6 +160,7 @@ def gamemonetize(limit_pages=4, num=4000, pause=20):
                 "embed": True,
             })
 
+        page += 1
         time.sleep(pause)
 
     return games

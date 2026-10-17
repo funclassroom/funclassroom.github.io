@@ -46,11 +46,20 @@ def read_existing():
             continue
         if len(row) < 5 or not isinstance(row[0], str):
             continue
+        sources = []
+        for triple in row[5] if len(row) > 5 else []:
+            if isinstance(triple, list) and len(triple) >= 2:
+                sources.append({
+                    "portal": triple[0],
+                    "url": triple[1],
+                    "embed": len(triple) > 2 and bool(triple[2]),
+                })
         rows[row[0]] = {
             "title": row[1],
             "rating": float(row[2] or 0),
             "plays": int(row[3] or 0),
             "thumb": row[4],
+            "sources": sources,
         }
     return rows
 
@@ -168,6 +177,7 @@ def main():
     playable_before = count_playable(OUT)
 
     collected = []
+    fetched = {}
     for portal in portals.PORTALS:
         try:
             games = portal(existing) if portal is portals.madkidgames else portal()
@@ -175,6 +185,7 @@ def main():
             print("portal %s failed: %s" % (portal.__name__, err), file=sys.stderr)
             continue
         print("%-14s %d games" % (portal.__name__, len(games)))
+        fetched[portal.__name__] = len(games)
         collected.extend(games)
 
     if not collected:
@@ -245,6 +256,28 @@ def main():
                 for item in sources
             ],
         })
+
+    # A feed that rate-limits for a day must not empty a chunk of the wall.
+    # Keep any tile we already had, with its old routes, unless a browser has
+    # actually found those routes dead. Genuine removals still happen through
+    # data/dead-sources.json.
+    have = {entry["id"] for entry in entries}
+    carried = 0
+    for slug, old in existing.items():
+        if slug in have or not old.get("sources"):
+            continue
+        entries.append({
+            "id": slug,
+            "title": old["title"],
+            "rating": old["rating"],
+            "plays": old["plays"],
+            "thumb": old["thumb"],
+            "sources": old["sources"],
+            "carried": True,
+        })
+        carried += 1
+    if carried:
+        print("kept %d earlier tiles the feeds did not return today" % carried)
 
     dead = load_dead()
     if dead:
@@ -318,6 +351,7 @@ def main():
         "tiles": len(entries),
         "routes": {},
         "sources": {},
+        "fetched": fetched,
         "verified": verify_stats,
     }
     for entry in entries:
