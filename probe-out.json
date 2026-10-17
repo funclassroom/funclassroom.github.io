@@ -1,0 +1,40 @@
+{
+ "cases": [
+  {
+   "query": "geometry dash",
+   "title": "Geometry Dash",
+   "trail": [
+    {
+     "source": "Source 1 of 3 · gamemonetize.com",
+     "blocked": false,
+     "loading": true,
+     "frame": "https://html5.gamemonetize.co/m84en44qjczb1b5846pzll223s40kar7/"
+    }
+   ]
+  },
+  {
+   "query": "stick war",
+   "title": "Stick War Legacy",
+   "trail": [
+    {
+     "source": "1 source tried",
+     "blocked": true,
+     "loading": false,
+     "frame": ""
+    }
+   ]
+  },
+  {
+   "query": "subway",
+   "title": "Subway Surfers",
+   "trail": [
+    {
+     "source": "1 source tried",
+     "blocked": true,
+     "loading": false,
+     "frame": ""
+    }
+   ]
+  }
+ ]
+}
