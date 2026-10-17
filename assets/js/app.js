@@ -14,7 +14,6 @@
   var MAX_RECENT = 8;
   var SLOW_LOAD_MS = 12000;
   var GIVE_UP_MS = 22000;
-  var REACH_MS = 6000;
   var EAGER_IMAGES = 24;
   var BATCH = 120;
   var SCROLL_SAVE_MS = 350;
@@ -43,7 +42,7 @@
   function emptyStore() {
     return {
       v: 2, saved: [], recent: [], sort: "hot",
-      plays: {}, last: {}, scroll: 0, good: {}, bad: {}, reach: {}
+      plays: {}, last: {}, scroll: 0, good: {}, bad: {}
     };
   }
 
@@ -60,12 +59,12 @@
     if (/^(hot|top|az)$/.test(raw.sort)) fresh.sort = raw.sort;
     if (typeof raw.scroll === "number" && raw.scroll >= 0) fresh.scroll = Math.round(raw.scroll);
 
-    ["plays", "last", "good", "bad", "reach"].forEach(function (field) {
+    ["plays", "last", "good", "bad"].forEach(function (field) {
       if (!raw[field] || typeof raw[field] !== "object") return;
       Object.keys(raw[field]).forEach(function (key) {
         var value = raw[field][key];
         if (!isId(key) || typeof value !== "number" || !isFinite(value)) return;
-        fresh[field][key] = field === "good" ? value : Math.max(0, Math.round(value));
+        fresh[field][key] = field === "good" || field === "bad" ? value : Math.max(0, Math.round(value));
       });
     });
 
@@ -393,9 +392,7 @@
     // Portals this device cannot reach go to the back of the queue, so a
     // blocked host does not cost a wait on every single tile.
     list.sort(function (a, b) {
-      var rankA = store.bad[a.portal] ? 2 : store.reach[a.portal] === 0 ? 1 : 0;
-      var rankB = store.bad[b.portal] ? 2 : store.reach[b.portal] === 0 ? 1 : 0;
-      return rankA - rankB;
+      return (store.bad[a.portal] ? 1 : 0) - (store.bad[b.portal] ? 1 : 0);
     });
 
     // A portal that played last time comes first for the same title.
@@ -411,67 +408,6 @@
       list.unshift(list.splice(good, 1)[0]);
     }
     return list;
-  }
-
-  /* Can the browser reach this host at all? A blocked host answers the frame
-     with an error page that still fires `load`, which is why a dead route can
-     look like a success. An opaque no-cors request is the honest check. */
-  function reachable(url) {
-    if (!window.fetch || !window.AbortController) return Promise.resolve(true);
-
-    return new Promise(function (resolve) {
-      var settled = false;
-      var controller = new window.AbortController();
-      var timer = window.setTimeout(function () {
-        if (settled) return;
-        settled = true;
-        try { controller.abort(); } catch (err) { /* ignore */ }
-        resolve(false);
-      }, REACH_MS);
-
-      function finish(ok) {
-        if (settled) return;
-        settled = true;
-        window.clearTimeout(timer);
-        resolve(ok);
-      }
-
-      window.fetch(url, {
-        mode: "no-cors",
-        cache: "no-store",
-        signal: controller.signal
-      }).then(function () { finish(true); }, function () { finish(false); });
-    });
-  }
-
-  function probePortals() {
-    var seen = {};
-    var portals = [];
-    ALL.forEach(function (item) {
-      item.sources.forEach(function (source) {
-        if (seen[source.portal]) return;
-        seen[source.portal] = true;
-        portals.push(source.portal);
-      });
-    });
-
-    portals.forEach(function (portal) {
-      var sample = null;
-      ALL.some(function (item) {
-        item.sources.some(function (source) {
-          if (source.portal !== portal) return false;
-          sample = source.url;
-          return true;
-        });
-        return sample !== null;
-      });
-      if (!sample) return;
-      reachable(sample).then(function (ok) {
-        if (store.reach[portal] === (ok ? 1 : 0)) return;
-        store.reach[portal] = ok ? 1 : 0;
-        save();
-      });
-    });
   }
 
   function noteBad(portal) {
@@ -555,22 +491,7 @@
     dom.next.hidden = sources.length < 2;
     dom.next.disabled = false;
 
-    if (!window.fetch || !window.AbortController) {
-      mountFrame(item, source, sources, index);
-      return;
-    }
-
-    var token = (state.token = (state.token || 0) + 1);
-
-    reachable(source.url).then(function (ok) {
-      if (token !== state.token || state.active !== state.currentId) return;
-      if (!ok) {
-        noteBad(source.portal);
-        nextSource(true);
-        return;
-      }
-      mountFrame(item, source, sources, index);
-    });
+    mountFrame(item, source, sources, index);
   }
 
   function mountFrame(item, source, sources, index) {
@@ -860,7 +781,6 @@
 
     state.persist = storageWorks();
     state.sort = store.sort;
-    probePortals();
 
     dom.count.textContent = String(ALL.length);
     dom.sorts.forEach(function (button) {

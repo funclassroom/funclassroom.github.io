@@ -14,10 +14,10 @@ Two sources, merged into one wall by title:
 | GameMonetize's public embed feed | ~15,800 | 2 — the CDN embed and the publisher's redirect wrapper |
 | MadKidGames sitemap | 506 | 1–3 — the bare `/full/` player, plus the same title on GameMonetize where it exists |
 
-The player also learns this device: on load it pings one game per portal, and
-whichever host answers is put first for every tile. A portal that fails moves to
-the back. So the same catalogue works on a network that blocks one CDN and not
-the other.
+The player learns from real attempts only: a portal that actually failed in the
+frame moves to the back for that device. It never pre-judges a host — a
+`fetch()` is filtered differently from an iframe, so a reachability ping gave
+false "blocked" answers and hid sources that played fine.
 
 Every tile carries at least one route and most carry two, tried in order.
 No source is marked unplayable ahead of time: the frame is attempted, and only
