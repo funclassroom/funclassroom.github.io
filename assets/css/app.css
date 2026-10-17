@@ -279,6 +279,74 @@ a { color: inherit; }
   color: #fff;
 }
 
+/* continue playing */
+
+.continue { margin: 2px 0 22px; }
+
+.continue-card {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  max-width: 620px;
+}
+
+.continue-thumb {
+  width: 168px;
+  height: 126px;
+  flex: none;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #ececef;
+}
+
+.continue-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 2px 0;
+}
+
+.continue-label {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.continue-body h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continue-meta {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.continue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.continue-actions .btn { text-decoration: none; }
+
+.continue-actions .btn-dark .ico { width: 12px; height: 12px; fill: currentColor; stroke: none; }
+
 /* recently played */
 
 .recent { margin: 2px 0 20px; }
@@ -411,6 +479,20 @@ a { color: inherit; }
 
 .tile-rating[data-new]::before { content: none; }
 
+.tile-played {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.01em;
+}
+
 .tile-play {
   position: absolute;
   left: 6px;
@@ -525,6 +607,17 @@ a { color: inherit; }
 }
 
 .sep { margin: 0 6px; color: var(--line-2); }
+
+.foot-data {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding-top: 0;
+  font-size: 12px;
+}
+
+.foot [data-storage-note].is-warn { color: var(--accent); }
 
 /* player */
 
@@ -682,6 +775,10 @@ a { color: inherit; }
     grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
     gap: 14px 10px;
   }
+
+  .continue-card { max-width: none; }
+  .continue-thumb { width: 108px; height: 81px; }
+  .continue-body h2 { font-size: 15px; }
 
   .tile-title { font-size: 12.5px; }
   .tile-meta { font-size: 11.5px; }

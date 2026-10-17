@@ -65,6 +65,7 @@ check("source is recorded", /madkidgames\.com\/html5-games/.test(sandbox.window.
 
 /* ---------- files ---------- */
 const index = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const app = fs.readFileSync(path.join(ROOT, "assets/js/app.js"), "utf8");
 const notFound = fs.readFileSync(path.join(ROOT, "404.html"), "utf8");
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
 const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
@@ -85,6 +86,12 @@ check(
   !CATALOG.some((g) => /\bai\b|chatgpt|midjourney|gemini|veo/i.test(g.title + " " + g.slug))
 );
 check("no offline images ship with the site", !fs.existsSync(path.join(ROOT, "assets/img")));
+check(
+  "saved state never leaves the device",
+  !/\bfetch\s*\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(app)
+);
+check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
+check("the page offers a way to wipe its own data", /data-reset/.test(index));
 check("the old game files are gone", !fs.existsSync(path.join(ROOT, "assets/js/games")));
 check("the old toolkit is gone", !fs.existsSync(path.join(ROOT, "assets/js/gamekit.js")));
 check("the 404 page links home", /href="\.\/"/.test(notFound));

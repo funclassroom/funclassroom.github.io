@@ -27,6 +27,29 @@ slugs with titles derived from their names. It runs when `scripts/build-catalog.
 changes, or by hand from the Actions tab. The generator also drops
 generative-AI-titled entries.
 
+## Progress and saves
+
+Two different kinds of progress exist, and it is worth knowing which is which.
+
+**What this site stores** — in this browser, under `classroom.state.v1`:
+
+- titles you saved
+- the last eight you opened, with timestamps and visit counts
+- your sort choice and how far down the wall you had scrolled
+- a "Pick up where you left off" card built from that history
+
+Nothing is uploaded: there is no analytics, no request carrying any of it, and
+the only way it leaves the device is if you clear the site data. The footer has
+a two-step **Clear saved data** button.
+
+**What the titles store themselves** — each frame loads from
+`madkidgames.com`, so its own save files (levels, coins, unlocked cars) live in
+that publisher's storage, tied to this site. They survive a reload, a closed
+tab and a new visit from the same browser. They do not follow you to another
+device or another browser, and a private window throws them away when it closes.
+If a title only keeps state in memory, nothing can save it — that is down to the
+game.
+
 ## The page
 
 - Search, plus Popular / Top rated / A–Z

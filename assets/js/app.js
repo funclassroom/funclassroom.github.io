@@ -1,4 +1,5 @@
-/* G@M£$ — browse the wall, open a title, close it. */
+/* Classroom — browse the wall, open a title, close it.
+   Everything personal (picks, history, sort, scroll) is stored on this device. */
 (function () {
   "use strict";
 
@@ -6,35 +7,120 @@
   var BY_SLUG = {};
   ALL.forEach(function (item) { BY_SLUG[item.slug] = item; });
 
-  var KEY_SAVED = "gams.saved.v1";
-  var KEY_RECENT = "gams.recent.v1";
+  var KEY = "classroom.state.v1";
+  var LEGACY_SAVED = "gams.saved.v1";
+  var LEGACY_RECENT = "gams.recent.v1";
   var MAX_RECENT = 8;
   var SLOW_LOAD_MS = 12000;
   var EAGER_IMAGES = 24;
+  var SCROLL_SAVE_MS = 350;
 
   var state = {
     q: "",
     sort: "hot",
     savedOnly: false,
-    saved: readList(KEY_SAVED),
-    recent: readList(KEY_RECENT),
     active: null,
-    lastFocus: null
+    lastFocus: null,
+    lastFocusSlug: null,
+    persist: true
   };
 
   var dom = {};
+  var store = loadStore();
 
-  function readList(key) {
+  /* ---------- on-device storage ---------- */
+
+  function isSlug(value) {
+    return typeof value === "string" && value.length > 0 && value.length < 120;
+  }
+
+  function emptyStore() {
+    return { v: 1, saved: [], recent: [], sort: "hot", plays: {}, last: {}, scroll: 0 };
+  }
+
+  function loadStore() {
+    var fresh = emptyStore();
+    var raw = null;
+
     try {
-      var raw = JSON.parse(window.localStorage.getItem(key));
-      return Array.isArray(raw) ? raw.filter(function (s) { return typeof s === "string"; }) : [];
+      raw = JSON.parse(window.localStorage.getItem(KEY));
     } catch (err) {
-      return [];
+      raw = null;
+    }
+
+    if (!raw || typeof raw !== "object") {
+      return migrate();
+    }
+
+    if (Array.isArray(raw.saved)) fresh.saved = raw.saved.filter(isSlug);
+    if (Array.isArray(raw.recent)) fresh.recent = raw.recent.filter(isSlug).slice(0, MAX_RECENT);
+    if (/^(hot|top|az)$/.test(raw.sort)) fresh.sort = raw.sort;
+    if (typeof raw.scroll === "number" && raw.scroll >= 0) fresh.scroll = Math.round(raw.scroll);
+
+    if (raw.plays && typeof raw.plays === "object") {
+      Object.keys(raw.plays).forEach(function (slug) {
+        var count = raw.plays[slug];
+        if (isSlug(slug) && typeof count === "number" && count > 0) {
+          fresh.plays[slug] = Math.round(count);
+        }
+      });
+    }
+
+    if (raw.last && typeof raw.last === "object") {
+      Object.keys(raw.last).forEach(function (slug) {
+        var when = raw.last[slug];
+        if (isSlug(slug) && typeof when === "number" && when > 0) fresh.last[slug] = when;
+      });
+    }
+
+    return fresh;
+  }
+
+  function migrate() {
+    var fresh = emptyStore();
+    try {
+      var saved = JSON.parse(window.localStorage.getItem(LEGACY_SAVED));
+      var recent = JSON.parse(window.localStorage.getItem(LEGACY_RECENT));
+      if (Array.isArray(saved)) fresh.saved = saved.filter(isSlug);
+      if (Array.isArray(recent)) fresh.recent = recent.filter(isSlug).slice(0, MAX_RECENT);
+      if (fresh.saved.length || fresh.recent.length) {
+        window.localStorage.setItem(KEY, JSON.stringify(fresh));
+        window.localStorage.removeItem(LEGACY_SAVED);
+        window.localStorage.removeItem(LEGACY_RECENT);
+      }
+    } catch (err) {
+      /* nothing to migrate */
+    }
+    return fresh;
+  }
+
+  function storageWorks() {
+    try {
+      window.localStorage.setItem("classroom.probe", "1");
+      window.localStorage.removeItem("classroom.probe");
+      return true;
+    } catch (err) {
+      return false;
     }
   }
 
-  function writeList(key, list) {
-    try { window.localStorage.setItem(key, JSON.stringify(list)); } catch (err) { /* private mode */ }
+  function save() {
+    if (!state.persist) return;
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(store));
+    } catch (err) {
+      state.persist = false;
+      paintStorageNote();
+    }
+  }
+
+  function paintStorageNote() {
+    if (!dom.storageNote) return;
+    dom.storageNote.textContent = state.persist
+      ? "Picks, history and scroll position are saved in this browser."
+      : "This browser is blocking storage, so picks will not be kept.";
+    dom.storageNote.classList.toggle("is-warn", !state.persist);
+    if (dom.reset) dom.reset.hidden = !state.persist && !store.saved.length && !store.recent.length;
   }
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -47,6 +133,23 @@
     if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "m";
     if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k";
     return String(n);
+  }
+
+  function ago(when) {
+    if (!when) return "";
+    var seconds = Math.max(0, Math.round((Date.now() - when) / 1000));
+    if (seconds < 60) return "just now";
+    var minutes = Math.round(seconds / 60);
+    if (minutes < 60) return minutes + (minutes === 1 ? " minute ago" : " minutes ago");
+    var hours = Math.round(minutes / 60);
+    if (hours < 24) return hours + (hours === 1 ? " hour ago" : " hours ago");
+    var days = Math.round(hours / 24);
+    if (days < 7) return days + (days === 1 ? " day ago" : " days ago");
+    try {
+      return new Date(when).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    } catch (err) {
+      return "a while ago";
+    }
   }
 
   function sorted(list) {
@@ -65,7 +168,7 @@
   function visible() {
     var q = state.q.trim().toLowerCase();
     return sorted(ALL.filter(function (item) {
-      if (state.savedOnly && state.saved.indexOf(item.slug) === -1) return false;
+      if (state.savedOnly && store.saved.indexOf(item.slug) === -1) return false;
       if (!q) return true;
       return item.title.toLowerCase().indexOf(q) !== -1 ||
         item.slug.replace(/-/g, " ").indexOf(q) !== -1;
@@ -109,6 +212,13 @@
       thumb.appendChild(rating);
     }
 
+    if (store.last[item.slug]) {
+      var played = document.createElement("span");
+      played.className = "tile-played";
+      played.textContent = "Played";
+      thumb.appendChild(played);
+    }
+
     var play = document.createElement("span");
     play.className = "tile-play";
     play.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>Play';
@@ -120,7 +230,8 @@
 
     var meta = document.createElement("span");
     meta.className = "tile-meta";
-    meta.textContent = shortNum(item.plays) + " plays";
+    var visits = store.plays[item.slug] || 0;
+    meta.textContent = visits > 1 ? "Played " + visits + " times" : shortNum(item.plays) + " plays";
 
     open.appendChild(thumb);
     open.appendChild(title);
@@ -130,7 +241,7 @@
     fav.type = "button";
     fav.className = "tile-fav";
     fav.setAttribute("data-fav", item.slug);
-    var isSaved = state.saved.indexOf(item.slug) !== -1;
+    var isSaved = store.saved.indexOf(item.slug) !== -1;
     if (isSaved) fav.classList.add("is-on");
     fav.setAttribute("aria-pressed", isSaved ? "true" : "false");
     fav.setAttribute("aria-label", (isSaved ? "Remove " : "Save ") + item.title);
@@ -159,12 +270,34 @@
   }
 
   function renderSaved() {
-    dom.savedCount.textContent = String(state.saved.length);
+    dom.savedCount.textContent = String(store.saved.length);
     dom.savedToggle.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
   }
 
+  function renderContinue() {
+    var slug = store.recent[0];
+    var item = slug ? BY_SLUG[slug] : null;
+
+    dom.continue.hidden = !item;
+    if (!item) return;
+
+    var plays = store.plays[slug] || 1;
+    dom.continueTitle.textContent = item.title;
+    dom.continueThumb.src = item.thumb;
+    dom.continueThumb.alt = "";
+
+    var bits = [];
+    bits.push(store.last[slug] ? "Last played " + ago(store.last[slug]) : "Ready to play");
+    if (plays > 1) bits.push(plays + " visits");
+    dom.continueMeta.textContent = bits.join(" · ");
+
+    dom.continuePlay.setAttribute("data-open", slug);
+    dom.continueExternal.href = item.embed;
+  }
+
   function renderRecent() {
-    var items = state.recent.map(function (slug) { return BY_SLUG[slug]; }).filter(Boolean);
+    var slugs = store.recent.slice(1);
+    var items = slugs.map(function (slug) { return BY_SLUG[slug]; }).filter(Boolean);
     dom.recent.hidden = items.length === 0;
     dom.recentList.innerHTML = "";
     items.forEach(function (item) {
@@ -192,7 +325,9 @@
   function render() {
     renderGrid();
     renderSaved();
+    renderContinue();
     renderRecent();
+    paintStorageNote();
   }
 
   /* ---------- player ---------- */
@@ -202,7 +337,12 @@
     if (!item || state.active === slug) return;
     var opts = options || {};
 
-    if (!state.active) state.lastFocus = document.activeElement;
+    if (!state.active) {
+      state.lastFocus = document.activeElement;
+      state.lastFocusSlug = state.lastFocus && state.lastFocus.getAttribute
+        ? state.lastFocus.getAttribute("data-open")
+        : null;
+    }
     state.active = slug;
 
     dom.playerTitle.textContent = item.title;
@@ -241,7 +381,7 @@
     document.body.classList.add("locked");
     dom.close.focus({ preventScroll: true });
 
-    touchRecent(slug);
+    rememberPlay(slug);
 
     if (opts.push !== false) {
       try { window.history.pushState({ p: slug }, "", "#p=" + slug); } catch (err) { /* file:// */ }
@@ -277,21 +417,51 @@
     }
 
     var back = state.lastFocus;
+    if (!back || !document.contains(back)) {
+      back = state.lastFocusSlug
+        ? document.querySelector('[data-open="' + state.lastFocusSlug + '"]')
+        : null;
+    }
     if (back && document.contains(back)) back.focus({ preventScroll: true });
-  }
 
-  function touchRecent(slug) {
-    state.recent = [slug].concat(state.recent.filter(function (s) { return s !== slug; })).slice(0, MAX_RECENT);
-    writeList(KEY_RECENT, state.recent);
+    renderContinue();
     renderRecent();
   }
 
+  function rememberPlay(slug) {
+    store.recent = [slug].concat(store.recent.filter(function (s) { return s !== slug; })).slice(0, MAX_RECENT);
+    store.last[slug] = Date.now();
+    store.plays[slug] = (store.plays[slug] || 0) + 1;
+    save();
+    markTilePlayed(slug);
+    renderContinue();
+    renderRecent();
+  }
+
+  /* Update the one tile in place so focus and scroll are never disturbed. */
+  function markTilePlayed(slug) {
+    var tile = document.querySelector('.tile[data-slug="' + slug + '"]');
+    if (!tile) return;
+
+    var thumb = tile.querySelector(".tile-thumb");
+    if (thumb && !thumb.querySelector(".tile-played")) {
+      var badge = document.createElement("span");
+      badge.className = "tile-played";
+      badge.textContent = "Played";
+      thumb.appendChild(badge);
+    }
+
+    var meta = tile.querySelector(".tile-meta");
+    var visits = store.plays[slug] || 0;
+    if (meta && visits > 1) meta.textContent = "Played " + visits + " times";
+  }
+
   function toggleSaved(slug) {
-    var i = state.saved.indexOf(slug);
+    var i = store.saved.indexOf(slug);
     var on = i === -1;
-    if (on) state.saved.unshift(slug);
-    else state.saved.splice(i, 1);
-    writeList(KEY_SAVED, state.saved);
+    if (on) store.saved.unshift(slug);
+    else store.saved.splice(i, 1);
+    save();
 
     var fav = document.querySelector('[data-fav="' + slug + '"]');
     if (fav) {
@@ -302,6 +472,7 @@
     }
 
     renderSaved();
+    paintStorageNote();
     if (state.savedOnly) renderGrid();
   }
 
@@ -339,6 +510,12 @@
     dom.count = $("[data-count]");
     dom.savedToggle = $("[data-saved-toggle]");
     dom.savedCount = $("[data-saved-count]");
+    dom.continue = $("[data-continue]");
+    dom.continueTitle = $("[data-continue-title]");
+    dom.continueThumb = $("[data-continue-thumb]");
+    dom.continueMeta = $("[data-continue-meta]");
+    dom.continuePlay = $("[data-continue-play]");
+    dom.continueExternal = $("[data-continue-external]");
     dom.recent = $("[data-recent]");
     dom.recentList = $("[data-recent-list]");
     dom.player = $("[data-player]");
@@ -355,10 +532,19 @@
     dom.searchClear = $("[data-search-clear]");
     dom.clear = $("[data-clear]");
     dom.sorts = $$("[data-sort]");
+    dom.storageNote = $("[data-storage-note]");
+    dom.reset = $("[data-reset]");
 
     if (!dom.grid) return;
 
+    state.persist = storageWorks();
+    state.sort = store.sort;
+
     dom.count.textContent = String(ALL.length);
+    dom.sorts.forEach(function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-sort") === state.sort ? "true" : "false");
+    });
+
     render();
 
     function onSearch() {
@@ -375,17 +561,20 @@
       dom.q.focus();
     });
 
-    dom.grid.addEventListener("click", function (event) {
+    function openFrom(event) {
       var open = event.target.closest("[data-open]");
-      if (open) { openPlayer(open.getAttribute("data-open")); return; }
+      if (open) { openPlayer(open.getAttribute("data-open")); return true; }
+      return false;
+    }
+
+    dom.grid.addEventListener("click", function (event) {
+      if (openFrom(event)) return;
       var fav = event.target.closest("[data-fav]");
       if (fav) toggleSaved(fav.getAttribute("data-fav"));
     });
 
-    dom.recentList.addEventListener("click", function (event) {
-      var open = event.target.closest("[data-open]");
-      if (open) openPlayer(open.getAttribute("data-open"));
-    });
+    dom.recentList.addEventListener("click", openFrom);
+    dom.continuePlay.addEventListener("click", openFrom);
 
     dom.savedToggle.addEventListener("click", function () {
       state.savedOnly = !state.savedOnly;
@@ -395,6 +584,8 @@
     dom.sorts.forEach(function (button) {
       button.addEventListener("click", function () {
         state.sort = button.getAttribute("data-sort");
+        store.sort = state.sort;
+        save();
         dom.sorts.forEach(function (other) {
           other.setAttribute("aria-pressed", other === button ? "true" : "false");
         });
@@ -423,6 +614,42 @@
       dom.fs.setAttribute("aria-pressed", document.fullscreenElement ? "true" : "false");
     });
 
+    /* scroll memory */
+    var scrollTimer = 0;
+    window.addEventListener("scroll", function () {
+      if (scrollTimer) return;
+      scrollTimer = window.setTimeout(function () {
+        scrollTimer = 0;
+        var top = window.pageYOffset || 0;
+        if (Math.abs(top - store.scroll) < 24) return;
+        store.scroll = Math.round(top);
+        save();
+      }, SCROLL_SAVE_MS);
+    }, { passive: true });
+
+    /* clear-on-device, two-step so it cannot happen by accident */
+    var resetArmed = false;
+    var resetTimer = 0;
+    dom.reset.addEventListener("click", function () {
+      if (!resetArmed) {
+        resetArmed = true;
+        dom.reset.textContent = "Click again to clear";
+        resetTimer = window.setTimeout(function () {
+          resetArmed = false;
+          dom.reset.textContent = "Clear saved data";
+        }, 4000);
+        return;
+      }
+
+      window.clearTimeout(resetTimer);
+      resetArmed = false;
+      dom.reset.textContent = "Clear saved data";
+      store = emptyStore();
+      state.savedOnly = false;
+      save();
+      render();
+    });
+
     document.addEventListener("keydown", function (event) {
       var typing = /^(input|textarea|select)$/i.test(event.target.tagName);
       if (event.key === "Escape") {
@@ -441,7 +668,11 @@
     window.addEventListener("hashchange", applyHash);
 
     var start = slugFromHash();
-    if (start) openPlayer(start, { push: false });
+    if (start) {
+      openPlayer(start, { push: false });
+    } else if (store.scroll > 0) {
+      try { window.scrollTo(0, store.scroll); } catch (err) { /* ignore */ }
+    }
   }
 
   if (document.readyState === "loading") {

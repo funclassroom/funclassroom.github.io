@@ -25,15 +25,23 @@ function check(name, condition, extra) {
   }
 }
 
-function boot(hash) {
+const STORE_KEY = "classroom.state.v1";
+
+function boot(hash, seed) {
   const dom = new JSDOM(HTML, {
     url: "https://example.test/" + (hash || ""),
     runScripts: "outside-only",
     pretendToBeVisual: true,
   });
+  dom.window.scrollTo = function (x, y) { dom.window.__scrolledTo = y; };
+  if (seed) dom.window.localStorage.setItem(STORE_KEY, JSON.stringify(seed));
   dom.window.eval(CATALOG_JS);
   dom.window.eval(APP_JS);
   return dom;
+}
+
+function readStore(window) {
+  return JSON.parse(window.localStorage.getItem(STORE_KEY));
 }
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
@@ -175,10 +183,7 @@ function titles(document) {
     click(window, first.querySelector("[data-fav]"));
     check("star fills", first.querySelector("[data-fav]").getAttribute("aria-pressed") === "true");
     check("counter updates", document.querySelector("[data-saved-count]").textContent === "1");
-    check(
-      "saves persist",
-      JSON.parse(window.localStorage.getItem("gams.saved.v1")).includes(first.dataset.slug)
-    );
+    check("saves persist on device", readStore(window).saved.includes(first.dataset.slug));
 
     click(window, document.querySelector("[data-saved-toggle]"));
     check("saved view filters", document.querySelectorAll(".tile").length === 1);
@@ -222,11 +227,21 @@ function titles(document) {
       document.querySelector("[data-load-link]").getAttribute("href").endsWith("/full/stick-war-legacy")
     );
     check("deep link written", window.location.hash === "#p=stick-war-legacy");
-    check("recent row appears", !document.querySelector("[data-recent]").hidden);
+    check("continue card appears", !document.querySelector("[data-continue]").hidden);
     check(
-      "recent row names it",
-      document.querySelector("[data-recent-list]").textContent.includes("Stick War Legacy")
+      "continue card names the title",
+      document.querySelector("[data-continue-title]").textContent === "Stick War Legacy"
     );
+    check(
+      "continue card links back to the player",
+      document.querySelector("[data-continue-external]").href.endsWith("/full/stick-war-legacy")
+    );
+    check("play is recorded on device", readStore(window).plays["stick-war-legacy"] === 1);
+    check(
+      "timestamp is recorded",
+      typeof readStore(window).last["stick-war-legacy"] === "number"
+    );
+    check("tile now says it was played", !!document.querySelector(".tile-played"));
 
     press(window, "Escape");
     check("escape closes", document.querySelector("[data-player]").hidden);
@@ -293,6 +308,133 @@ function titles(document) {
     check(
       "escape clears search first",
       search.value === "" && document.querySelectorAll(".tile").length === window.CATALOG.length
+    );
+    dom.window.close();
+  }
+
+  /* persistence across reloads */
+  {
+    const first = boot();
+    await tick();
+    const seed = (() => {
+      click(first.window, first.window.document.querySelector(".tile-open"));
+      press(first.window, "Escape");
+      click(first.window, first.window.document.querySelector('[data-fav="subway-surfers"]'));
+      click(first.window, first.window.document.querySelector('[data-sort="az"]'));
+      first.window.scrollTo(0, 640);
+      first.window.dispatchEvent(new first.window.Event("scroll"));
+      return readStore(first.window);
+    })();
+    first.window.close();
+
+    check("store records the sort", seed.sort === "az", JSON.stringify(seed.sort));
+    check("store records the pick", seed.saved.includes("subway-surfers"));
+    check("store records the visit", seed.recent[0] === "stick-war-legacy");
+
+    const second = boot("", seed);
+    await tick();
+    const { document } = second.window;
+
+    check(
+      "continue survives a reload",
+      !document.querySelector("[data-continue]").hidden &&
+        document.querySelector("[data-continue-title]").textContent === "Stick War Legacy"
+    );
+    check(
+      "saved survives a reload",
+      document.querySelector('[data-fav="subway-surfers"]').getAttribute("aria-pressed") === "true"
+    );
+    check(
+      "sort survives a reload",
+      document.querySelector('[data-sort="az"]').getAttribute("aria-pressed") === "true" &&
+        document.querySelectorAll("[data-sort][aria-pressed=\"true\"]").length === 1
+    );
+    second.window.close();
+  }
+
+  /* scroll restore */
+  {
+    const dom = boot("", { v: 1, saved: [], recent: [], sort: "hot", plays: {}, last: {}, scroll: 900 });
+    await tick();
+    check("scroll position is restored", dom.window.__scrolledTo === 900, String(dom.window.__scrolledTo));
+    dom.window.close();
+  }
+
+  /* legacy keys migrate */
+  {
+    const dom = new JSDOM(HTML, {
+      url: "https://example.test/",
+      runScripts: "outside-only",
+      pretendToBeVisual: true,
+    });
+    dom.window.scrollTo = function () {};
+    dom.window.localStorage.setItem("gams.saved.v1", JSON.stringify(["granny"]));
+    dom.window.localStorage.setItem("gams.recent.v1", JSON.stringify(["bad-piggies"]));
+    dom.window.eval(CATALOG_JS);
+    dom.window.eval(APP_JS);
+    await tick();
+    const migrated = readStore(dom.window);
+    check("old picks migrate to the new store", migrated.saved.includes("granny"));
+    check("old history migrates too", migrated.recent[0] === "bad-piggies");
+    check("old keys are cleaned up", dom.window.localStorage.getItem("gams.saved.v1") === null);
+    dom.window.close();
+  }
+
+  /* clearing */
+  {
+    const dom = boot("", {
+      v: 1,
+      saved: ["subway-surfers"],
+      recent: ["stick-war-legacy"],
+      sort: "az",
+      plays: { "stick-war-legacy": 3 },
+      last: { "stick-war-legacy": Date.now() },
+      scroll: 400,
+    });
+    await tick();
+    const { document } = dom.window;
+    const reset = document.querySelector("[data-reset]");
+
+    check("data is present before clearing", dom.window.localStorage.getItem(STORE_KEY).includes("subway-surfers"));
+    click(dom.window, reset);
+    check("first click only arms the button", reset.textContent === "Click again to clear");
+    click(dom.window, reset);
+
+    const after = readStore(dom.window);
+    check("clearing empties picks", after.saved.length === 0);
+    check("clearing empties history", after.recent.length === 0);
+    check("clearing empties visits", Object.keys(after.plays).length === 0);
+    check("continue card hides", document.querySelector("[data-continue]").hidden);
+    check("saved count resets", document.querySelector("[data-saved-count]").textContent === "0");
+    check("button label resets", reset.textContent === "Clear saved data");
+    dom.window.close();
+  }
+
+  /* blocked storage */
+  {
+    const dom = new JSDOM(HTML, {
+      url: "https://example.test/",
+      runScripts: "outside-only",
+      pretendToBeVisual: true,
+    });
+    dom.window.scrollTo = function () {};
+    Object.defineProperty(dom.window, "localStorage", {
+      value: {
+        getItem() { return null; },
+        setItem() { throw new Error("blocked"); },
+        removeItem() {},
+      },
+    });
+    dom.window.eval(CATALOG_JS);
+    dom.window.eval(APP_JS);
+    await tick();
+    const { document } = dom.window;
+    click(dom.window, document.querySelector(".tile-open"));
+    press(dom.window, "Escape");
+    check("blocked storage still plays", document.querySelectorAll(".tile").length === 506);
+    check(
+      "blocked storage is announced",
+      /blocking storage/i.test(document.querySelector("[data-storage-note]").textContent)
     );
     dom.window.close();
   }

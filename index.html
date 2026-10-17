@@ -49,6 +49,24 @@
     </div>
   </div>
 
+  <section class="continue" data-continue hidden aria-label="Continue playing">
+    <div class="continue-card">
+      <img class="continue-thumb" data-continue-thumb alt="" width="168" height="126">
+      <div class="continue-body">
+        <p class="continue-label">Pick up where you left off</p>
+        <h2 data-continue-title></h2>
+        <p class="continue-meta" data-continue-meta></p>
+        <div class="continue-actions">
+          <button type="button" class="btn btn-dark" data-continue-play>
+            <svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>
+            <span>Resume</span>
+          </button>
+          <a class="btn" data-continue-external target="_blank" rel="noopener">Open in a new tab</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="recent" data-recent hidden aria-label="Recently played">
     <h2>Recently played</h2>
     <div class="recent-list" data-recent-list></div>
@@ -63,7 +81,11 @@
 </main>
 
 <footer class="foot">
-  <p>G@M£$ <span class="sep">/</span> 507 titles, streamed from MadKidGames. Nothing is hosted here.</p>
+  <p>G@M£$ <span class="sep">/</span> 506 titles, streamed from MadKidGames. Nothing is hosted here.</p>
+  <p class="foot-data">
+    <span data-storage-note>Picks, history and scroll position are saved in this browser.</span>
+    <button type="button" class="link" data-reset>Clear saved data</button>
+  </p>
 </footer>
 
 <div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="player-title">
