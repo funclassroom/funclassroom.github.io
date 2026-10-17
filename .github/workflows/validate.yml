@@ -13,13 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with: { node-version: 22 }
       - name: Install locked dependencies
         run: npm ci
       - name: Run UI and catalogue regression tests
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee test.log
+        run: npm test
       - run: npm i playwright@1.47.2 --no-audit --no-fund
       - run: npx playwright install chromium --with-deps
       - name: Load a spread of embeds
@@ -28,16 +26,6 @@ jobs:
           LANES: 12
           WAIT: 6000
         run: node scripts/validate.mjs
-      - name: Keep the test log on failure
-        if: failure()
-        run: |
-          git config user.name "catalog-bot"
-          git config user.email "catalog-bot@users.noreply.github.com"
-          git add -f test.log
-          git commit -q -m "Test log" || true
-          git pull --rebase --autostash || true
-          git push || true
-
       - name: Commit the findings
         run: |
           git config user.name "catalog-bot"
