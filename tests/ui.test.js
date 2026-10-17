@@ -670,6 +670,62 @@ function titles(document) {
     dom.window.close();
   }
 
+  /* picks, tags, player favourite, multi-word search */
+  {
+    const dom = boot("", { v: 2, saved: [], recent: ["stick-war-legacy"], sort: "hot", plays: {}, last: {}, scroll: 0, good: {}, bad: {} });
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    check("a suggestions shelf exists", !!document.querySelector("[data-picks]"));
+    check(
+      "suggestions are playable tiles",
+      Array.from(document.querySelectorAll("[data-picks-list] [data-open]")).length > 0
+    );
+
+    const tags = document.querySelectorAll("[data-tag]");
+    check("genre chips are offered", tags.length > 3, String(tags.length));
+    const before = document.querySelectorAll(".tile").length;
+    const tagWord = tags[0].textContent.toLowerCase();
+    click(window, tags[0]);
+    check(
+      "a chip filters the wall",
+      document.querySelectorAll(".tile").length < before ||
+        titles(document).every((t) => t.toLowerCase().includes(tagWord))
+    );
+    check("the chip shows as pressed", tags[0].getAttribute("aria-pressed") === "true");
+    click(window, tags[0]);
+    check("clicking again clears the filter", document.querySelectorAll(".tile").length === before);
+
+    const input = document.querySelector("#q");
+    type(window, input, "car park");
+    check(
+      "multi-word search matches every word",
+      document.querySelectorAll(".tile").length > 0 &&
+        titles(document).every((t) => /car/i.test(t) || /park/i.test(t))
+    );
+    type(window, input, "");
+    dom.window.close();
+  }
+
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+    click(window, document.querySelector('.tile[data-playable="1"] .tile-open'));
+    const fav = document.querySelector("[data-player-fav]");
+    check("the player has a save button", !!fav);
+    click(window, fav);
+    check("the player button fills", fav.getAttribute("aria-pressed") === "true");
+    check("the pick is stored", readStore(window).saved.length === 1);
+    check(
+      "the tile agrees",
+      document.querySelector("[data-fav]").getAttribute("aria-pressed") === "true"
+    );
+    dom.window.close();
+  }
+
   console.log("\n  UI: " + pass + " passed, " + fail + " failed\n");
   if (fail) {
     failures.forEach((f) => console.log("   - " + f));

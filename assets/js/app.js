@@ -22,6 +22,7 @@
     q: "",
     sort: "hot",
     savedOnly: false,
+    tag: "",
     active: null,
     sourceIndex: 0,
     lastFocus: null,
@@ -158,13 +159,57 @@
     return copy;
   }
 
+  var STOP = { the: 1, a: 1, an: 1, game: 1, games: 1, free: 1, online: 1, play: 1 };
+
+  function tagOf(item) {
+    var words = item.title.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/);
+    for (var i = 0; i < words.length; i += 1) {
+      if (words[i].length > 2 && !STOP[words[i]]) return words[i];
+    }
+    return "other";
+  }
+
+  function renderTags() {
+    if (!dom.tags) return;
+    var counts = {};
+    ALL.forEach(function (item) {
+      var tag = tagOf(item);
+      counts[tag] = (counts[tag] || 0) + 1;
+    });
+
+    var top = Object.keys(counts)
+      .filter(function (tag) { return counts[tag] >= 25; })
+      .sort(function (a, b) { return counts[b] - counts[a]; })
+      .slice(0, 12);
+
+    dom.tags.innerHTML = "";
+    top.forEach(function (tag) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "tag";
+      button.setAttribute("data-tag", tag);
+      button.setAttribute("aria-pressed", state.tag === tag ? "true" : "false");
+      button.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+      dom.tags.appendChild(button);
+    });
+    dom.tags.hidden = top.length === 0;
+  }
+
   function visible() {
     var q = state.q.trim().toLowerCase();
     return sorted(ALL.filter(function (item) {
       if (state.savedOnly && store.saved.indexOf(item.id) === -1) return false;
+      if (state.tag && tagOf(item) !== state.tag) return false;
       if (!q) return true;
-      return item.title.toLowerCase().indexOf(q) !== -1 ||
-        item.id.replace(/-/g, " ").indexOf(q) !== -1;
+      var hay = item.title.toLowerCase();
+      if (hay.indexOf(q) !== -1) return true;
+      if (item.id.replace(/-/g, " ").indexOf(q) !== -1) return true;
+
+      // Every word must appear somewhere: "car park" finds "Car Parking".
+      var words = q.split(/\s+/).filter(Boolean);
+      return words.length > 1 && words.every(function (word) {
+        return hay.indexOf(word) !== -1;
+      });
     }));
   }
 
@@ -305,6 +350,61 @@
     dom.savedToggle.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
   }
 
+  function renderPicks() {
+    if (!dom.picks) return;
+
+    // Suggestions come from what this device already played: the same first
+    // word, or the same genre-ish keyword. Nothing is sent anywhere.
+    var seeds = store.recent.slice(0, 4);
+    var picks = [];
+    var used = {};
+
+    seeds.forEach(function (seed) {
+      var item = BY_ID[seed];
+      if (!item) return;
+      var head = item.title.toLowerCase().split(" ")[0];
+      if (head.length < 3) return;
+
+      ALL.some(function (other) {
+        if (picks.length >= 8) return true;
+        if (other.id === item.id || used[other.id]) return false;
+        if (other.title.toLowerCase().indexOf(head) !== 0) return false;
+        if (!playable(other)) return false;
+        used[other.id] = true;
+        picks.push(other);
+        return picks.length >= 8;
+      });
+    });
+
+    if (!picks.length) {
+      // First visit: show a spread rather than an empty shelf.
+      picks = ALL.filter(playable).slice(0, 8);
+    }
+
+    dom.picks.hidden = picks.length < 4;
+    dom.picksList.innerHTML = "";
+    picks.slice(0, 8).forEach(function (item) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "recent-chip";
+      chip.setAttribute("data-open", item.id);
+
+      var img = document.createElement("img");
+      img.src = item.thumb;
+      img.alt = "";
+      img.loading = "lazy";
+      img.width = 88;
+      img.height = 66;
+
+      var text = document.createElement("span");
+      text.textContent = item.title;
+
+      chip.appendChild(img);
+      chip.appendChild(text);
+      dom.picksList.appendChild(chip);
+    });
+  }
+
   function renderContinue() {
     var id = store.recent[0];
     var item = id ? BY_ID[id] : null;
@@ -376,6 +476,7 @@
     renderSaved();
     renderContinue();
     renderRecent();
+    renderPicks();
     paintFooter();
   }
 
@@ -461,6 +562,14 @@
     }
   }
 
+  function syncPlayerFav(item) {
+    if (!dom.playerFav) return;
+    var on = store.saved.indexOf(item.id) !== -1;
+    dom.playerFav.classList.toggle("is-on", on);
+    dom.playerFav.setAttribute("aria-pressed", on ? "true" : "false");
+    dom.playerFav.setAttribute("aria-label", (on ? "Remove " : "Save ") + item.title);
+  }
+
   function attemptSource(index) {
     var item = BY_ID[state.active];
     if (!item) return;
@@ -489,6 +598,7 @@
       ? "Source " + (index + 1) + " of " + sources.length + " · " + source.portal
       : source.portal;
     dom.next.hidden = sources.length < 2;
+    syncPlayerFav(item);
     dom.next.disabled = false;
 
     mountFrame(item, source, sources, index);
@@ -644,6 +754,7 @@
 
     renderContinue();
     renderRecent();
+    renderPicks();
     paintFooter();
   }
 
@@ -655,6 +766,7 @@
     markTilePlayed(id);
     renderContinue();
     renderRecent();
+    renderPicks();
     paintFooter();
   }
 
@@ -726,6 +838,7 @@
     dom.empty = $("[data-empty]");
     dom.emptyQ = $("[data-empty-q]");
     dom.shown = $("[data-shown]");
+    dom.tags = $("[data-tags]");
     dom.more = $("[data-more]");
     dom.count = $("[data-count]");
     dom.savedToggle = $("[data-saved-toggle]");
@@ -737,6 +850,8 @@
     dom.continuePlay = $("[data-continue-play]");
     dom.continueExternal = $("[data-continue-external]");
     dom.recent = $("[data-recent]");
+    dom.picks = $("[data-picks]");
+    dom.picksList = $("[data-picks-list]");
     dom.recentList = $("[data-recent-list]");
     dom.player = $("[data-player]");
     dom.playerTitle = $("[data-player-title]");
@@ -753,6 +868,7 @@
     dom.next = $("[data-next]");
     dom.close = $("[data-close]");
     dom.external = $("[data-external]");
+    dom.playerFav = $("[data-player-fav]");
     dom.fs = $("[data-fs]");
     dom.q = $("#q");
     dom.searchClear = $("[data-search-clear]");
@@ -768,10 +884,13 @@
     state.sort = store.sort;
 
     dom.count.textContent = String(ALL.length);
+    var footCount = $("[data-foot-count]");
+    if (footCount) footCount.textContent = ALL.length.toLocaleString("en-GB");
     dom.sorts.forEach(function (button) {
       button.setAttribute("aria-pressed", button.getAttribute("data-sort") === state.sort ? "true" : "false");
     });
 
+    renderTags();
     render();
 
     function onSearch() {
@@ -794,6 +913,17 @@
       return false;
     }
 
+    dom.tags.addEventListener("click", function (event) {
+      var button = event.target.closest("[data-tag]");
+      if (!button) return;
+      var tag = button.getAttribute("data-tag");
+      state.tag = state.tag === tag ? "" : tag;
+      Array.prototype.forEach.call(dom.tags.children, function (child) {
+        child.setAttribute("aria-pressed", child.getAttribute("data-tag") === state.tag ? "true" : "false");
+      });
+      renderGrid();
+    });
+
     dom.grid.addEventListener("click", function (event) {
       if (openFrom(event)) return;
       var fav = event.target.closest("[data-fav]");
@@ -801,6 +931,7 @@
     });
 
     dom.recentList.addEventListener("click", openFrom);
+    dom.picksList.addEventListener("click", openFrom);
     dom.continuePlay.addEventListener("click", openFrom);
 
     dom.savedToggle.addEventListener("click", function () {
@@ -827,6 +958,12 @@
     });
 
     dom.more.addEventListener("click", appendBatch);
+    dom.playerFav.addEventListener("click", function () {
+      if (!state.active) return;
+      toggleSaved(state.active);
+      syncPlayerFav(BY_ID[state.active]);
+    });
+
     $("[data-shuffle]").addEventListener("click", shuffle);
     dom.close.addEventListener("click", function () { closePlayer(); });
     dom.next.addEventListener("click", function () { nextSource(false); });

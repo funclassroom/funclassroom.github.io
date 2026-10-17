@@ -72,7 +72,8 @@ re-reads the MadKidGames sitemap, merges duplicates by a normalised title
 
 The builder refuses to write a catalogue that is smaller than the one already
 in place, so a bad feed day cannot wipe the wall. It also drops generative-AI
-titles.
+titles, and a short blocklist of horror and gambling titles that a school
+network would flag.
 
 ## Progress and saves
 
@@ -99,7 +100,11 @@ game.
 
 ## The page
 
-- Search, plus Popular / Top rated / A–Z
+- Search (multi-word: "car park" finds "Car Parking"), plus Popular / Top rated / A–Z
+- Genre chips built from the catalogue itself, no hand-kept taxonomy
+- "More like what you played" — suggestions derived on the device from titles
+  you already opened, with nothing sent anywhere
+- Save straight from the player, not just the tile
 - 120 tiles to a page, with a **Show more** button, so a 16,000-title wall
   still paints in one frame
 - Save titles, and a row of the last eight you opened
