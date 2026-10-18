@@ -18,7 +18,7 @@
         "colours": 7
       },
       "drew": true,
-      "text": "SCORE 0 BEST 0 Arrows / WASD · swipe Game over You scored 0. Play again",
+      "text": "SCORE 0 BEST 0 Arrows / WASD · swipe",
       "log": [],
       "stepError": null
     },
@@ -36,12 +36,12 @@
         "found": false,
         "dom": {
           "cells": 16,
-          "filled": 4,
+          "filled": 3,
           "text": 74
         }
       },
       "drew": true,
-      "text": "SCORE 4 BEST 4 New Arrow keys, WASD or swipe · merge the numbers 2 2 4 2",
+      "text": "SCORE 12 BEST 12 New Arrow keys, WASD or swipe · merge the numbers 2 2 8",
       "log": [],
       "stepError": null
     },
@@ -127,12 +127,12 @@
         "found": false,
         "dom": {
           "cells": 81,
-          "filled": 20,
-          "text": 108
+          "filled": 18,
+          "text": 104
         }
       },
       "drew": true,
-      "text": "MINES 10 TIME 2 New game 1 1 1 1 1 2 2 2 2 1 2 1 1 1 1 2 2 1 1 1 Click to dig · right-click or hold to flag",
+      "text": "MINES 10 TIME 2 New game 1 2 2 1 2 1 1 1 1 1 1 1 1 1 1 1 2 2 Click to dig · right-click or hold to flag",
       "log": [],
       "stepError": null
     }
