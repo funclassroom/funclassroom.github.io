@@ -128,7 +128,7 @@ function titles(document) {
       "thumbnails are portal art or local pack art",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
         /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src")) ||
-        /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
+        /^assets\/img\/(pack\/)?[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
       )
     );
     check(
@@ -142,6 +142,17 @@ function titles(document) {
         );
       })(),
       document.querySelector(".tile .tile-title").textContent
+    );
+    check(
+      "the wall opens with the local Minecraft file",
+      document.querySelector(".tile").getAttribute("data-id") === "local-minecraft" &&
+        document.querySelector(".tile").getAttribute("data-featured") === "1",
+      document.querySelector(".tile").getAttribute("data-id")
+    );
+    check(
+      "the local Minecraft tile says it plays offline",
+      document.querySelector(".tile .tile-file") &&
+        document.querySelector(".tile .tile-file").textContent === "OFFLINE"
     );
     check(
       "tiles name themselves for screen readers",
@@ -204,6 +215,15 @@ function titles(document) {
     type(window, page.querySelector("#fq"), "basket");
     check("local search only returns local HTML games", Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden).every((card) => /basket-random\.html$/.test(card.getAttribute("data-file"))));
     check("local search finds the new basketball game", page.querySelector('[data-file="assets/games/basket-random.html"]').hidden === false);
+    type(window, page.querySelector("#fq"), "minecraft");
+    check(
+      "the local search leads with Minecraft",
+      (() => {
+        const shown = Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden);
+        return shown.length === 1 && shown[0].getAttribute("data-file") === "assets/games/minecraft.html";
+      })(),
+      Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden).map((card) => card.getAttribute("data-file")).join(",")
+    );
     type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
@@ -325,6 +345,23 @@ function titles(document) {
     check("HTML result plays the local file", document.querySelector(".player-frame").getAttribute("src") === "assets/games/bad-piggies.html");
     click(window, document.querySelector("[data-close]"));
 
+    type(window, input, "minecraft");
+    check(
+      "searching for Minecraft puts the local file first",
+      document.querySelector(".tile").getAttribute("data-id") === "local-minecraft",
+      document.querySelector(".tile").getAttribute("data-id")
+    );
+    check(
+      "the streamed Minecraft titles are still listed",
+      document.querySelectorAll(".tile").length > 1
+    );
+    type(window, input, "2048");
+    check(
+      "no other local title is pushed up",
+      document.querySelector(".tile").getAttribute("data-id") !== "local-2048",
+      document.querySelector(".tile").getAttribute("data-id")
+    );
+
     const matches = window.CATALOG.filter((g) => /subway/i.test(g.title)).length;
     type(window, input, "subway");
     check("search filters", document.querySelectorAll(".tile").length === matches);
@@ -378,6 +415,8 @@ function titles(document) {
     const id = tile.getAttribute("data-id");
     const title = tile.querySelector(".tile-title").textContent;
     const source = window.CATALOG.find((g) => g.id === id).sources[0].url;
+    // A local file is addressed relative to the page; the links resolve it.
+    const absolute = new URL(source, window.location.href).href;
 
     check("player starts closed", document.querySelector("[data-player]").hidden);
     check("no iframe until asked", document.querySelectorAll("iframe").length === 0);
@@ -393,7 +432,7 @@ function titles(document) {
     check("autoplay allowed", /autoplay/.test(frame.getAttribute("allow")));
     check("player shows the title", document.querySelector("[data-player-title]").textContent === title);
     check("page locks", document.body.classList.contains("locked"));
-    check("new-tab escape", document.querySelector("[data-external]").href === source);
+    check("new-tab escape", document.querySelector("[data-external]").href === absolute);
     check(
       "slow-load escape",
       document.querySelector("[data-load-link]").getAttribute("href") === source
@@ -406,7 +445,7 @@ function titles(document) {
     );
     check(
       "continue card links back to the player",
-      document.querySelector("[data-continue-external]").href === source
+      document.querySelector("[data-continue-external]").href === absolute
     );
     check("play is recorded on device", readStore(window).plays[id] === 1);
     check(
