@@ -1,32 +1,47 @@
 {
-  "checkedAt": "2026-10-17T18:02:41.614Z",
+  "checkedAt": "2026-10-18T09:24:27.616Z",
   "checked": 1500,
-  "dead": 2,
+  "dead": 3,
   "urls": [
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=jp112o3o4hzgrnc7zaewjkrfk282pul8/"
+    "https://html5.gamemonetize.co/92rgvlnfyvms2w91puiip5hr27x4y3uj/",
+    "https://html5.gamemonetize.co/mrccgcvib1l5gzqelr1dknq5upuu39tn/",
+    "https://html5.gamemonetize.co/uh42l3gg002jgw3gupjl0ikom592ftyo/"
   ],
   "detail": [
     {
-      "id": "29583",
-      "title": "City Inferno Scape Buggy or Die Today",
+      "id": "57848",
+      "title": "Colorful Assort Game",
       "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
-      "status": 302,
+      "url": "https://html5.gamemonetize.co/92rgvlnfyvms2w91puiip5hr27x4y3uj/",
+      "status": 200,
       "failed": null,
       "sub": {
         "frames": 1,
-        "canvas": 1,
-        "text": "Game not found!\nPlease upload your game."
+        "canvas": 0,
+        "text": "Failed to start the game.\nPlease try reloading the page or restarting the app.\nOK"
       },
       "dead": true
     },
     {
-      "id": "44366",
-      "title": "Spirall Rool",
+      "id": "76744",
+      "title": "Crystal Craash",
       "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=jp112o3o4hzgrnc7zaewjkrfk282pul8/",
-      "status": 302,
+      "url": "https://html5.gamemonetize.co/mrccgcvib1l5gzqelr1dknq5upuu39tn/",
+      "status": 200,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": "✦ TAP TO PLAY ✦\nCRYSTAL CRUSH — GEM MERGE"
+      },
+      "dead": true
+    },
+    {
+      "id": "49563",
+      "title": "Jinx & Minx Tower Escape",
+      "portal": "gamemonetize.com",
+      "url": "https://html5.gamemonetize.co/uh42l3gg002jgw3gupjl0ikom592ftyo/",
+      "status": 200,
       "failed": null,
       "sub": {
         "frames": 1,
