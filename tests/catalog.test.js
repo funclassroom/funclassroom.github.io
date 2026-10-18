@@ -128,6 +128,46 @@ const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
 
 check("index loads the catalogue", /assets\/js\/catalog\.js/.test(index));
+check(
+  "the wall links to the local files",
+  /<a[^>]+class="btn btn-local"[^>]+href="files\.html"/.test(index) &&
+    fs.existsSync(path.join(ROOT, "files.html"))
+);
+
+/* ---------- the local games ---------- */
+const LOCAL = [
+  "snake", "2048", "tetris", "breakout", "pong", "flap", "minesweeper"
+];
+const filesPage = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
+const gameFiles = LOCAL.map((slug) => path.join(ROOT, "assets/games", slug + ".html"));
+
+check("every local game ships a file", gameFiles.every((file) => fs.existsSync(file)));
+check(
+  "the local page links every one of them",
+  LOCAL.every((slug) => filesPage.includes("assets/games/" + slug + ".html"))
+);
+check(
+  "the local page does not invent others",
+  (filesPage.match(/assets\/games\/[a-z0-9-]+\.html/g) || []).length === LOCAL.length
+);
+check(
+  "the local games never call out to the network",
+  gameFiles.every((file) => {
+    const html = fs.readFileSync(file, "utf8");
+    return !/https?:\/\//.test(html) && !/<script[^>]+src=/i.test(html) && !/<link[^>]+href="http/i.test(html);
+  })
+);
+check(
+  "each local game is a complete page",
+  gameFiles.every((file) => {
+    const html = fs.readFileSync(file, "utf8");
+    return /<!doctype html>/i.test(html) && /<canvas|<button/.test(html) && html.length > 2000;
+  })
+);
+check(
+  "every local game has art",
+  LOCAL.every((slug) => fs.existsSync(path.join(ROOT, "assets/img", slug + ".svg")))
+);
 check("index loads the app", /assets\/js\/app\.js/.test(index));
 check("index loads the one stylesheet", /assets\/css\/app\.css/.test(index));
 check("index has no old dual-skin leftovers", !/gamekit|data-mode|mode-classroom/i.test(index));
@@ -143,8 +183,9 @@ check(
   !/ai-token|AI_TOKENS|is_ai/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
 );
 check(
-  "the only image in the repo is the hand-shot title screen",
-  fs.readdirSync(path.join(ROOT, "assets/img")).join(",") === "minecraft.png"
+  "the only photographs in the repo belong to the hand-added title",
+  fs.readdirSync(path.join(ROOT, "assets/img")).filter((f) => /\.(png|jpe?g|webp)$/.test(f)).join(",") ===
+    "minecraft.png"
 );
 check(
   "saved state never leaves the device",

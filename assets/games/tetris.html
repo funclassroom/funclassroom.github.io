@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Tetris</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #0b0d14; color: #eef1ff; overflow: hidden; touch-action: none;
+    user-select: none; -webkit-user-select: none;
+    font: 600 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header { display: flex; align-items: center; gap: 18px; padding: 10px 16px 4px; }
+  .k { opacity: .5; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+  .v { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .next { display: flex; align-items: center; gap: 10px; }
+  #next { width: 58px; height: 44px; border-radius: 8px; background: #131724; }
+  .spacer { flex: 1; }
+  .hint { opacity: .42; font-size: 12px; font-weight: 500; text-align: right; }
+  .stage { position: relative; flex: 1; min-height: 0; margin: 0 14px 12px; }
+  canvas#game { display: block; width: 100%; height: 100%; border-radius: 14px; background: #080a11; }
+  .overlay {
+    position: absolute; inset: 0; border-radius: 14px; display: grid; place-items: center;
+    text-align: center; padding: 20px; background: rgba(5, 6, 12, .84);
+  }
+  .overlay[hidden] { display: none; }
+  .overlay h1 { margin: 0 0 6px; font-size: clamp(24px, 6vw, 40px); }
+  .overlay p { margin: 0; opacity: .72; font-weight: 500; }
+  .overlay button {
+    margin-top: 18px; border: 0; border-radius: 999px; padding: 12px 30px; cursor: pointer;
+    font: inherit; font-weight: 800; background: #8ad7ff; color: #05202e;
+  }
+  .pad { display: none; gap: 8px; padding: 0 14px 12px; }
+  .pad button {
+    flex: 1; border: 0; border-radius: 10px; padding: 14px 0; font: inherit; font-size: 18px;
+    font-weight: 800; background: #1a1f2e; color: #dfe6ff; cursor: pointer;
+  }
+  .pad button:active { background: #252c40; }
+  @media (pointer: coarse) { .pad { display: flex; } .hint { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div><div class="k">Score</div><div class="v" data-score>0</div></div>
+  <div><div class="k">Lines</div><div class="v" data-lines>0</div></div>
+  <div><div class="k">Level</div><div class="v" data-level>1</div></div>
+  <div class="spacer"></div>
+  <div class="next"><span class="k">Next</span><canvas id="next" width="116" height="88"></canvas></div>
+</header>
+<div class="stage">
+  <canvas id="game"></canvas>
+  <div class="overlay" data-overlay>
+    <div>
+      <h1 data-title>Tetris</h1>
+      <p data-line>← → move · ↑ rotate · ↓ soft drop · space slams it down</p>
+      <button type="button" data-go>Start</button>
+    </div>
+  </div>
+</div>
+<div class="pad">
+  <button type="button" data-act="left">←</button>
+  <button type="button" data-act="rotate">↻</button>
+  <button type="button" data-act="right">→</button>
+  <button type="button" data-act="down">↓</button>
+  <button type="button" data-act="drop">⇩</button>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  var cv = document.getElementById("game");
+  var ctx = cv.getContext("2d");
+  var nextCv = document.getElementById("next");
+  var nctx = nextCv.getContext("2d");
+  var overlay = document.querySelector("[data-overlay]");
+  var titleEl = document.querySelector("[data-title]");
+  var lineEl = document.querySelector("[data-line]");
+  var go = document.querySelector("[data-go]");
+  var scoreEl = document.querySelector("[data-score]");
+  var linesEl = document.querySelector("[data-lines]");
+  var levelEl = document.querySelector("[data-level]");
+
+  var COLS = 10;
+  var ROWS = 20;
+  var SHAPES = {
+    I: [[1, 1, 1, 1]],
+    O: [[1, 1], [1, 1]],
+    T: [[0, 1, 0], [1, 1, 1]],
+    S: [[0, 1, 1], [1, 1, 0]],
+    Z: [[1, 1, 0], [0, 1, 1]],
+    J: [[1, 0, 0], [1, 1, 1]],
+    L: [[0, 0, 1], [1, 1, 1]]
+  };
+  var COLORS = {
+    I: "#5ad1e6", O: "#f2d14e", T: "#b07cf0",
+    S: "#63d471", Z: "#ef6f6f", J: "#5b8def", L: "#f0a35e"
+  };
+
+  var W = 0, H = 0, dpr = 1, cell = 24, ox = 0, oy = 0;
+  var board, piece, next, score, lines, level, running, over, dropAcc, last, soft, paused;
+
+  function blank() {
+    var rows = [];
+    for (var y = 0; y < ROWS; y += 1) rows.push(new Array(COLS).fill(""));
+    return rows;
+  }
+
+  function pick() {
+    var keys = Object.keys(SHAPES);
+    var key = keys[Math.floor(Math.random() * keys.length)];
+    var matrix = SHAPES[key].map(function (row) { return row.slice(); });
+    return { key: key, m: matrix, x: Math.floor((COLS - matrix[0].length) / 2), y: 0 };
+  }
+
+  function reset() {
+    board = blank();
+    next = pick();
+    piece = spawn();
+    score = 0;
+    lines = 0;
+    level = 1;
+    over = false;
+    paused = false;
+    running = false;
+    dropAcc = 0;
+    soft = 0;
+    paintChrome();
+  }
+
+  function spawn() {
+    var p = next;
+    next = pick();
+    p.x = Math.floor((COLS - p.m[0].length) / 2);
+    p.y = 0;
+    drawNext();
+    return p;
+  }
+
+  function paintChrome() {
+    scoreEl.textContent = String(score);
+    linesEl.textContent = String(lines);
+    levelEl.textContent = String(level);
+  }
+
+  function collide(p, dx, dy, matrix) {
+    var m = matrix || p.m;
+    for (var y = 0; y < m.length; y += 1) {
+      for (var x = 0; x < m[y].length; x += 1) {
+        if (!m[y][x]) continue;
+        var nx = p.x + x + dx;
+        var ny = p.y + y + dy;
+        if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+        if (ny >= 0 && board[ny][nx]) return true;
+      }
+    }
+    return false;
+  }
+
+  function rotate() {
+    if (!running) return;
+    var m = piece.m;
+    var out = [];
+    for (var x = 0; x < m[0].length; x += 1) {
+      var row = [];
+      for (var y = m.length - 1; y >= 0; y -= 1) row.push(m[y][x]);
+      out.push(row);
+    }
+    // wall kick: try in place, then one left, then one right
+    var kicks = [0, -1, 1, -2, 2];
+    for (var i = 0; i < kicks.length; i += 1) {
+      if (!collide(piece, kicks[i], 0, out)) {
+        piece.m = out;
+        piece.x += kicks[i];
+        return;
+      }
+    }
+  }
+
+  function merge() {
+    piece.m.forEach(function (row, y) {
+      row.forEach(function (on, x) {
+        if (!on) return;
+        var by = piece.y + y;
+        var bx = piece.x + x;
+        if (by >= 0) board[by][bx] = piece.key;
+      });
+    });
+  }
+
+  function clearLines() {
+    var cleared = 0;
+    for (var y = ROWS - 1; y >= 0; y -= 1) {
+      if (board[y].every(Boolean)) {
+        board.splice(y, 1);
+        board.unshift(new Array(COLS).fill(""));
+        cleared += 1;
+        y += 1;
+      }
+    }
+    if (!cleared) return;
+    lines += cleared;
+    score += [0, 100, 300, 500, 800][cleared] * level;
+    level = 1 + Math.floor(lines / 10);
+    paintChrome();
+  }
+
+  function lock() {
+    merge();
+    clearLines();
+    piece = spawn();
+    if (collide(piece, 0, 0)) {
+      over = true;
+      running = false;
+      titleEl.textContent = "Game over";
+      lineEl.textContent = "You cleared " + lines + " lines for " + score + ".";
+      go.textContent = "Play again";
+      overlay.hidden = false;
+    }
+  }
+
+  function step() {
+    if (!collide(piece, 0, 1)) piece.y += 1;
+    else lock();
+  }
+
+  function speed() {
+    return Math.max(0.08, 0.75 - (level - 1) * 0.06);
+  }
+
+  function resize() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    var box = cv.getBoundingClientRect();
+    W = Math.max(200, box.width);
+    H = Math.max(240, box.height);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    cell = Math.floor(Math.min((W - 24) / COLS, (H - 16) / ROWS));
+    ox = Math.floor((W - cell * COLS) / 2);
+    oy = Math.floor((H - cell * ROWS) / 2);
+  }
+
+  function block(c, x, y, s, color) {
+    c.fillStyle = color;
+    c.beginPath();
+    c.roundRect(x + 1, y + 1, s - 2, s - 2, Math.max(2, s * 0.18));
+    c.fill();
+    c.fillStyle = "rgba(255, 255, 255, .16)";
+    c.fillRect(x + 3, y + 3, s - 6, Math.max(2, s * 0.14));
+  }
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.fillStyle = "#0a0d16";
+    ctx.beginPath();
+    ctx.roundRect(ox - 8, oy - 8, cell * COLS + 16, cell * ROWS + 16, 12);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255, 255, 255, .045)";
+    ctx.lineWidth = 1;
+    for (var c = 1; c < COLS; c += 1) {
+      ctx.beginPath();
+      ctx.moveTo(ox + c * cell + 0.5, oy);
+      ctx.lineTo(ox + c * cell + 0.5, oy + ROWS * cell);
+      ctx.stroke();
+    }
+    for (var r = 1; r < ROWS; r += 1) {
+      ctx.beginPath();
+      ctx.moveTo(ox, oy + r * cell + 0.5);
+      ctx.lineTo(ox + COLS * cell, oy + r * cell + 0.5);
+      ctx.stroke();
+    }
+
+    if (!board) return;
+
+    for (var y = 0; y < ROWS; y += 1) {
+      for (var x = 0; x < COLS; x += 1) {
+        if (board[y][x]) block(ctx, ox + x * cell, oy + y * cell, cell, COLORS[board[y][x]]);
+      }
+    }
+
+    if (piece && running) {
+      // ghost
+      var gy = 0;
+      while (!collide(piece, 0, gy + 1)) gy += 1;
+      ctx.globalAlpha = 0.18;
+      piece.m.forEach(function (row, yy) {
+        row.forEach(function (on, xx) {
+          if (!on) return;
+          block(ctx, ox + (piece.x + xx) * cell, oy + (piece.y + yy + gy) * cell, cell, COLORS[piece.key]);
+        });
+      });
+      ctx.globalAlpha = 1;
+
+      piece.m.forEach(function (row, yy) {
+        row.forEach(function (on, xx) {
+          if (!on) return;
+          block(ctx, ox + (piece.x + xx) * cell, oy + (piece.y + yy) * cell, cell, COLORS[piece.key]);
+        });
+      });
+    }
+  }
+
+  function drawNext() {
+    nctx.clearRect(0, 0, nextCv.width, nextCv.height);
+    if (!next) return;
+    var m = next.m;
+    var cw = nextCv.width / 5;
+    var ch = nextCv.height / 4;
+    var s = Math.min(cw, ch);
+    var bx = (nextCv.width - m[0].length * s) / 2;
+    var by = (nextCv.height - m.length * s) / 2;
+    for (var y = 0; y < m.length; y += 1) {
+      for (var x = 0; x < m[y].length; x += 1) {
+        if (!m[y][x]) continue;
+        nctx.fillStyle = COLORS[next.key];
+        nctx.beginPath();
+        nctx.roundRect(bx + x * s + 1, by + y * s + 1, s - 2, s - 2, 4);
+        nctx.fill();
+      }
+    }
+  }
+
+  function frame(now) {
+    window.requestAnimationFrame(frame);
+    if (!last) last = now;
+    var dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+
+    if (running) {
+      dropAcc += dt * (soft > 0 ? 8 : 1);
+      while (dropAcc >= speed()) {
+        dropAcc -= speed();
+        step();
+        if (!running) break;
+      }
+      if (soft > 0) soft -= dt;
+    }
+    draw();
+  }
+
+  function resume() {
+    paused = false;
+    overlay.hidden = true;
+    running = true;
+    last = 0;
+  }
+
+  function start() {
+    reset();
+    overlay.hidden = true;
+    running = true;
+    last = 0;
+  }
+
+  go.addEventListener("click", function () {
+    if (paused) resume();
+    else start();
+  });
+
+  document.addEventListener("keydown", function (event) {
+    var key = event.key;
+    if (!running) {
+      if (key === " " || key === "Enter") { event.preventDefault(); start(); }
+      return;
+    }
+    if (key === "ArrowLeft") { event.preventDefault(); if (!collide(piece, -1, 0)) piece.x -= 1; }
+    else if (key === "ArrowRight") { event.preventDefault(); if (!collide(piece, 1, 0)) piece.x += 1; }
+    else if (key === "ArrowDown") { event.preventDefault(); soft = 0.25; if (!collide(piece, 0, 1)) piece.y += 1; }
+    else if (key === "ArrowUp" || key === "x" || key === "X") { event.preventDefault(); rotate(); }
+    else if (key === " ") {
+      event.preventDefault();
+      while (!collide(piece, 0, 1)) piece.y += 1;
+      lock();
+    } else if (key === "p" || key === "P") {
+      event.preventDefault();
+      running = false;
+      paused = true;
+      titleEl.textContent = "Paused";
+      lineEl.textContent = "Press P or tap to carry on.";
+      go.textContent = "Keep going";
+      overlay.hidden = false;
+    }
+  });
+
+  document.querySelectorAll("[data-act]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!running) { start(); return; }
+      var act = button.getAttribute("data-act");
+      if (act === "left" && !collide(piece, -1, 0)) piece.x -= 1;
+      if (act === "right" && !collide(piece, 1, 0)) piece.x += 1;
+      if (act === "down") { soft = 0.25; if (!collide(piece, 0, 1)) piece.y += 1; }
+      if (act === "rotate") rotate();
+      if (act === "drop") {
+        while (!collide(piece, 0, 1)) piece.y += 1;
+        lock();
+      }
+    });
+  });
+
+  window.addEventListener("keydown", function (event) {
+    // resume from pause with P anywhere
+    if ((event.key === "p" || event.key === "P") && paused && !over) {
+      event.preventDefault();
+      resume();
+    }
+  });
+
+  window.addEventListener("resize", resize);
+
+  reset();
+  resize();
+  window.requestAnimationFrame(frame);
+}());
+</script>
+</body>
+</html>

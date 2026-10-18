@@ -9,6 +9,7 @@ const HTML = fs
   .replace(/<script src="[^"]+"><\/script>/g, "");
 const CATALOG_JS = fs.readFileSync(path.join(ROOT, "assets/js/catalog.js"), "utf8");
 const APP_JS = fs.readFileSync(path.join(ROOT, "assets/js/app.js"), "utf8");
+const FILES_HTML = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
 
 let pass = 0;
 let fail = 0;
@@ -172,6 +173,81 @@ function titles(document) {
       Array.from(document.querySelectorAll("use")).every((u) => document.querySelector(u.getAttribute("href")))
     );
     dom.window.close();
+  }
+
+  /* local files */
+
+  {
+    const wall = boot();
+    await tick();
+    const link = wall.window.document.querySelector('a.btn-local[href="files.html"]');
+    check(
+      "the wall carries a way into the local files",
+      !!link && /Local files/.test(link.textContent)
+    );
+    wall.window.close();
+
+    const local = new JSDOM(FILES_HTML, {
+      url: "https://example.test/files.html",
+      runScripts: "dangerously",
+      pretendToBeVisual: true,
+    });
+    await tick();
+    const { window } = local;
+    const { document: page } = window;
+
+    check("the local page is a Classroom tab", page.title === "Classroom");
+    check(
+      "every local title gets a card",
+      page.querySelectorAll(".file-card").length === 7,
+      String(page.querySelectorAll(".file-card").length)
+    );
+    check(
+      "the cards name their games",
+      Array.from(page.querySelectorAll(".file-title")).map((n) => n.textContent).join(",") ===
+        "Snake,2048,Tetris,Breakout,Pong,Flap,Minesweeper"
+    );
+    check(
+      "a card plays a file in the folder",
+      Array.from(page.querySelectorAll("[data-open-file]")).every((b) =>
+        /^assets\/games\/[a-z0-9-]+\.html$/.test(b.getAttribute("data-open-file"))
+      )
+    );
+    check(
+      "the cards show local art",
+      Array.from(page.querySelectorAll(".file-art img")).every((img) =>
+        /^assets\/img\/[a-z0-9-]+\.svg$/.test(img.getAttribute("src"))
+      )
+    );
+    check("nothing is playing yet", page.querySelector("[data-player]").hidden);
+    check("no frame until asked", page.querySelectorAll("iframe").length === 0);
+
+    click(window, page.querySelector("[data-open-file]"));
+    const frame = page.querySelector("iframe");
+    check("playing opens the file in place", !page.querySelector("[data-player]").hidden);
+    check(
+      "the frame points at the chosen file",
+      !!frame && /\/assets\/games\/snake\.html$/.test(frame.getAttribute("src")),
+      frame && frame.getAttribute("src")
+    );
+    check("page locks while playing", page.body.classList.contains("locked"));
+    check(
+      "the player names the title",
+      page.querySelector("[data-player-title]").textContent === "Snake"
+    );
+    check(
+      "there is a way to open the file on its own",
+      page.querySelector("[data-external]").getAttribute("href") ===
+        "https://example.test/assets/games/snake.html"
+    );
+    check("the deep link is written", window.location.pathname === "/assets/games/snake.html");
+
+    click(window, page.querySelector("[data-close]"));
+    check("closing puts the page back", page.querySelector("[data-player]").hidden);
+    check("closing destroys the frame", page.querySelectorAll("iframe").length === 0);
+    check("scrolling is restored", !page.body.classList.contains("locked"));
+    check("the hash-free address comes back", window.location.pathname === "/files.html");
+    window.close();
   }
 
   /* sorting */

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Minesweeper</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #0d1117; color: #e6edf3; overflow: hidden; touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+    font: 600 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px 8px;
+    max-width: 560px; width: 100%; margin: 0 auto;
+  }
+  .stat { background: #161b22; border: 1px solid #232a33; border-radius: 10px; padding: 6px 12px; min-width: 64px; }
+  .stat .k { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .45; }
+  .stat .v { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .spacer { flex: 1; }
+  button.new {
+    border: 0; border-radius: 10px; padding: 10px 16px; cursor: pointer; font: inherit;
+    font-weight: 800; background: #2f81f7; color: #fff;
+  }
+  button.new:hover { background: #4b95ff; }
+  .wrap { flex: 1; min-height: 0; display: grid; place-items: center; padding: 4px 16px 18px; }
+  .board {
+    display: grid; gap: 3px; padding: 8px; border-radius: 14px; background: #11161d;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    touch-action: manipulation;
+  }
+  .cell {
+    width: clamp(26px, min(8.4vw, 5.3vh), 46px); aspect-ratio: 1; border-radius: 6px;
+    border: 0; padding: 0; font: inherit; font-size: clamp(13px, 2.2vh, 20px); font-weight: 800;
+    background: #232c38; color: #dbe6f5; cursor: pointer; display: grid; place-items: center;
+    line-height: 1;
+  }
+  .cell:hover { background: #2c3849; }
+  .cell.open { background: #161d26; cursor: default; }
+  .cell.open:hover { background: #161d26; }
+  .cell.flag { color: #ff6b6b; }
+  .cell.mine { background: #4a1f24; color: #ffb3b3; }
+  .cell.boom { background: #b3261e; color: #fff; }
+  .cell[data-n="1"] { color: #6cb6ff; }
+  .cell[data-n="2"] { color: #7ee787; }
+  .cell[data-n="3"] { color: #ffa657; }
+  .cell[data-n="4"] { color: #d2a8ff; }
+  .cell[data-n="5"] { color: #ff7b72; }
+  .cell[data-n="6"] { color: #79c0ff; }
+  .cell[data-n="7"] { color: #e3b341; }
+  .cell[data-n="8"] { color: #c9d1d9; }
+  .status { text-align: center; min-height: 22px; padding: 0 16px 8px; font-weight: 600; opacity: .8; }
+  .status.good { color: #7ee787; opacity: 1; }
+  .status.bad { color: #ff8f8f; opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <div class="stat"><div class="k">Mines</div><div class="v" data-mines>10</div></div>
+  <div class="stat"><div class="k">Time</div><div class="v" data-time>0</div></div>
+  <div class="spacer"></div>
+  <button type="button" class="new" data-new>New game</button>
+</header>
+<div class="wrap">
+  <div class="board" data-board aria-label="Minefield"></div>
+</div>
+<p class="status" data-status>Click to dig · right-click or hold to flag</p>
+<script>
+(function () {
+  "use strict";
+
+  var SIZE = 9;
+  var MINES = 10;
+
+  var boardEl = document.querySelector("[data-board]");
+  var minesEl = document.querySelector("[data-mines]");
+  var timeEl = document.querySelector("[data-time]");
+  var statusEl = document.querySelector("[data-status]");
+  var newBtn = document.querySelector("[data-new]");
+
+  var cells = [];
+  var mines, opened, flags, over, won, started, timer, seconds, pressTimer, pressCell;
+
+  for (var i = 0; i < SIZE * SIZE; i += 1) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "cell";
+    button.setAttribute("data-i", String(i));
+    button.setAttribute("aria-label", "Covered square");
+    boardEl.appendChild(button);
+    cells.push(button);
+  }
+  boardEl.style.gridTemplateColumns = "repeat(" + SIZE + ", auto)";
+
+  function around(index) {
+    var x = index % SIZE;
+    var y = Math.floor(index / SIZE);
+    var out = [];
+    for (var dy = -1; dy <= 1; dy += 1) {
+      for (var dx = -1; dx <= 1; dx += 1) {
+        if (!dx && !dy) continue;
+        var nx = x + dx;
+        var ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= SIZE || ny >= SIZE) continue;
+        out.push(ny * SIZE + nx);
+      }
+    }
+    return out;
+  }
+
+  function reset() {
+    mines = new Array(SIZE * SIZE).fill(false);
+    opened = new Array(SIZE * SIZE).fill(false);
+    flags = new Array(SIZE * SIZE).fill(false);
+    over = false;
+    won = false;
+    started = false;
+    seconds = 0;
+    window.clearInterval(timer);
+    timer = null;
+    timeEl.textContent = "0";
+    minesEl.textContent = String(MINES);
+    statusEl.textContent = "Click to dig · right-click or hold to flag";
+    statusEl.className = "status";
+    cells.forEach(function (cell) {
+      cell.className = "cell";
+      cell.textContent = "";
+      cell.removeAttribute("data-n");
+      cell.setAttribute("aria-label", "Covered square");
+    });
+  }
+
+  function plant(first) {
+    var banned = new Set(around(first).concat([first]));
+    var placed = 0;
+    while (placed < MINES) {
+      var at = Math.floor(Math.random() * SIZE * SIZE);
+      if (banned.has(at) || mines[at]) continue;
+      mines[at] = true;
+      placed += 1;
+    }
+    started = true;
+    timer = window.setInterval(function () {
+      if (over) return;
+      seconds += 1;
+      timeEl.textContent = String(seconds);
+    }, 1000);
+  }
+
+  function number(index) {
+    return around(index).filter(function (i) { return mines[i]; }).length;
+  }
+
+  function countFlags() {
+    return flags.filter(Boolean).length;
+  }
+
+  function open(index) {
+    if (over || opened[index] || flags[index]) return;
+    if (!started) plant(index);
+
+    opened[index] = true;
+    var cell = cells[index];
+    cell.classList.add("open");
+
+    if (mines[index]) {
+      cell.classList.add("boom");
+      cell.textContent = "✹";
+      lose(index);
+      return;
+    }
+
+    var n = number(index);
+    if (n) {
+      cell.setAttribute("data-n", String(n));
+      cell.textContent = String(n);
+    } else {
+      cell.textContent = "";
+      around(index).forEach(function (next) {
+        if (!opened[next] && !mines[next] && !flags[next]) open(next);
+      });
+    }
+    cell.setAttribute("aria-label", n ? n + " nearby" : "Empty");
+
+    if (opened.filter(Boolean).length === SIZE * SIZE - MINES) win();
+  }
+
+  function flag(index) {
+    if (over || opened[index]) return;
+    flags[index] = !flags[index];
+    cells[index].classList.toggle("flag", flags[index]);
+    cells[index].textContent = flags[index] ? "⚑" : "";
+    cells[index].setAttribute("aria-label", flags[index] ? "Flagged" : "Covered square");
+    minesEl.textContent = String(MINES - countFlags());
+    if (countFlags() === MINES && mines.filter(function (on, i) { return on && !flags[i]; }).length === 0) win();
+  }
+
+  function revealMines(hit) {
+    mines.forEach(function (isMine, index) {
+      if (!isMine) return;
+      var cell = cells[index];
+      if (index === hit) return;
+      cell.classList.add("open", "mine");
+      cell.textContent = "✹";
+    });
+  }
+
+  function lose(hit) {
+    over = true;
+    window.clearInterval(timer);
+    revealMines(hit);
+    statusEl.textContent = "Boom. That one was a mine.";
+    statusEl.className = "status bad";
+  }
+
+  function win() {
+    if (won || over) return;
+    won = true;
+    over = true;
+    window.clearInterval(timer);
+    flags = flags.map(function () { return true; });
+    mines.forEach(function (isMine, index) {
+      if (!isMine) return;
+      cells[index].classList.add("flag");
+      cells[index].textContent = "⚑";
+    });
+    minesEl.textContent = "0";
+    statusEl.textContent = "Cleared in " + seconds + " seconds.";
+    statusEl.className = "status good";
+  }
+
+  boardEl.addEventListener("click", function (event) {
+    var cell = event.target.closest(".cell");
+    if (!cell) return;
+    open(Number(cell.getAttribute("data-i")));
+  });
+
+  boardEl.addEventListener("contextmenu", function (event) {
+    var cell = event.target.closest(".cell");
+    if (!cell) return;
+    event.preventDefault();
+    flag(Number(cell.getAttribute("data-i")));
+  });
+
+  // press-and-hold flags on touch
+  boardEl.addEventListener("pointerdown", function (event) {
+    var cell = event.target.closest(".cell");
+    if (!cell || event.pointerType === "mouse") return;
+    pressCell = Number(cell.getAttribute("data-i"));
+    pressTimer = window.setTimeout(function () {
+      flag(pressCell);
+      pressCell = null;
+    }, 380);
+  });
+  function cancelPress() {
+    window.clearTimeout(pressTimer);
+    pressCell = null;
+  }
+  boardEl.addEventListener("pointerup", function (event) {
+    if (pressCell !== null) {
+      var cell = event.target.closest(".cell");
+      if (cell) open(Number(cell.getAttribute("data-i")));
+    }
+    cancelPress();
+  });
+  boardEl.addEventListener("pointerleave", cancelPress);
+  boardEl.addEventListener("pointercancel", cancelPress);
+
+  newBtn.addEventListener("click", reset);
+
+  reset();
+}());
+</script>
+</body>
+</html>

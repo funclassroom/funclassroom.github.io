@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 384" width="512" height="384">
+  <rect width="512" height="384" fill="#08080a"/>
+  <g stroke="#ffffff" stroke-opacity=".12" stroke-width="3" stroke-dasharray="9 14">
+    <path d="M256 12v360"/>
+  </g>
+  <g fill="#7ef0b0">
+    <rect x="40" y="128" width="12" height="112" rx="6"/>
+  </g>
+  <g fill="#ff8a8a">
+    <rect x="460" y="196" width="12" height="112" rx="6"/>
+  </g>
+  <circle cx="330" cy="168" r="10" fill="#fff"/>
+  <g font-family="system-ui, sans-serif" font-weight="800" font-size="30" text-anchor="middle">
+    <text x="204" y="60" fill="#7ef0b0" fill-opacity=".85">3</text>
+    <text x="308" y="60" fill="#ff8a8a" fill-opacity=".85">2</text>
+  </g>
+  <text x="40" y="352" fill="#ffffff" fill-opacity=".35" font-family="system-ui, sans-serif" font-size="18" font-weight="700" letter-spacing="4">PONG</text>
+</svg>

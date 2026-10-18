@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classroom</title>
+<meta name="description" content="Seven games that ship with the page as plain files. Nothing to block.">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E">
+<link rel="stylesheet" href="assets/css/app.css?v=20">
+</head>
+<body>
+<a class="skip" href="#files">Skip to the list</a>
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M4 15v5h5M20 9V4h-5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></symbol>
+</svg>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="logo" href="./">G@M£$</a>
+    <p class="files-crumb">Local files <span>· seven titles in the page itself</span></p>
+    <div class="bar-actions">
+      <a class="btn" href="./">
+        <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>
+        <span>All titles</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="files-hero">
+    <p class="files-kicker"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> Never blocked</p>
+    <h1>These are just files.</h1>
+    <p class="files-lede">
+      Seven games that ship with this page as plain HTML and JavaScript. There is no
+      third-party embed and no server to refuse a frame, so a filter that blocks a game
+      site has nothing to grab. They run with the wi-fi off.
+    </p>
+    <ul class="files-facts">
+      <li><b>0</b> external requests</li>
+      <li><b>0</b> tracking scripts</li>
+      <li><b>7</b> games that work offline</li>
+    </ul>
+  </section>
+
+  <section id="files" class="files-grid" data-files-grid aria-label="Local games"></section>
+
+  <p class="files-note">
+    Progress and high scores stay in this browser, like everything else here.
+    <a href="./">Back to all 17,557 titles</a>
+  </p>
+</main>
+
+<footer class="foot">
+  <p>G@M£$ <span class="sep">/</span> the whole list is streamed from publishers — this page is the exception.</p>
+</footer>
+
+<div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="file-title">
+  <div class="player-top">
+    <button type="button" class="pbtn" data-close aria-label="Close">
+      <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <div class="player-meta">
+      <b id="file-title" data-player-title></b>
+      <span>Running from a local file</span>
+      <span class="player-source">no network needed</span>
+    </div>
+    <div class="player-tools">
+      <a class="pbtn" data-external target="_blank" rel="noopener" aria-label="Open the file on its own">
+        <svg class="ico" aria-hidden="true"><use href="#i-external"/></svg>
+      </a>
+      <button type="button" class="pbtn" data-fs aria-label="Fullscreen">
+        <svg class="ico" aria-hidden="true"><use href="#i-expand"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="player-stage" data-stage></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var GAMES = [
+    { id: "snake", title: "Snake", file: "assets/games/snake.html", art: "assets/img/snake.svg",
+      line: "Eat the apples, don't bite yourself.", how: "Arrows · WASD · swipe" },
+    { id: "2048", title: "2048", file: "assets/games/2048.html", art: "assets/img/2048.svg",
+      line: "Slide the tiles together and reach 2048.", how: "Arrows · WASD · swipe" },
+    { id: "tetris", title: "Tetris", file: "assets/games/tetris.html", art: "assets/img/tetris.svg",
+      line: "Ten wide, twenty tall, and no room for mistakes.", how: "Arrows · space" },
+    { id: "breakout", title: "Breakout", file: "assets/games/breakout.html", art: "assets/img/breakout.svg",
+      line: "One ball, three lives, forty-five bricks.", how: "Mouse · ← →" },
+    { id: "pong", title: "Pong", file: "assets/games/pong.html", art: "assets/img/pong.svg",
+      line: "First to seven. The CPU does not get tired.", how: "Mouse · ↑ ↓" },
+    { id: "flap", title: "Flap", file: "assets/games/flap.html", art: "assets/img/flap.svg",
+      line: "Tap to stay in the air. Mind the pipes.", how: "Space · click · tap" },
+    { id: "minesweeper", title: "Minesweeper", file: "assets/games/minesweeper.html", art: "assets/img/minesweeper.svg",
+      line: "Nine by nine, ten mines, and one guess too many.", how: "Click · right-click · hold" }
+  ];
+
+  var grid = document.querySelector("[data-files-grid]");
+  var player = document.querySelector("[data-player]");
+  var stage = document.querySelector("[data-stage]");
+  var titleEl = document.querySelector("[data-player-title]");
+  var ext = document.querySelector("[data-external]");
+  var closeBtn = document.querySelector("[data-close]");
+  var fsBtn = document.querySelector("[data-fs]");
+  var lastFocus = null;
+  var current = null;
+  // Where the page was before a game took over the address bar. Relative
+  // links resolve against the address bar, so it has to be exact.
+  var home = window.location.pathname + window.location.search;
+
+  GAMES.forEach(function (game) {
+    var card = document.createElement("article");
+    card.className = "file-card";
+    card.setAttribute("data-file", game.id);
+
+    var open = document.createElement("button");
+    open.type = "button";
+    open.className = "file-open";
+    open.setAttribute("data-open-file", game.file);
+    open.setAttribute("data-title", game.title);
+    open.setAttribute("aria-label", "Play " + game.title);
+
+    var art = document.createElement("span");
+    art.className = "file-art";
+    var img = document.createElement("img");
+    img.src = game.art;
+    img.alt = "";
+    img.loading = "lazy";
+    img.width = 512;
+    img.height = 384;
+    art.appendChild(img);
+
+    var badge = document.createElement("span");
+    badge.className = "file-badge";
+    badge.textContent = "HTML file";
+    art.appendChild(badge);
+
+    var play = document.createElement("span");
+    play.className = "file-play";
+    play.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span>Play</span>';
+    art.appendChild(play);
+
+    var body = document.createElement("span");
+    body.className = "file-body";
+    var name = document.createElement("span");
+    name.className = "file-title";
+    name.textContent = game.title;
+    var line = document.createElement("span");
+    line.className = "file-line";
+    line.textContent = game.line;
+    var how = document.createElement("span");
+    how.className = "file-how";
+    how.textContent = game.how;
+    body.appendChild(name);
+    body.appendChild(line);
+    body.appendChild(how);
+
+    open.appendChild(art);
+    open.appendChild(body);
+    card.appendChild(open);
+    grid.appendChild(card);
+  });
+
+  function openGame(file, title, opener) {
+    lastFocus = opener || document.activeElement;
+    current = file;
+    titleEl.textContent = title;
+    var absolute = new URL(file, window.location.href).href;
+    ext.href = absolute;
+    stage.innerHTML = "";
+    var frame = document.createElement("iframe");
+    frame.className = "player-frame";
+    frame.src = absolute;
+    frame.title = title;
+    frame.setAttribute("allow", "autoplay; fullscreen; gamepad; pointer-lock");
+    frame.setAttribute("allowfullscreen", "");
+    frame.setAttribute("frameborder", "0");
+    stage.appendChild(frame);
+    player.hidden = false;
+    player.setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    try { window.history.pushState({ f: file }, "", absolute); } catch (err) { /* file:// */ }
+    closeBtn.focus({ preventScroll: true });
+  }
+
+  function closeGame(push) {
+    if (player.hidden) return;
+    player.hidden = true;
+    player.setAttribute("aria-hidden", "true");
+    stage.innerHTML = "";
+    document.body.classList.remove("locked");
+    current = null;
+    if (push !== false) {
+      try { window.history.replaceState(null, "", home); } catch (err) { /* ignore */ }
+    }
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+  }
+
+  grid.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-open-file]");
+    if (!button) return;
+    openGame(button.getAttribute("data-open-file"), button.getAttribute("data-title"), button);
+  });
+
+  closeBtn.addEventListener("click", function () { closeGame(true); });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !player.hidden) {
+      closeGame(true);
+      return;
+    }
+    // The games live in their own frame, so a shortcut has to be handed over
+    // when the focus is here rather than inside it.
+  });
+
+  fsBtn.addEventListener("click", function () {
+    if (!document.fullscreenElement) {
+      if (player.requestFullscreen) player.requestFullscreen().catch(function () {});
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen().catch(function () {});
+    }
+  });
+
+  window.addEventListener("popstate", function () {
+    if (player.hidden) return;
+    closeGame(false);
+  });
+}());
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 384" width="512" height="384">
+  <rect width="512" height="384" fill="#080a11"/>
+  <g stroke="#ffffff" stroke-opacity=".05">
+    <path d="M176 0v352M208 0v352M240 0v352M272 0v352M304 0v352M336 0v352"/>
+    <path d="M160 32h192M160 64h192M160 96h192M160 128h192M160 160h192M160 192h192M160 224h192M160 256h192M160 288h192M160 320h192"/>
+  </g>
+  <g>
+    <rect x="160" y="320" width="30" height="30" rx="4" fill="#5b8def"/>
+    <rect x="192" y="320" width="30" height="30" rx="4" fill="#5b8def"/>
+    <rect x="224" y="320" width="30" height="30" rx="4" fill="#5b8def"/>
+    <rect x="256" y="320" width="30" height="30" rx="4" fill="#5b8def"/>
+    <rect x="192" y="288" width="30" height="30" rx="4" fill="#63d471"/>
+    <rect x="224" y="288" width="30" height="30" rx="4" fill="#63d471"/>
+    <rect x="256" y="288" width="30" height="30" rx="4" fill="#63d471"/>
+    <rect x="224" y="256" width="30" height="30" rx="4" fill="#ef6f6f"/>
+    <rect x="256" y="256" width="30" height="30" rx="4" fill="#ef6f6f"/>
+  </g>
+  <g>
+    <rect x="224" y="128" width="30" height="30" rx="4" fill="#b07cf0"/>
+    <rect x="192" y="160" width="30" height="30" rx="4" fill="#b07cf0"/>
+    <rect x="224" y="160" width="30" height="30" rx="4" fill="#b07cf0"/>
+    <rect x="256" y="160" width="30" height="30" rx="4" fill="#b07cf0"/>
+  </g>
+  <text x="376" y="88" fill="#8ad7ff" fill-opacity=".8" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="3">NEXT</text>
+  <g transform="translate(384 104)">
+    <rect x="0" y="0" width="26" height="26" rx="4" fill="#f2d14e"/>
+    <rect x="28" y="0" width="26" height="26" rx="4" fill="#f2d14e"/>
+    <rect x="0" y="28" width="26" height="26" rx="4" fill="#f2d14e"/>
+    <rect x="28" y="28" width="26" height="26" rx="4" fill="#f2d14e"/>
+  </g>
+  <text x="376" y="292" fill="#ffffff" fill-opacity=".28" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="3">TETRIS</text>
+</svg>

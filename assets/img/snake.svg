@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 384" width="512" height="384">
+  <rect width="512" height="384" fill="#0a1712"/>
+  <g stroke="#86e08a" stroke-opacity=".07">
+    <path d="M0 48h512M0 96h512M0 144h512M0 192h512M0 240h512M0 288h512M0 336h512"/>
+    <path d="M48 0v384M96 0v384M144 0v384M192 0v384M240 0v384M288 0v384M336 0v384M384 0v384M432 0v384M480 0v384"/>
+  </g>
+  <g fill="#86e08a">
+    <rect x="224" y="96" width="40" height="40" rx="11"/>
+    <rect x="264" y="96" width="40" height="40" rx="11" fill="#a9f0ac"/>
+    <rect x="304" y="96" width="40" height="40" rx="11"/>
+    <rect x="304" y="136" width="40" height="40" rx="11"/>
+    <rect x="304" y="176" width="40" height="40" rx="11"/>
+    <rect x="264" y="176" width="40" height="40" rx="11"/>
+    <rect x="224" y="176" width="40" height="40" rx="11"/>
+    <rect x="184" y="176" width="40" height="40" rx="11"/>
+    <rect x="184" y="216" width="40" height="40" rx="11"/>
+  </g>
+  <g fill="#06230f">
+    <rect x="268" y="108" width="7" height="7"/>
+    <rect x="282" y="108" width="7" height="7"/>
+  </g>
+  <g>
+    <circle cx="352" cy="248" r="15" fill="#ff5d5d"/>
+    <path d="M352 234q6-9 14-7-3 8-10 9z" fill="#7ee787"/>
+  </g>
+  <text x="36" y="58" fill="#e9f6ee" fill-opacity=".75" font-family="system-ui, sans-serif" font-size="20" font-weight="700">SNAKE</text>
+</svg>

@@ -1024,3 +1024,237 @@ a { color: inherit; }
 }
 
 .notfound .btn { text-decoration: none; }
+
+/* local files */
+
+.files-crumb {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.files-crumb span {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+@media (max-width: 620px) {
+  .files-crumb span { display: none; }
+}
+
+.files-hero {
+  padding: 34px 0 26px;
+  max-width: 720px;
+}
+
+.files-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.files-kicker .ico {
+  width: 14px;
+  height: 14px;
+}
+
+.files-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.files-lede {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--ink-2);
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+.files-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.files-facts li {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.files-facts b {
+  margin-right: 4px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 20px 18px;
+  padding-bottom: 28px;
+}
+
+.file-card {
+  min-width: 0;
+}
+
+.file-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+}
+
+.file-art {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ececef;
+  box-shadow: 0 6px 18px rgba(21, 22, 26, 0.06);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.file-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-open:hover .file-art,
+.file-open:focus-visible .file-art {
+  transform: translateY(-2px);
+  border-color: var(--line-2);
+  box-shadow: 0 14px 30px rgba(21, 22, 26, 0.14);
+}
+
+.file-badge {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: rgba(21, 22, 26, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.file-play {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px 6px 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.file-play .ico {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.file-open:hover .file-play,
+.file-open:focus-visible .file-play { opacity: 1; transform: none; }
+
+.file-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 2px 0;
+}
+
+.file-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.file-line {
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.file-how {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.files-note {
+  margin: 0;
+  padding: 20px 0 40px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.files-note a {
+  margin-left: 6px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (hover: none) {
+  .file-play { display: none; }
+}
+
+@media (max-width: 780px) {
+  .files-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 12px; }
+  .file-title { font-size: 13px; }
+  .file-line { font-size: 12px; }
+}
+
+@media (max-width: 460px) {
+  .files-hero { padding: 22px 0 18px; }
+}
+
+.btn-local {
+  border-color: #cfe6d7;
+  background: #f2fbf5;
+  color: #17603a;
+}
+
+.btn-local:hover { background: #e6f6ec; }
