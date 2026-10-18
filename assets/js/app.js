@@ -17,6 +17,24 @@
   var EAGER_IMAGES = 24;
   var BATCH = 120;
   var SCROLL_SAVE_MS = 350;
+  var EXIT_URL = "https://classroom.google.com/";
+
+  /* Tab cloaks: the tab can look like Classroom, Google or Docs.
+     Classroom is the default, so a fresh visit always opens disguised. */
+  var CLOAKS = {
+    classroom: {
+      title: "Classroom",
+      icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E"
+    },
+    google: {
+      title: "Google",
+      icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2730%27%20fill%3D%27%23ffffff%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2745%27%20font-family%3D%27Arial%27%20font-size%3D%2736%27%20font-weight%3D%27bold%27%20text-anchor%3D%27middle%27%20fill%3D%27%234285F4%27%3EG%3C%2Ftext%3E%3C%2Fsvg%3E"
+    },
+    docs: {
+      title: "Google Docs",
+      icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2718%27%20y%3D%2712%27%20width%3D%2728%27%20height%3D%2740%27%20rx%3D%273%27%20fill%3D%27%23ffffff%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2719%27%20width%3D%2718%27%20height%3D%274%27%20rx%3D%272%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2727%27%20width%3D%2718%27%20height%3D%274%27%20rx%3D%272%27%20fill%3D%27%239ec1ff%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2735%27%20width%3D%2718%27%20height%3D%274%27%20rx%3D%272%27%20fill%3D%27%239ec1ff%27%2F%3E%3Crect%20x%3D%2723%27%20y%3D%2743%27%20width%3D%2712%27%20height%3D%274%27%20rx%3D%272%27%20fill%3D%27%239ec1ff%27%2F%3E%3C%2Fsvg%3E"
+    }
+  };
 
   var state = {
     q: "",
@@ -42,7 +60,7 @@
 
   function emptyStore() {
     return {
-      v: 2, saved: [], recent: [], sort: "hot",
+      v: 2, saved: [], recent: [], sort: "hot", cloak: "classroom",
       plays: {}, last: {}, scroll: 0, good: {}, bad: {}
     };
   }
@@ -58,6 +76,7 @@
     if (Array.isArray(raw.saved)) fresh.saved = raw.saved.filter(isId);
     if (Array.isArray(raw.recent)) fresh.recent = raw.recent.filter(isId).slice(0, MAX_RECENT);
     if (/^(hot|top|az)$/.test(raw.sort)) fresh.sort = raw.sort;
+    if (typeof raw.cloak === "string" && CLOAKS[raw.cloak]) fresh.cloak = raw.cloak;
     if (typeof raw.scroll === "number" && raw.scroll >= 0) fresh.scroll = Math.round(raw.scroll);
 
     ["plays", "last", "good", "bad"].forEach(function (field) {
@@ -457,6 +476,31 @@
       chip.appendChild(text);
       dom.recentList.appendChild(chip);
     });
+  }
+
+  function applyCloak(name, persist) {
+    if (!CLOAKS[name]) name = "classroom";
+    store.cloak = name;
+    document.title = CLOAKS[name].title;
+    var icon = document.querySelector('link[rel="icon"]');
+    if (icon) icon.href = CLOAKS[name].icon;
+    if (dom.cloaks) dom.cloaks.forEach(function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-cloak") === name ? "true" : "false");
+    });
+    if (persist) save();
+  }
+
+  function openBlank() {
+    // Reopen this page inside an about:blank tab so the address bar
+    // shows nothing at all. No network, just an iframe of this page.
+    var win = window.open("about:blank", "_blank");
+    if (!win) return;
+    var url = window.location.href.replace(/</g, "%3C");
+    win.document.write(
+      "<!doctype html><html><head><title>Classroom</title></head>" +
+      "<body style='margin:0'><iframe src='" + url + "' style='border:0;width:100vw;height:100vh' allowfullscreen></iframe></body></html>"
+    );
+    win.document.close();
   }
 
   function paintFooter() {
@@ -886,11 +930,14 @@
     dom.storageNote = $("[data-storage-note]");
     dom.build = $("[data-build]");
     dom.reset = $("[data-reset]");
+    dom.cloaks = $$("[data-cloak]");
+    dom.blank = $("[data-blank]");
 
     if (!dom.grid) return;
 
     state.persist = storageWorks();
     state.sort = store.sort;
+    applyCloak(store.cloak, false);
 
     dom.count.textContent = String(ALL.length);
     var footCount = $("[data-foot-count]");
@@ -947,6 +994,14 @@
       state.savedOnly = !state.savedOnly;
       render();
     });
+
+    if (dom.cloaks) dom.cloaks.forEach(function (button) {
+      button.addEventListener("click", function () {
+        applyCloak(button.getAttribute("data-cloak"), true);
+      });
+    });
+
+    if (dom.blank) dom.blank.addEventListener("click", openBlank);
 
     dom.sorts.forEach(function (button) {
       button.addEventListener("click", function () {
@@ -1034,6 +1089,10 @@
       if (event.key === "/" && !typing) {
         event.preventDefault();
         dom.q.focus();
+      }
+      // Panic key: one tap and the tab looks like homework again.
+      if (event.key === "`" && !typing) {
+        window.location.href = EXIT_URL;
       }
     });
 

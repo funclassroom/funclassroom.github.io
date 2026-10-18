@@ -183,7 +183,7 @@ function titles(document) {
     const link = wall.window.document.querySelector('a.btn-local[href="files.html"]');
     check(
       "the wall carries a way into the local files",
-      !!link && /Local files/.test(link.textContent)
+      !!link && /100% Unblocked/.test(link.textContent)
     );
     wall.window.close();
 
@@ -200,7 +200,7 @@ function titles(document) {
     check("the local page is a Classroom tab", page.title === "Classroom");
     check(
       "every local title gets a card",
-      cards.length === 19 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 33 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(

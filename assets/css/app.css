@@ -1162,7 +1162,37 @@ a { color: inherit; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.28s ease;
 }
+
+.file-open:hover .file-art img,
+.file-open:focus-visible .file-art img { transform: scale(1.06); }
+
+/* legibility gradient + shine sweep so every thumbnail looks finished */
+.file-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10, 12, 24, 0) 55%, rgba(10, 12, 24, 0.28) 100%);
+}
+
+.file-art::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -30%;
+  width: 34%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg) translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.file-open:hover .file-art::before,
+.file-open:focus-visible .file-art::before { transform: skewX(-18deg) translateX(620%); }
 
 .file-art.is-broken {
   display: grid;
@@ -1186,22 +1216,37 @@ a { color: inherit; }
 
 .file-badge {
   position: absolute;
-  top: 9px;
   left: 9px;
-  padding: 3px 7px;
-  border-radius: 5px;
-  background: rgba(21, 22, 26, 0.78);
-  color: #fff;
+  bottom: 10px;
+  z-index: 2;
+  padding: 3px 8px 3px 6px;
+  border-radius: 999px;
+  background: rgba(10, 40, 24, 0.82);
+  color: #7dffb0;
+  border: 1px solid rgba(125, 255, 176, 0.35);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.file-badge::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: #2bde7d;
+  vertical-align: 1px;
 }
 
 .file-play {
   position: absolute;
   right: 10px;
   bottom: 10px;
+  z-index: 2;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -1279,9 +1324,109 @@ a { color: inherit; }
 }
 
 .btn-local {
-  border-color: #cfe6d7;
-  background: #f2fbf5;
-  color: #17603a;
+  position: relative;
+  border-color: #14b866;
+  background: linear-gradient(180deg, #e9fbf0, #d3f5e1);
+  color: #0a5c36;
+  font-weight: 800;
+  box-shadow: 0 1px 0 rgba(20, 184, 102, 0.25), 0 4px 14px rgba(20, 184, 102, 0.18);
 }
 
-.btn-local:hover { background: #e6f6ec; }
+.btn-local::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #14b866;
+  box-shadow: 0 0 0 0 rgba(20, 184, 102, 0.55);
+  animation: pulse 2.2s ease-out infinite;
+}
+
+.btn-local:hover {
+  background: linear-gradient(180deg, #ddf8e8, #c6f1d6);
+  border-color: #0ea25a;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(20, 184, 102, 0.55); }
+  70% { box-shadow: 0 0 0 9px rgba(20, 184, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(20, 184, 102, 0); }
+}
+
+/* unblocked tools: filter + surprise */
+
+.files-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.files-search { flex: 1; max-width: 460px; }
+
+.files-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .files-tools { flex-wrap: wrap; }
+  .files-search { flex-basis: 100%; max-width: none; }
+  .files-count { margin-left: 0; }
+}
+
+/* stealth footer: cloaks, blank tab, quick exit */
+
+.foot-stealth {
+  align-items: center;
+  padding-bottom: 18px;
+}
+
+.stealth-label {
+  font-weight: 600;
+}
+
+.cloak {
+  display: inline-flex;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.cloak button {
+  padding: 4px 12px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cloak button:first-child { border-left: 0; }
+.cloak button:hover { background: #f3f4f6; }
+
+.cloak button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.panic-hint { color: #a7aab3; }
+
+.foot kbd,
+.files-hero kbd {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+}
