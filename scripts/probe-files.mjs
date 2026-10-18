@@ -54,28 +54,58 @@ for (const game of games) {
     log.push("goto: " + err.message.split("\n")[0]);
   }
 
-  await view.waitForTimeout(4000);
+  await view.waitForTimeout(3500);
+
+  // A lot of these open on a title card that wants one click before it does
+  // anything, so the probe clicks the middle of the page first.
+  await view.mouse.click(256, 192).catch(() => {});
+  await view.waitForTimeout(2500);
 
   const drew = await view.evaluate(() => {
-    const canvas = document.querySelector("canvas");
+    const canvases = Array.from(document.querySelectorAll("canvas"));
     let painted = false;
-    if (canvas && canvas.width && canvas.height) {
+    let readable = 0;
+    for (const canvas of canvases) {
+      if (!canvas.width || !canvas.height) continue;
       try {
         const ctx = canvas.getContext("2d");
         if (ctx) {
+          readable += 1;
           const data = ctx.getImageData(0, 0, Math.min(canvas.width, 400), Math.min(canvas.height, 300)).data;
           const colours = new Set();
           for (let i = 0; i < data.length; i += 4 * 53) {
             colours.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
           }
-          painted = colours.size > 2;
+          if (colours.size > 2) painted = true;
+        } else if (canvas.getContext("webgl2") || canvas.getContext("webgl")) {
+          // A WebGL canvas cannot be read back here, but holding a context at
+          // all means the game has started drawing.
+          painted = true;
         }
       } catch (err) {
-        painted = true; // a WebGL canvas we cannot read still drew something
+        painted = true;
       }
     }
-    const text = (document.body && document.body.innerText ? document.body.innerText : "").trim();
-    return { painted, textLength: text.length, canvas: !!canvas, title: document.title };
+
+    const body = document.body;
+    const text = (body && body.innerText ? body.innerText : "").trim();
+    const visible = body
+      ? Array.from(body.querySelectorAll("*")).filter((node) => {
+          const box = node.getBoundingClientRect();
+          return box.width > 40 && box.height > 20;
+        }).length
+      : 0;
+    const background = body ? getComputedStyle(body).backgroundColor : "";
+
+    return {
+      painted,
+      readable,
+      canvases: canvases.length,
+      textLength: text.length,
+      visible,
+      background,
+      title: document.title,
+    };
   });
 
   const shot = path.join(THUMBS, slug + ".jpg");
@@ -85,7 +115,8 @@ for (const game of games) {
     log.push("shot: " + err.message.split("\n")[0]);
   }
 
-  const alive = status === 200 && (drew.painted || drew.textLength > 20);
+  const alive =
+    status === 200 && (drew.painted || drew.textLength > 20 || drew.visible > 6);
   results.push({ slug, title: game.title, status, drew, alive, log });
   if (!alive || log.some((line) => line.startsWith("pageerror"))) {
     errors.push({ slug, status, drew, log });

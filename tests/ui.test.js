@@ -200,7 +200,7 @@ function titles(document) {
     check("the local page is a Classroom tab", page.title === "Classroom");
     check(
       "every local title gets a card",
-      cards.length === 20 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 19 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(

@@ -132,7 +132,7 @@ game.
   still paints in one frame
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
-- **Local files** in the header: twenty games that are plain files, on their own
+- **Local files** in the header: nineteen games that are plain files, on their own
   page, with no embed to load
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
@@ -144,17 +144,17 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **Local files** in the header, lists twenty games
+`files.html`, reached from **Local files** in the header, lists nineteen games
 that ship with the site as plain HTML under `assets/games/`. No embed, no
 portal, no third party that can refuse a frame: the page opens a file from its
 own folder, and a filter aimed at a game site has nothing to act on.
 
 They come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
 which collects 352 single-file games. That pack is several gigabytes, so this
-site carries the twenty smallest that still make a good wall — the largest here
-is 1.4 MB and the whole folder is about 11 MB. Nothing is modified except that
-one file, `Indev.html`, was left out: it pulls a Cloudflare analytics beacon and
-would not have been offline at all.
+site carries the smallest that still make a good wall — the largest here
+is 1.4 MB and the whole folder is about 11 MB. A few are left out: `Indev.html`
+pulls a Cloudflare analytics beacon and would not have been offline at all, and
+`agar-io-lite.html` asks for an image that is not in the pack.
 
 `scripts/probe-files.mjs` serves the repo and opens every one of them in
 Chromium, checking each returns 200 and actually paints. It also takes the
@@ -166,7 +166,7 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the twenty titles that are plain files
+files.html               the nineteen titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
