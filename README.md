@@ -7,7 +7,7 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **37 local HTML games**.
+The main search includes publisher titles and the **64 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
@@ -154,7 +154,7 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: thirty-seven titles that are plain files,
+- **100% Unblocked** in the header: sixty-four titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
@@ -166,14 +166,14 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists thirty-seven
+`files.html`, reached from **100% Unblocked** in the header, lists sixty-four
 titles that ship with the site as plain HTML under `assets/games/`. No embed,
 no portal, no third party that can refuse a frame: the page opens a file from
 its own folder, and a filter aimed at a game site has nothing to act on.
 
 They come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
 which collects 352 single-file games. That pack is several gigabytes, so this
-site carries thirty-six hand-picked ones: the small classics plus the heavy
+site carries sixty-three hand-picked ones: the small classics plus the heavy
 legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and more).
 On top of those, **Minecraft** is bundled as `assets/games/minecraft.html` —
 the **Eaglercraft 26.2 (zeus)** offline download from
