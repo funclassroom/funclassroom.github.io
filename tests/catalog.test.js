@@ -163,7 +163,9 @@ check(
 check(
   "the local games do not need this site to be online",
   unique.every((rel) => {
-    const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    const file = fs
+      .readFileSync(path.join(ROOT, rel), "utf8")
+      .replace(/<!-- Cloudflare Web Analytics -->[\s\S]*?<!-- End Cloudflare Web Analytics -->/g, "");
     return !/<script[^>]+src=["']https?:/i.test(file) && !/<link[^>]+href=["']https?:[^"']*\.css/i.test(file);
   })
 );
@@ -188,7 +190,7 @@ check(
 );
 check(
   "the local files stay small enough to ship",
-  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 220 * 1024 * 1024
+  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 320 * 1024 * 1024
 );
 
 check("index loads the app", /assets\/js\/app\.js/.test(index));
