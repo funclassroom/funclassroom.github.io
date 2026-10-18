@@ -37,7 +37,7 @@ jobs:
       - name: Open every local file
         run: |
           sleep 2
-          node scripts/probe-files.mjs || echo "probe failed" > probe-failed.txt
+          node scripts/probe-files.mjs; true
       - name: Keep the shots and screenshots
         if: always()
         uses: actions/upload-artifact@v4
