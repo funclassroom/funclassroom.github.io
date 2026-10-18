@@ -164,6 +164,7 @@ scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft)
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
+tests/games.test.js      each bundled game starts without throwing
 ```
 
 ## Running

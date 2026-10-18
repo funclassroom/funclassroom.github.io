@@ -982,8 +982,11 @@ a { color: inherit; }
 }
 
 @media (max-width: 460px) {
-  .bar-actions .btn span { display: none; }
-  .bar-actions .btn { padding: 0 10px; }
+  /* the local-files link keeps its words: it is the one button whose label
+     says what it does, and an icon alone would not */
+  .bar-actions [data-saved-toggle] span { display: none; }
+  .bar-actions [data-saved-toggle] { padding: 0 10px; }
+  .btn-local { padding: 0 9px; font-size: 12.5px; }
   .player-meta span { display: none; }
 }
 
