@@ -12,6 +12,7 @@ on:
       - "assets/games/**"
       - "assets/img/pack/**"
       - "files.html"
+      - "assets/js/local-games.js"
       - "scripts/probe-files.mjs"
       - ".github/workflows/local-files.yml"
 

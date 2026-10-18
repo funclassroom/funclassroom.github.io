@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Classroom</title>
-<meta name="description" content="Thirty-three titles that ship with the page as plain files. Nothing to block.">
+<meta name="description" content="Thirty-six titles that ship with the page as plain files. Nothing to block.">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E">
@@ -42,7 +42,7 @@
     <p class="files-kicker"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> Never blocked</p>
     <h1>These are just files.</h1>
     <p class="files-lede">
-      Thirty-three titles that live in this folder as plain HTML, not embeds on
+      Thirty-six titles that live in this folder as plain HTML, not embeds on
       somebody else's server. There is no portal, no player to load and no
       third party that can refuse a frame, so a filter that blocks a site
       has nothing to act on.
@@ -54,7 +54,7 @@
       load with no network at all.
     </p>
     <ul class="files-facts">
-      <li><b>33</b> titles in this folder</li>
+      <li><b data-local-count>36</b> titles in this folder</li>
       <li><b>0</b> third-party embeds</li>
       <li><b>offline</b> works with the wi-fi off</li>
     </ul>
@@ -68,7 +68,7 @@
   <div class="files-tools">
     <div class="search files-search">
       <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
-      <input id="fq" type="search" placeholder="Filter these 33 titles" autocomplete="off" spellcheck="false" aria-label="Filter these titles">
+      <input id="fq" type="search" placeholder="Search HTML games" autocomplete="off" spellcheck="false" aria-label="Filter these titles">
     </div>
     <button type="button" class="btn btn-dark" data-surprise>
       <svg class="ico" aria-hidden="true"><use href="#i-shuffle"/></svg>
@@ -86,7 +86,7 @@
 
   <p class="files-note">
     Saves and high scores stay in this browser, like everything else here.
-    <a href="./">Back to all 17,557 titles</a>
+    <a href="./">Back to all games</a>
   </p>
 </main>
 
@@ -121,45 +121,15 @@
   <div class="player-stage" data-stage></div>
 </div>
 
+<script src="assets/js/local-games.js?v=2"></script>
 <script>
 (function () {
   "use strict";
 
-  var GAMES = [
-    { file: "assets/games/2048.html", title: "2048", line: "Slide the tiles, merge the numbers, reach 2048." },
-    { file: "assets/games/bit-planes.htm", title: "Bit Planes", line: "Fly between the towers without clipping a wing." },
-    { file: "assets/games/coreball.html", title: "Coreball", line: "Throw each ball into the ring without hitting another." },
-    { file: "assets/games/doodle-jump.html", title: "Doodle Jump", line: "Bounce up the platforms. Never stop going up." },
-    { file: "assets/games/elastic-face.htm", title: "Elastic Face", line: "Stretch the face, hit the targets, try not to flinch." },
-    { file: "assets/games/evil-glitch.html", title: "Evil Glitch", line: "Something is wrong with this machine. Keep going." },
-    { file: "assets/games/google-dino.html", title: "Dino Run", line: "The Chrome dinosaur, rescued from the internet." },
-    { file: "assets/games/johnny-trigger.html", title: "Johnny Trigger", line: "Aim, fire and clear the room in one shot." },
-    { file: "assets/games/minesweeper.html", title: "Minesweeper", line: "The classic board, mines and all." },
-    { file: "assets/games/opposite-day.html", title: "Opposite Day", line: "Do everything backwards." },
-    { file: "assets/games/paper-io-2.htm", title: "Paper.io 2", line: "Claim territory and cut off the other colours." },
-    { file: "assets/games/pixel-speedrun.html", title: "Pixel Speedrun", line: "A tiny ninja, a lot of spikes, one more go." },
-    { file: "assets/games/sand-game.html", title: "Sand Game", line: "Drop sand, water and fire, and watch it fall." },
-    { file: "assets/games/spacebar-clicker.html", title: "Spacebar Clicker", line: "Press space. Then press it again. Then again." },
-    { file: "assets/games/stack.html", title: "Stack", line: "Drop each block exactly on the one below." },
-    { file: "assets/games/territorial-io.html", title: "Territorial.io", line: "Grow a country and take the map." },
-    { file: "assets/games/trap-the-cat.html", title: "Trap the Cat", line: "Wall the cat in before it reaches the edge." },
-    { file: "assets/games/wordle-unlimited.html", title: "Wordle Unlimited", line: "Six tries, five letters, as many rounds as you like." },
-    { file: "assets/games/zrist.html", title: "Zrist", line: "A one-button climb with a very sharp fall." },
-    { file: "assets/games/slope.html", title: "Slope", line: "Roll the neon ball down the endless void. Do not blink." },
-    { file: "assets/games/retro-bowl.html", title: "Retro Bowl", line: "Call the plays, manage the roster, win the Bowl." },
-    { file: "assets/games/ovo.html", title: "OvO", line: "Sprint, slide and dive through brutal parkour trials." },
-    { file: "assets/games/stickman-hook.html", title: "Stickman Hook", line: "Grapple, swing and bounce to the finish line." },
-    { file: "assets/games/drive-mad.htm", title: "Drive Mad", line: "One hundred stunt tracks. No brakes were harmed." },
-    { file: "assets/games/flappy-bird.html", title: "Flappy Bird", line: "Thread the pipes. You already know this one." },
-    { file: "assets/games/cookie-clicker.htm", title: "Cookie Clicker", line: "Bake cookies. Then bake many more cookies." },
-    { file: "assets/games/level-devil.html", title: "Level Devil", line: "The floor is lava and the exit is a lie." },
-    { file: "assets/games/fireboy-and-watergirl.html", title: "Fireboy & Watergirl", line: "Two players, one temple. Do not mix them up." },
-    { file: "assets/games/bad-piggies.html", title: "Bad Piggies", line: "Build a machine out of junk, steal the eggs." },
-    { file: "assets/games/fruit-ninja.html", title: "Fruit Ninja", line: "Slice everything in the air. Dodge the bombs." },
-    { file: "assets/games/pac-man.html", title: "Pac-Man", line: "Eat every dot, dodge every ghost." },
-    { file: "assets/games/crossy-road.htm", title: "Crossy Road", line: "Hop the roads and rivers. Beat your best." },
-    { file: "assets/games/soccer-random.htm", title: "Soccer Random", line: "Wobbly one-button football chaos for two." }
-  ];
+  var GAMES = window.LOCAL_GAMES || [];
+
+  document.querySelector("[data-local-count]").textContent = GAMES.length;
+  document.getElementById("fq").placeholder = "Search these " + GAMES.length + " HTML games";
 
   var RECENT_KEY = "classroom.files.v1";
   var MAX_RECENT = 8;

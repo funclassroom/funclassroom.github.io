@@ -136,7 +136,8 @@ check(
 
 /* ---------- the local games ---------- */
 const filesPage = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
-const listed = Array.from(filesPage.matchAll(/(assets\/games\/[A-Za-z0-9._-]+\.html?)/g)).map((m) => m[1]);
+const localGames = fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8");
+const listed = Array.from(localGames.matchAll(/(assets\/games\/[A-Za-z0-9._-]+\.html?)/g)).map((m) => m[1]);
 const unique = Array.from(new Set(listed));
 
 check("the local page lists more than a dozen files", unique.length >= 12, String(unique.length));
@@ -147,7 +148,7 @@ check(
 );
 check(
   "every local game has a card title",
-  (filesPage.match(/title: "/g) || []).length === unique.length
+  (localGames.match(/title: "/g) || []).length === unique.length
 );
 check(
   "the local games do not need this site to be online",
