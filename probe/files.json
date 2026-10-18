@@ -1,0 +1,139 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "button": {
+    "href": "files.html",
+    "text": "Local files"
+  },
+  "results": [
+    {
+      "slug": "snake",
+      "before": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "after": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "text": "SCORE 0 BEST 0 Arrows / WASD · swipe Game over You scored 0. Play again",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "2048",
+      "before": {
+        "found": false
+      },
+      "after": {
+        "found": false
+      },
+      "text": "SCORE 8 BEST 8 New Arrow keys, WASD or swipe · merge the numbers 2 4 4",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "tetris",
+      "before": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "after": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "text": "SCORE 0 LINES 0 LEVEL 1 NEXT",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "breakout",
+      "before": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "after": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "text": "SCORE 0 LIVES Move with the mouse · ← → · drag",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "pong",
+      "before": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "after": {
+        "found": true,
+        "ctx": true,
+        "colours": 6
+      },
+      "text": "YOU 0 CPU 0 Move the mouse · ↑ ↓ · drag",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "flap",
+      "before": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "after": {
+        "found": true,
+        "ctx": true,
+        "colours": 7
+      },
+      "text": "SCORE 0 BEST 0 Space · click · tap Down you go Score 0 · best 0 Play again",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "minesweeper",
+      "before": {
+        "found": false
+      },
+      "after": {
+        "found": false
+      },
+      "text": "MINES 10 TIME 2 New game 1 1 1 1 2 1 1 1 2 2 2 1 1 1 1 1 1 3 1 2 2 Click to dig · right-click or hold to flag",
+      "log": [],
+      "stepError": null
+    }
+  ],
+  "errors": [
+    {
+      "slug": "2048",
+      "before": {
+        "found": false
+      },
+      "after": {
+        "found": false
+      },
+      "text": "SCORE 8 BEST 8 New Arrow keys, WASD or swipe · merge the numbers 2 4 4",
+      "log": [],
+      "stepError": null
+    },
+    {
+      "slug": "minesweeper",
+      "before": {
+        "found": false
+      },
+      "after": {
+        "found": false
+      },
+      "text": "MINES 10 TIME 2 New game 1 1 1 1 2 1 1 1 2 2 2 1 1 1 1 1 1 3 1 2 2 Click to dig · right-click or hold to flag",
+      "log": [],
+      "stepError": null
+    }
+  ]
+}
