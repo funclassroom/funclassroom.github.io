@@ -179,14 +179,26 @@ async function main() {
     });
 
     const shot = path.join(THUMBS, slug + ".jpg");
+    const full = path.join(OUT, slug + ".png");
+    let colours = -1;
+    try {
+      await view.screenshot({ path: full, type: "png" });
+      colours = coloursIn(fs.readFileSync(full));
+    } catch (err) {
+      log.push("shot: " + err.message.split("\n")[0]);
+    }
     try {
       await view.screenshot({ path: shot, type: "jpeg", quality: 78 });
     } catch (err) {
       log.push("shot: " + err.message.split("\n")[0]);
     }
 
+    // A page that drew nothing is a single flat colour once screenshotted,
+    // which is the only reliable way to judge a WebGL game from outside.
     const alive =
-      status === 200 && (drew.painted || drew.textLength > 20 || drew.visible > 6);
+      status === 200 &&
+      (colours > 4 || drew.painted || drew.textLength > 20) &&
+      !log.some((line) => /^goto:/.test(line));
     results.push({ slug, title: game.title, status, colours, drew, alive, log });
     if (!alive) errors.push({ slug, status, colours, drew, log: log.slice(0, 3) });
     await view.close();
