@@ -3,6 +3,7 @@
    takes the card screenshots the page uses. Run by local-files.yml. */
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 import { chromium } from "playwright";
 
 const BASE = process.env.BASE || "http://127.0.0.1:8765";
@@ -10,6 +11,74 @@ const OUT = process.env.OUT || "probe";
 const THUMBS = path.join("assets", "img", "pack");
 fs.mkdirSync(OUT, { recursive: true });
 fs.mkdirSync(THUMBS, { recursive: true });
+
+/* How many distinct colours a PNG screenshot holds. A page that never drew
+   anything is one flat colour; anything with a title card or a game is not.
+   Reading the screenshot sidesteps the problem that a WebGL canvas cannot be
+   read back from inside the page. */
+function coloursIn(png) {
+  let at = 8;
+  let width = 0;
+  let height = 0;
+  let depth = 0;
+  let type = 0;
+  const idat = [];
+  while (at < png.length) {
+    const length = png.readUInt32BE(at);
+    const kind = png.toString("ascii", at + 4, at + 8);
+    const body = png.subarray(at + 8, at + 8 + length);
+    if (kind === "IHDR") {
+      width = body.readUInt32BE(0);
+      height = body.readUInt32BE(4);
+      depth = body[8];
+      type = body[9];
+    } else if (kind === "IDAT") {
+      idat.push(body);
+    } else if (kind === "IEND") {
+      break;
+    }
+    at += 12 + length;
+  }
+  if (!width || !height || depth !== 8 || (type !== 2 && type !== 6)) return -1;
+
+  const channels = type === 6 ? 4 : 3;
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  const line = Buffer.alloc(stride);
+  const prev = Buffer.alloc(stride);
+  const seen = new Set();
+  let offset = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    const filter = raw[offset];
+    offset += 1;
+    const row = raw.subarray(offset, offset + stride);
+    offset += stride;
+    for (let x = 0; x < stride; x += 1) {
+      const a = x >= channels ? line[x - channels] : 0;
+      const b = prev[x];
+      const c = x >= channels ? prev[x - channels] : 0;
+      let value = row[x];
+      if (filter === 1) value += a;
+      else if (filter === 2) value += b;
+      else if (filter === 3) value += (a + b) >> 1;
+      else if (filter === 4) {
+        const p = a + b - c;
+        const pa = Math.abs(p - a);
+        const pb = Math.abs(p - b);
+        const pc = Math.abs(p - c);
+        value += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      }
+      line[x] = value & 0xff;
+    }
+    for (let x = 0; x < stride; x += channels * 7) {
+      seen.add((line[x] << 16) | (line[x + 1] << 8) | line[x + 2]);
+      if (seen.size > 40) return seen.size;
+    }
+    line.copy(prev);
+  }
+  return seen.size;
+}
 
 const browser = await chromium.launch({
   args: ["--enable-unsafe-swiftshader", "--use-gl=swiftshader", "--autoplay-policy=no-user-gesture-required"],
@@ -117,10 +186,8 @@ for (const game of games) {
 
   const alive =
     status === 200 && (drew.painted || drew.textLength > 20 || drew.visible > 6);
-  results.push({ slug, title: game.title, status, drew, alive, log });
-  if (!alive || log.some((line) => line.startsWith("pageerror"))) {
-    errors.push({ slug, status, drew, log });
-  }
+  results.push({ slug, title: game.title, status, colours, drew, alive, log });
+  if (!alive) errors.push({ slug, status, colours, drew, log: log.slice(0, 3) });
   await view.close();
 }
 
@@ -182,7 +249,7 @@ for (const entry of results) {
     entry.slug.padEnd(20),
     entry.alive ? "alive" : "DEAD ",
     String(entry.status),
-    entry.drew.painted ? "painted" : "no-paint",
+    "colours:" + entry.colours,
     entry.log.length ? entry.log[0].slice(0, 120) : ""
   );
 }
