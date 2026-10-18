@@ -50,8 +50,7 @@ jobs:
         run: |
           git config user.name "catalog-bot"
           git config user.email "catalog-bot@users.noreply.github.com"
-          if [ -f probe/files.json ]; then cp probe/files.json local-report.json; fi
-          git add assets/img/pack local-report.json 2>/dev/null || true
+          git add assets/img/pack 2>/dev/null || true
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Screenshots and report from the local files run"
           git pull --rebase --autostash

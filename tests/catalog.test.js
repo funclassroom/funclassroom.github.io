@@ -157,6 +157,14 @@ check(
   })
 );
 check(
+  "every local game has a screenshot and nothing extra",
+  (() => {
+    const shots = fs.readdirSync(path.join(ROOT, "assets/img/pack")).filter((n) => n.endsWith(".jpg")).sort();
+    const want = unique.map((rel) => path.basename(rel).replace(/\.html?$/, "") + ".jpg").sort();
+    return shots.join(",") === want.join(",");
+  })()
+);
+check(
   "each local game is a complete page",
   unique.every((rel) => {
     const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
