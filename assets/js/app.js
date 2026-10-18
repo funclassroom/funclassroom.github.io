@@ -5,6 +5,19 @@
   "use strict";
 
   var ALL = (window.CATALOG || []).slice();
+  // Keep local versions searchable alongside the publisher catalogue.
+  (window.LOCAL_GAMES || []).forEach(function (game) {
+    var slug = game.file.split("/").pop().replace(/\.html?$/, "");
+    ALL.push({
+      id: "local-" + slug,
+      title: game.title + " (HTML)",
+      rating: 0,
+      plays: 0,
+      thumb: "assets/img/pack/" + slug + ".jpg",
+      sources: [{ portal: "Local HTML", url: game.file, embed: true }]
+    });
+  });
+  window.CATALOG = ALL;
   var BY_ID = {};
   ALL.forEach(function (item) { BY_ID[item.id] = item; });
 
@@ -83,7 +96,13 @@
       if (!raw[field] || typeof raw[field] !== "object") return;
       Object.keys(raw[field]).forEach(function (key) {
         var value = raw[field][key];
-        if (!isId(key) || typeof value !== "number" || !isFinite(value)) return;
+        if (!isId(key)) return;
+        // Successful sources are stored as portal names, not just legacy indexes.
+        if (field === "good" && typeof value === "string" && value.length > 0 && value.length < 256) {
+          fresh.good[key] = value;
+          return;
+        }
+        if (typeof value !== "number" || !isFinite(value)) return;
         fresh[field][key] = field === "good" || field === "bad" ? value : Math.max(0, Math.round(value));
       });
     });

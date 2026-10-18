@@ -5,6 +5,23 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 **Live:** https://socks275.github.io/ClassroomGames/
 
+## Local HTML games and search
+
+The main search includes publisher titles and the **36 local HTML games**.
+Local versions have an **(HTML)** suffix and open the bundled file rather than
+an external publisher. **100% Unblocked** links to `files.html`, whose search
+only filters local games. Both pages use `assets/js/local-games.js` as their
+shared list; add a game there, its file under `assets/games/`, and its card
+screenshot under `assets/img/pack/`.
+
+New additions: **Basket Random** (one-button basketball), **Jumping Shell**
+(puzzle platforming), and **Fireblob** (ice-melting platforming). These files
+come from [CoolDude2349/Offline-HTML-Games-Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack/tree/5dbfcd7a6e788101a8acab50a6cf1af209938641/offline),
+revision `5dbfcd7a6e788101a8acab50a6cf1af209938641`, and are kept unmodified.
+All three loaded in Chromium with external HTTP requests blocked and no
+JavaScript page errors. Browser checks do not guarantee that every level is
+bug-free or that a school's filter permits this site's domain.
+
 ## The catalogue
 
 Three feeds plus a short hand-written list, merged into one wall by title:

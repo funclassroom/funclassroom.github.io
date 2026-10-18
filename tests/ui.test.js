@@ -8,6 +8,7 @@ const HTML = fs
   .readFileSync(path.join(ROOT, "index.html"), "utf8")
   .replace(/<script src="[^"]+"><\/script>/g, "");
 const CATALOG_JS = fs.readFileSync(path.join(ROOT, "assets/js/catalog.js"), "utf8");
+const LOCAL_JS = fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8");
 const APP_JS = fs.readFileSync(path.join(ROOT, "assets/js/app.js"), "utf8");
 const FILES_HTML = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
 
@@ -37,6 +38,7 @@ function boot(hash, seed, catalogJs) {
   dom.window.scrollTo = function (x, y) { dom.window.__scrolledTo = y; };
   if (seed) dom.window.localStorage.setItem(STORE_KEY, JSON.stringify(seed));
   dom.window.eval(catalogJs || CATALOG_JS);
+  if (!catalogJs) dom.window.eval(LOCAL_JS);
   dom.window.eval(APP_JS);
   return dom;
 }
@@ -187,7 +189,7 @@ function titles(document) {
     );
     wall.window.close();
 
-    const local = new JSDOM(FILES_HTML, {
+    const local = new JSDOM(FILES_HTML.replace(/<script src="[^"]+"><\/script>/g, "").replace("<script>", "<script>" + LOCAL_JS), {
       url: "https://example.test/files.html",
       runScripts: "dangerously",
       pretendToBeVisual: true,
@@ -198,9 +200,13 @@ function titles(document) {
     const cards = Array.from(page.querySelectorAll(".file-card"));
 
     check("the local page is a Classroom tab", page.title === "Classroom");
+    type(window, page.querySelector("#fq"), "basket");
+    check("local search only returns local HTML games", Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden).every((card) => /basket-random\.html$/.test(card.getAttribute("data-file"))));
+    check("local search finds the new basketball game", page.querySelector('[data-file="assets/games/basket-random.html"]').hidden === false);
+    type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
-      cards.length === 33 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 36 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(
@@ -309,6 +315,13 @@ function titles(document) {
     const { document } = window;
     const input = document.querySelector("#q");
 
+    check("main catalogue includes every HTML game", window.CATALOG.filter((g) => g.id.startsWith("local-")).length === window.LOCAL_GAMES.length);
+    type(window, input, "bad piggies");
+    check("main search includes publisher and HTML versions", !!document.querySelector('.tile[data-id="bad-piggies"]') && !!document.querySelector('.tile[data-id="local-bad-piggies"]'));
+    click(window, document.querySelector('[data-open="local-bad-piggies"]'));
+    check("HTML result plays the local file", document.querySelector(".player-frame").getAttribute("src") === "assets/games/bad-piggies.html");
+    click(window, document.querySelector("[data-close]"));
+
     const matches = window.CATALOG.filter((g) => /subway/i.test(g.title)).length;
     type(window, input, "subway");
     check("search filters", document.querySelectorAll(".tile").length === matches);
@@ -405,6 +418,18 @@ function titles(document) {
     check("scroll restored", !document.body.classList.contains("locked"));
     check("focus returns to the tile", document.activeElement === opener);
     check("hash cleared", window.location.hash === "");
+    dom.window.close();
+  }
+
+  /* Persisted working routes must survive a reload, including legacy indexes. */
+  for (const remembered of ["portal3.test", 2]) {
+    const dom = boot("", { good: { multi: remembered } }, miniCatalog([
+      { id: "multi", title: "Multi Source", sources: sourcesFor(3) }
+    ]));
+    await tick();
+    click(dom.window, dom.window.document.querySelector(".tile-open"));
+    check("remembered working source survives reload: " + remembered,
+      dom.window.document.querySelector("iframe").getAttribute("src") === "https://portal3.test/embed/");
     dom.window.close();
   }
 
