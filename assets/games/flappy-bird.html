@@ -23305,7 +23305,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                                 var r = A(e, /^[\r\n\t ]+/);
                                 n = r && r[0]
                             }
-                            "application/xhtml+xml" === ye && lt === at && (e = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + e + "</body></html>");
+                            "application/xhtml+xml" === ye && lt === at && (e = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + e + "<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5c8537ca1595433fbe40c6e770fb9738"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>");
                             var i = ae ? ae.createHTML(e) : e;
                             if (lt === at)
                                 try {
@@ -60643,5 +60644,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             ;
             run().catch(handleError);
         </script>
-    </body>
+    <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5c8537ca1595433fbe40c6e770fb9738"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
 </html>
