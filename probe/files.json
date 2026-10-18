@@ -17,6 +17,7 @@
         "ctx": true,
         "colours": 7
       },
+      "drew": true,
       "text": "SCORE 0 BEST 0 Arrows / WASD · swipe Game over You scored 0. Play again",
       "log": [],
       "stepError": null
@@ -24,12 +25,23 @@
     {
       "slug": "2048",
       "before": {
-        "found": false
+        "found": false,
+        "dom": {
+          "cells": 16,
+          "filled": 2,
+          "text": 70
+        }
       },
       "after": {
-        "found": false
+        "found": false,
+        "dom": {
+          "cells": 16,
+          "filled": 4,
+          "text": 74
+        }
       },
-      "text": "SCORE 8 BEST 8 New Arrow keys, WASD or swipe · merge the numbers 2 4 4",
+      "drew": true,
+      "text": "SCORE 4 BEST 4 New Arrow keys, WASD or swipe · merge the numbers 2 2 4 2",
       "log": [],
       "stepError": null
     },
@@ -45,6 +57,7 @@
         "ctx": true,
         "colours": 7
       },
+      "drew": true,
       "text": "SCORE 0 LINES 0 LEVEL 1 NEXT",
       "log": [],
       "stepError": null
@@ -61,6 +74,7 @@
         "ctx": true,
         "colours": 7
       },
+      "drew": true,
       "text": "SCORE 0 LIVES Move with the mouse · ← → · drag",
       "log": [],
       "stepError": null
@@ -77,6 +91,7 @@
         "ctx": true,
         "colours": 6
       },
+      "drew": true,
       "text": "YOU 0 CPU 0 Move the mouse · ↑ ↓ · drag",
       "log": [],
       "stepError": null
@@ -93,6 +108,7 @@
         "ctx": true,
         "colours": 7
       },
+      "drew": true,
       "text": "SCORE 0 BEST 0 Space · click · tap Down you go Score 0 · best 0 Play again",
       "log": [],
       "stepError": null
@@ -100,40 +116,26 @@
     {
       "slug": "minesweeper",
       "before": {
-        "found": false
+        "found": false,
+        "dom": {
+          "cells": 81,
+          "filled": 0,
+          "text": 68
+        }
       },
       "after": {
-        "found": false
+        "found": false,
+        "dom": {
+          "cells": 81,
+          "filled": 20,
+          "text": 108
+        }
       },
-      "text": "MINES 10 TIME 2 New game 1 1 1 1 2 1 1 1 2 2 2 1 1 1 1 1 1 3 1 2 2 Click to dig · right-click or hold to flag",
+      "drew": true,
+      "text": "MINES 10 TIME 2 New game 1 1 1 1 1 2 2 2 2 1 2 1 1 1 1 2 2 1 1 1 Click to dig · right-click or hold to flag",
       "log": [],
       "stepError": null
     }
   ],
-  "errors": [
-    {
-      "slug": "2048",
-      "before": {
-        "found": false
-      },
-      "after": {
-        "found": false
-      },
-      "text": "SCORE 8 BEST 8 New Arrow keys, WASD or swipe · merge the numbers 2 4 4",
-      "log": [],
-      "stepError": null
-    },
-    {
-      "slug": "minesweeper",
-      "before": {
-        "found": false
-      },
-      "after": {
-        "found": false
-      },
-      "text": "MINES 10 TIME 2 New game 1 1 1 1 2 1 1 1 2 2 2 1 1 1 1 1 1 3 1 2 2 Click to dig · right-click or hold to flag",
-      "log": [],
-      "stepError": null
-    }
-  ]
+  "errors": []
 }
