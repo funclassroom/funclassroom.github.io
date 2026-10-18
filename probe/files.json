@@ -4,6 +4,11 @@
     "href": "files.html",
     "text": "Local files"
   },
+  "phoneButton": {
+    "text": "Local files",
+    "width": 103,
+    "height": 36
+  },
   "results": [
     {
       "slug": "snake",
@@ -36,12 +41,12 @@
         "found": false,
         "dom": {
           "cells": 16,
-          "filled": 4,
-          "text": 74
+          "filled": 3,
+          "text": 72
         }
       },
       "drew": true,
-      "text": "SCORE 4 BEST 4 New Arrow keys, WASD or swipe · merge the numbers 2 2 4 2",
+      "text": "SCORE 8 BEST 8 New Arrow keys, WASD or swipe · merge the numbers 2 4 4",
       "log": [],
       "stepError": null
     },
@@ -127,12 +132,12 @@
         "found": false,
         "dom": {
           "cells": 81,
-          "filled": 17,
-          "text": 102
+          "filled": 15,
+          "text": 98
         }
       },
       "drew": true,
-      "text": "MINES 10 TIME 2 New game 1 1 1 1 1 2 2 1 1 1 2 1 2 1 2 1 2 Click to dig · right-click or hold to flag",
+      "text": "MINES 10 TIME 2 New game 1 1 1 1 1 1 1 2 3 2 1 1 2 1 2 Click to dig · right-click or hold to flag",
       "log": [],
       "stepError": null
     }
