@@ -152,6 +152,26 @@ if (indexLog.length || cards.length !== 7 || !framed) {
   errors.push({ slug: "files-page", log: indexLog, cards: cards.length, framed });
 }
 
+// narrow screens, where the header has to fit
+const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
+await phone.goto(BASE + "/files.html", { waitUntil: "load" });
+await phone.waitForTimeout(500);
+await shot(phone, "files-phone");
+await phone.close();
+
+const phoneWall = await browser.newPage({ viewport: { width: 390, height: 844 } });
+await phoneWall.goto(BASE + "/", { waitUntil: "load" });
+await phoneWall.waitForTimeout(600);
+await shot(phoneWall, "wall-phone");
+const phoneButton = await phoneWall.evaluate(() => {
+  const link = document.querySelector("a.btn-local");
+  if (!link) return null;
+  const box = link.getBoundingClientRect();
+  return { text: link.textContent.trim(), width: Math.round(box.width), height: Math.round(box.height) };
+});
+await phoneWall.close();
+if (!phoneButton || phoneButton.width < 60) errors.push({ slug: "wall-phone", phoneButton });
+
 // the wall's button
 const wall = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 await wall.goto(BASE + "/", { waitUntil: "load" });
@@ -168,10 +188,10 @@ await browser.close();
 
 fs.writeFileSync(
   path.join(OUT, "files.json"),
-  JSON.stringify({ base: BASE, button, results, errors }, null, 2)
+  JSON.stringify({ base: BASE, button, phoneButton, results, errors }, null, 2)
 );
 
-console.log(JSON.stringify({ button, errors: errors.length }, null, 2));
+console.log(JSON.stringify({ button, phoneButton, errors: errors.length }, null, 2));
 for (const entry of results) {
   console.log(
     entry.slug.padEnd(13),
