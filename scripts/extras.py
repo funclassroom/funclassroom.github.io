@@ -11,29 +11,12 @@ A game here is the same dict a portal returns, plus two optional keys:
 The builder merges these in before it groups by title, so an extra can never
 be counted twice and a feed that later carries the same game simply becomes a
 second route on the same tile. Rebuilding never drops them.
+
+Empty for now: Minecraft used to live here as a streamed Eaglercraft embed
+from a third-party host. It is now bundled as a plain local file
+(assets/games/minecraft.html, the Eaglercraft 26.2 zeus offline download from
+https://eaglercraft.com/downloads) and listed in assets/js/local-games.js, so
+it only appears on the 100% Unblocked page and as a local (HTML) result.
 """
 
-EXTRAS = [
-    {
-        "portal": "eymenwsmc.site",
-        "id": "minecraft",
-        "title": "Minecraft",
-        "url": "https://eymenwsmc.site/262/index.html?v=u2",
-        # The launcher forwards to this standalone client build; it is the
-        # same game one hop earlier, on a different domain, so it works as
-        # the fallback when the launcher itself will not load.
-        "alt": "https://eaglercraft-26-2-u1-cdn.u2471966200.workers.dev/"
-        "eaglercraft-26.2-u2.html?v=u2-20261017",
-        "thumb": "assets/img/minecraft.png",
-        "rating": 0.0,
-        "plays": 0,
-        # Eaglercraft runs entirely in WebAssembly inside the frame. The
-        # launcher page for 26.2 forwards to the client build; it was probed
-        # in a real browser, both directly and inside an iframe.
-        "embed": True,
-        "pin": True,
-        # GameMonetize has a browser title called "Minecraft" that is not
-        # this game; it must not be offered as a fallback for Eaglercraft.
-        "exclusive": True,
-    },
-]
+EXTRAS = []

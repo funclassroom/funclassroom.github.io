@@ -7,7 +7,7 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **36 local HTML games**.
+The main search includes publisher titles and the **37 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
@@ -31,7 +31,7 @@ Three feeds plus a short hand-written list, merged into one wall by title:
 | GameMonetize's public feed | ~15,800 | `html5.gamemonetize.co` (+ `gamemonetize.com` wrapper) |
 | HTMLGames' public embed index | 1,244 | `cdn.htmlgames.com` |
 | MadKidGames sitemap | 506 | `www.madkidgames.com` |
-| `scripts/extras.py`, by hand | 1 | `eymenwsmc.site` |
+| `scripts/extras.py`, by hand | 0 | — (currently empty) |
 
 Routes are chosen **one per domain**, so a block on one host never takes the
 backup with it. That is why `html5.gamemonetize.co` and `gamemonetize.com` are
@@ -68,14 +68,12 @@ same tile. Three keys are special: `id` names the tile slug, `pin` keeps it
 above the most-played on every sort, and `exclusive` refuses a feed copy — a
 different game that happens to own the same title is not a fallback.
 
-The one entry is **Minecraft** — Eaglercraft 26.2, the WebAssembly port of
-Minecraft Java Edition, served from [eymenwsmc.site](https://eymenwsmc.site/262/index.html?v=u2)
-with the standalone client build as the fallback route. It was loaded in a real
-browser, both on its own and inside a bare iframe, before it went on the wall:
-the client boots to the title screen, singleplayer works, and the page framed
-it with no `X-Frame-Options` or `frame-ancestors` in the way. The player's
-iframe now also asks for `pointer-lock`, without which the mouse cannot look
-around in-game.
+There are currently no hand-added entries. **Minecraft** used to be the one
+entry, streamed as Eaglercraft from a third-party host; it is now bundled as a
+plain local file instead (see *The files that cannot be blocked* below), so it
+no longer appears as a streamed tile on the main wall. (The player's iframe
+still asks for `pointer-lock`, without which mouse-look is dead in games like
+it.)
 
 ### Why not hundreds of portals
 
@@ -150,7 +148,7 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: thirty-three titles that are plain files,
+- **100% Unblocked** in the header: thirty-seven titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
@@ -162,16 +160,23 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists thirty-three
+`files.html`, reached from **100% Unblocked** in the header, lists thirty-seven
 titles that ship with the site as plain HTML under `assets/games/`. No embed,
 no portal, no third party that can refuse a frame: the page opens a file from
 its own folder, and a filter aimed at a game site has nothing to act on.
 
 They come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
 which collects 352 single-file games. That pack is several gigabytes, so this
-site carries thirty-three hand-picked ones: the small classics plus the heavy
+site carries thirty-six hand-picked ones: the small classics plus the heavy
 legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and more).
-Slope is the largest at 26 MB and the whole folder is about 116 MB. A few are
+On top of those, **Minecraft** is bundled as `assets/games/minecraft.html` —
+the **Eaglercraft 26.2 (zeus)** offline download from
+[eaglercraft.com/downloads](https://eaglercraft.com/downloads), one
+self-contained HTML file (SHA-256
+`3cbcc8f3193006bf1c231de8df1f6a59c5ff2b8458571282ce0b68ff51589ffe`, about
+76 MB, no external scripts) that replaced the old streamed Eaglercraft embed.
+It is the largest file in the folder and the whole folder is about 197 MB, so
+its first load takes a while. A few are
 left out: `Indev.html`
 pulls a Cloudflare analytics beacon and would not have been offline at all, and
 `agar-io-lite.html` asks for an image that is not in the pack.
@@ -186,15 +191,15 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the thirty-three titles that are plain files
+files.html               the thirty-seven titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,557 rows)
+assets/js/catalog.js     generated catalogue (17,556 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
-scripts/extras.py        titles added by hand (Minecraft)
+scripts/extras.py        titles added by hand (currently none)
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
 ```
@@ -214,10 +219,11 @@ Push, and Pages rebuilds.
 ## On images and AI
 
 No image is generated here: every thumbnail is the publisher's own file. The
-only two files of artwork in the repo are the hand-written SVG tab icon and
-`assets/img/minecraft.png`, a screenshot of the Eaglercraft title screen taken
-while checking that the embed actually boots — the game has no artwork of its
-own to point a thumbnail at.
+only file of artwork in the repo is the hand-written SVG tab icon. The
+Minecraft card on the local page (`assets/img/pack/minecraft.jpg`) is converted
+from the screenshot of the Eaglercraft title screen taken while checking that
+the old embed actually boots — the game has no artwork of its own to point a
+thumbnail at.
 
 AI-titled titles are no longer filtered — the old blocklist was removed when it
 turned out to be hiding the one Veo title the feeds still carried.

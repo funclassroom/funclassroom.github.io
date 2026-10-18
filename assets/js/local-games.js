@@ -1,5 +1,6 @@
 /* Shared list of locally hosted HTML games for both search pages. */
 window.LOCAL_GAMES = [
+    { file: "assets/games/minecraft.html", title: "Minecraft", line: "Eaglercraft 26.2 (zeus) from eaglercraft.com/downloads — the whole game in one offline file. First load takes a while." },
     { file: "assets/games/2048.html", title: "2048", line: "Slide the tiles, merge the numbers, reach 2048." },
     { file: "assets/games/bit-planes.htm", title: "Bit Planes", line: "Fly between the towers without clipping a wing." },
     { file: "assets/games/coreball.html", title: "Coreball", line: "Throw each ball into the ring without hitting another." },
