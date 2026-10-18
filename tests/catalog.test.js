@@ -110,14 +110,15 @@ check(
   CATALOG.every((g) => /^https:\/\//.test(g.thumb) || /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(g.thumb))
 );
 check(
-  "the hand-added title is pinned and leads the catalogue",
-  CATALOG[0].id === "minecraft" && CATALOG[0].pinned === true && CATALOG[0].title === "Minecraft"
+  "the streamed Minecraft tile has been removed from the catalogue",
+  !CATALOG.some((g) => g.id === "minecraft") &&
+    CATALOG.every((g) => g.sources.every((s) => !/eymenwsmc|workers\.dev/.test(s.url))) &&
+    CATALOG.every((g) => !g.pinned)
 );
 check(
-  "the hand-added title carries the Eaglercraft build as a fallback",
-  CATALOG[0].sources.length === 2 &&
-    /eymenwsmc\.site/.test(CATALOG[0].sources[0].url) &&
-    /eaglercraft/.test(CATALOG[0].sources[1].url)
+  "Minecraft lives with the local files instead",
+  /assets\/games\/minecraft\.html/.test(fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8")) &&
+    fs.existsSync(path.join(ROOT, "assets/games/minecraft.html"))
 );
 
 /* ---------- files ---------- */
@@ -178,7 +179,7 @@ check(
 );
 check(
   "the local files stay small enough to ship",
-  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 150 * 1024 * 1024
+  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 220 * 1024 * 1024
 );
 
 check("index loads the app", /assets\/js\/app\.js/.test(index));
@@ -196,9 +197,8 @@ check(
   !/ai-token|AI_TOKENS|is_ai/.test(fs.readFileSync(path.join(ROOT, "scripts/build-catalog.py"), "utf8"))
 );
 check(
-  "the only photographs in the repo belong to the hand-added title",
-  fs.readdirSync(path.join(ROOT, "assets/img")).filter((f) => /\.(png|jpe?g|webp)$/.test(f)).join(",") ===
-    "minecraft.png"
+  "no loose photographs sit beside the pack screenshots",
+  fs.readdirSync(path.join(ROOT, "assets/img")).filter((f) => /\.(png|jpe?g|webp)$/.test(f)).length === 0
 );
 check(
   "saved state never leaves the device",

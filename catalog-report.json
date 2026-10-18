@@ -1,22 +1,20 @@
 {
   "fetched": {
-    "by hand": 1,
     "gamemonetize": 16000,
     "htmlgames": 1245,
     "madkidgames": 507
   },
   "routes": {
     "1": 1696,
-    "2": 15805,
+    "2": 15804,
     "3": 56
   },
   "sources": {
-    "eymenwsmc.site": 2,
     "gamemonetize.com": 31721,
     "htmlgames.com": 1244,
     "madkidgames.com": 507
   },
-  "tiles": 17557,
+  "tiles": 17556,
   "verified": {
     "alive": 17547,
     "checked": 17559,

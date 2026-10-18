@@ -125,19 +125,20 @@ function titles(document) {
       check("the button counts what is left", /\d+ left/.test(more.textContent) || /Show 120 more/.test(more.textContent));
     }
     check(
-      "thumbnails are portal art or the local pinned art",
+      "thumbnails are portal art or local pack art",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
         /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src")) ||
         /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
       )
     );
     check(
-      "the pinned title leads the wall",
+      "nothing is pinned and the streamed Minecraft tile is gone",
       (() => {
         const first = document.querySelector(".tile");
         return (
-          first.getAttribute("data-pinned") === "1" &&
-          first.querySelector(".tile-title").textContent === "Minecraft"
+          first.getAttribute("data-pinned") === "0" &&
+          !document.querySelector('.tile[data-id="minecraft"]') &&
+          first.querySelector(".tile-title").textContent !== "Minecraft"
         );
       })(),
       document.querySelector(".tile .tile-title").textContent
@@ -206,7 +207,7 @@ function titles(document) {
     type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
-      cards.length === 36 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 37 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(
@@ -228,7 +229,11 @@ function titles(document) {
     check("nothing is playing yet", page.querySelector("[data-player]").hidden);
     check("no frame until asked", page.querySelectorAll("iframe").length === 0);
 
-    click(window, page.querySelector("[data-open-file]"));
+    check(
+      "Minecraft leads the local page",
+      page.querySelector("[data-open-file]").getAttribute("data-open-file") === "assets/games/minecraft.html"
+    );
+    click(window, page.querySelector('[data-open-file="assets/games/2048.html"]'));
     const frame = page.querySelector("iframe");
     check("playing opens the file in place", !page.querySelector("[data-player]").hidden);
     check(
@@ -284,15 +289,12 @@ function titles(document) {
     const sortedPart = alphabetical.filter((t) => t !== "");
     check("A–Z sorts", sortedPart.length === alphabetical.length);
     check(
-      "the pinned title still leads A–Z",
-      document.querySelector(".tile").getAttribute("data-pinned") === "1"
+      "A–Z leads with its first title, nothing pinned above it",
+      document.querySelector(".tile").getAttribute("data-pinned") === "0"
     );
 
     click(window, buttons.find((b) => b.dataset.sort === "top"));
-    // The pinned tile is deliberate and carries no rating, so the ranking
-    // assertion is about everything else on the wall.
     const ratings = Array.from(document.querySelectorAll(".tile"))
-      .filter((t) => t.getAttribute("data-pinned") !== "1")
       .map((t) => Number(t.getAttribute("data-rating")));
     check(
       "top rated descends",
@@ -300,8 +302,9 @@ function titles(document) {
       ratings.slice(0, 5).join(",")
     );
     check(
-      "the pinned title still leads top rated",
-      document.querySelector(".tile").getAttribute("data-pinned") === "1"
+      "top rated leads with a rated title, nothing pinned above it",
+      document.querySelector(".tile").getAttribute("data-pinned") === "0" &&
+        Number(document.querySelector(".tile").getAttribute("data-rating")) > 0
     );
     check("one sort at a time", document.querySelectorAll('[data-sort][aria-pressed="true"]').length === 1);
     dom.window.close();
