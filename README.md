@@ -109,8 +109,12 @@ Nothing is uploaded: there is no analytics, no request carrying any of it, and
 the only way it leaves the device is if you clear the site data. The footer has
 a two-step **Clear saved data** button.
 
-**What the titles store themselves** — each frame loads from
-`madkidgames.com`, so its own save files (levels, coins, unlocked cars) live in
+**The local files** keep nothing outside this browser either. Their high scores
+sit in `localStorage` under `classroom.snake.best`, `classroom.2048.best`,
+`classroom.flap.best`; nothing in them calls the network.
+
+**What the titles store themselves** — each frame loads from its publisher, so
+its own save files (levels, coins, unlocked cars) live in
 that publisher's storage, tied to this site. They survive a reload, a closed
 tab and a new visit from the same browser. They do not follow you to another
 device or another browser, and a private window throws them away when it closes.
@@ -128,6 +132,8 @@ game.
   still paints in one frame
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
+- **Local files** in the header: seven games that are plain files, on their own
+  page, playable with no network at all
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
   tried automatically; if every one fails, the player says so, apologises, and
