@@ -1,21 +1,22 @@
 name: local files
 
 # The bundled games are plain files, so they can be tested without the open
-# web: serve the repo and drive each one in Chromium. Fails if a game throws,
-# draws nothing, or if the listing page loses a card.
+# web: serve the repo, open every one in Chromium, and keep a screenshot of
+# each for the cards. Fails if a game is blank, throws, or if the listing page
+# loses a card.
 
 on:
   workflow_dispatch:
   push:
     paths:
       - "assets/games/**"
+      - "assets/img/pack/**"
       - "files.html"
-      - "assets/js/app.js"
       - "scripts/probe-files.mjs"
       - ".github/workflows/local-files.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: local-files
@@ -24,7 +25,7 @@ concurrency:
 jobs:
   play:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,14 +34,24 @@ jobs:
       - run: npx playwright install chromium --with-deps
       - name: Serve the site
         run: python3 -m http.server 8765 --bind 127.0.0.1 &
-      - name: Play every local file
+      - name: Open every local file
         run: |
           sleep 2
           node scripts/probe-files.mjs
-      - name: Keep the screenshots
+      - name: Keep the shots and screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: local-files-shots
+          name: local-files
           path: probe
           if-no-files-found: ignore
+      - name: Commit the card screenshots if they are new
+        if: success()
+        run: |
+          git config user.name "catalog-bot"
+          git config user.email "catalog-bot@users.noreply.github.com"
+          git add assets/img/pack
+          if git diff --cached --quiet; then echo "No new screenshots."; exit 0; fi
+          git commit -m "Screenshot the local games"
+          git pull --rebase --autostash
+          git push

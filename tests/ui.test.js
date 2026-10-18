@@ -195,28 +195,28 @@ function titles(document) {
     await tick();
     const { window } = local;
     const { document: page } = window;
+    const cards = Array.from(page.querySelectorAll(".file-card"));
 
     check("the local page is a Classroom tab", page.title === "Classroom");
     check(
       "every local title gets a card",
-      page.querySelectorAll(".file-card").length === 7,
-      String(page.querySelectorAll(".file-card").length)
+      cards.length === 20 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      String(cards.length)
     );
     check(
       "the cards name their games",
-      Array.from(page.querySelectorAll(".file-title")).map((n) => n.textContent).join(",") ===
-        "Snake,2048,Tetris,Breakout,Pong,Flap,Minesweeper"
+      cards.every((card) => card.querySelector(".file-title").textContent.trim().length > 0)
     );
     check(
       "a card plays a file in the folder",
       Array.from(page.querySelectorAll("[data-open-file]")).every((b) =>
-        /^assets\/games\/[a-z0-9-]+\.html$/.test(b.getAttribute("data-open-file"))
+        /^assets\/games\/[A-Za-z0-9._-]+\.html?$/.test(b.getAttribute("data-open-file"))
       )
     );
     check(
-      "the cards show local art",
+      "the cards use the local screenshots",
       Array.from(page.querySelectorAll(".file-art img")).every((img) =>
-        /^assets\/img\/[a-z0-9-]+\.svg$/.test(img.getAttribute("src"))
+        /^assets\/img\/pack\/[A-Za-z0-9-]+\.jpg$/.test(img.getAttribute("src"))
       )
     );
     check("nothing is playing yet", page.querySelector("[data-player]").hidden);
@@ -227,20 +227,20 @@ function titles(document) {
     check("playing opens the file in place", !page.querySelector("[data-player]").hidden);
     check(
       "the frame points at the chosen file",
-      !!frame && /\/assets\/games\/snake\.html$/.test(frame.getAttribute("src")),
+      !!frame && /\/assets\/games\/2048\.html$/.test(frame.getAttribute("src")),
       frame && frame.getAttribute("src")
     );
     check("page locks while playing", page.body.classList.contains("locked"));
     check(
       "the player names the title",
-      page.querySelector("[data-player-title]").textContent === "Snake"
+      page.querySelector("[data-player-title]").textContent === "2048"
     );
     check(
       "there is a way to open the file on its own",
       page.querySelector("[data-external]").getAttribute("href") ===
-        "https://example.test/assets/games/snake.html"
+        "https://example.test/assets/games/2048.html"
     );
-    check("the deep link is written", window.location.pathname === "/assets/games/snake.html");
+    check("the deep link is written", /\/assets\/games\/2048\.html$/.test(window.location.pathname));
 
     click(window, page.querySelector("[data-close]"));
     check("closing puts the page back", page.querySelector("[data-player]").hidden);

@@ -109,9 +109,9 @@ Nothing is uploaded: there is no analytics, no request carrying any of it, and
 the only way it leaves the device is if you clear the site data. The footer has
 a two-step **Clear saved data** button.
 
-**The local files** keep nothing outside this browser either. Their high scores
-sit in `localStorage` under `classroom.snake.best`, `classroom.2048.best`,
-`classroom.flap.best`; nothing in them calls the network.
+**The local files** save wherever their own code decides, which for most of
+them is this browser's `localStorage` under the site's own origin. They are not
+wrapped in anything that sends data anywhere.
 
 **What the titles store themselves** — each frame loads from its publisher, so
 its own save files (levels, coins, unlocked cars) live in
@@ -132,8 +132,8 @@ game.
   still paints in one frame
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search
-- **Local files** in the header: seven games that are plain files, on their own
-  page, playable with no network at all
+- **Local files** in the header: twenty games that are plain files, on their own
+  page, with no embed to load
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
   tried automatically; if every one fails, the player says so, apologises, and
@@ -144,33 +144,39 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **Local files** in the header, lists seven games that
-ship with the site as plain `.html` files under `assets/games/`. No embed, no
-third-party host, no network request at all: they run from the same folder as
-the page, so a filter that blocks a game website has nothing to act on, and they
-work with the wi-fi off. Each one is a self-contained canvas or DOM game with
-keyboard, mouse and touch controls, and high scores stay in localStorage.
+`files.html`, reached from **Local files** in the header, lists twenty games
+that ship with the site as plain HTML under `assets/games/`. No embed, no
+portal, no third party that can refuse a frame: the page opens a file from its
+own folder, and a filter aimed at a game site has nothing to act on.
 
-`scripts/probe-files.mjs` serves the repo and plays all seven in Chromium —
-starting each game, checking it actually paints, and failing if a frame throws.
-`.github/workflows/local-files.yml` runs it whenever a game changes.
+They come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
+which collects 352 single-file games. That pack is several gigabytes, so this
+site carries the twenty smallest that still make a good wall — the largest here
+is 1.4 MB and the whole folder is about 11 MB. Nothing is modified except that
+one file, `Indev.html`, was left out: it pulls a Cloudflare analytics beacon and
+would not have been offline at all.
+
+`scripts/probe-files.mjs` serves the repo and opens every one of them in
+Chromium, checking each returns 200 and actually paints. It also takes the
+512×384 card screenshots in `assets/img/pack/`.
+`.github/workflows/local-files.yml` runs it when a game changes and commits any
+new screenshots.
 
 ## Files
 
 ```
 index.html               the page
-files.html               the seven titles that are plain files
+files.html               the twenty titles that are plain files
 404.html                 not-found page
-assets/games/*.html      Snake, 2048, Tetris, Breakout, Pong, Flap, Minesweeper
+assets/games/*.html      the games themselves, straight from the offline pack
+assets/img/pack/*.jpg    one screenshot per game, taken by the probe
 assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,557 rows)
 assets/js/app.js         search, sort, saves, recents, player
-assets/img/*.svg         hand-drawn cards for the local titles
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft)
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
-tests/games.test.js      each bundled game starts without throwing
 ```
 
 ## Running

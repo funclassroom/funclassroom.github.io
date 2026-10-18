@@ -1,202 +1,159 @@
-/* Load every local file game in a real browser, start it, and say whether it
-   actually drew something. Run by .github/workflows/local-files.yml. */
+/* Load every game on the local files page in a real browser: does the page
+   list them, does each file actually open, and does it draw something? Also
+   takes the card screenshots the page uses. Run by local-files.yml. */
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
 const BASE = process.env.BASE || "http://127.0.0.1:8765";
 const OUT = process.env.OUT || "probe";
+const THUMBS = path.join("assets", "img", "pack");
 fs.mkdirSync(OUT, { recursive: true });
-
-
+fs.mkdirSync(THUMBS, { recursive: true });
 
 const browser = await chromium.launch({
-  args: ["--enable-unsafe-swiftshader", "--use-gl=swiftshader"],
+  args: ["--enable-unsafe-swiftshader", "--use-gl=swiftshader", "--autoplay-policy=no-user-gesture-required"],
 });
 
 const errors = [];
 const results = [];
 
-async function shot(page, name) {
-  await page.screenshot({ path: path.join(OUT, name + ".png") });
-}
+const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+const pageLog = [];
+page.on("pageerror", (err) => pageLog.push("pageerror: " + err.message));
+await page.goto(BASE + "/files.html", { waitUntil: "load" });
+await page.waitForTimeout(800);
 
-/* A canvas that has been painted has more than one colour in it. Games drawn
-   with DOM nodes are checked by what they put on screen instead. */
-async function paintScore(page, selector) {
-  return page.evaluate((sel) => {
-    const canvas = document.querySelector(sel);
-    if (!canvas) {
-      const cells = document.querySelectorAll(".cell");
-      const filled = Array.from(cells).filter((c) => c.textContent.trim() || c.dataset.v).length;
-      const text = document.body.innerText.trim().length;
-      return { found: false, dom: { cells: cells.length, filled, text } };
-    }
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return { found: true, ctx: false };
-    const { width, height } = canvas;
-    if (!width || !height) return { found: true, ctx: true, blank: true };
-    const data = ctx.getImageData(0, 0, width, height).data;
-    const seen = new Set();
-    for (let i = 0; i < data.length; i += 4 * 97) {
-      seen.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
-      if (seen.size > 6) break;
-    }
-    return { found: true, ctx: true, colours: seen.size };
-  }, selector);
-}
-
-async function run(slug, steps, settle = 1800) {
-  const page = await browser.newPage({ viewport: { width: 960, height: 640 } });
-  const log = [];
-  page.on("pageerror", (err) => log.push("pageerror: " + err.message));
-  page.on("console", (msg) => {
-    if (msg.type() === "error") log.push("console: " + msg.text());
-  });
-  await page.goto(BASE + "/assets/games/" + slug + ".html", { waitUntil: "load" });
-  await page.waitForTimeout(500);
-  const before = await paintScore(page, "canvas#game");
-  let stepError = null;
-  try {
-    await steps(page);
-  } catch (err) {
-    stepError = err.message.split("\n")[0];
-  }
-  await page.waitForTimeout(settle);
-  const after = await paintScore(page, "canvas#game");
-  const text = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " ").trim().slice(0, 120));
-  await shot(page, slug);
-  const drew = after.found ? after.colours >= 3 : (after.dom && after.dom.cells > 0 && after.dom.filled > 0);
-  const entry = { slug, before, after, drew, text, log, stepError };
-  results.push(entry);
-  if (log.length || stepError || !drew) {
-    errors.push(entry);
-  }
-  await page.close();
-}
-
-const click = (page, selector) => page.click(selector);
-const key = (page, k) => page.keyboard.press(k);
-
-await run(
-  "snake",
-  async (page) => {
-    await click(page, "[data-go]");
-    await page.waitForTimeout(320);
-    // turn once, so the shot catches it mid-slither rather than in a wall
-    await key(page, "ArrowDown");
-    await page.waitForTimeout(320);
-  },
-  500
+const games = await page.evaluate(() =>
+  Array.from(document.querySelectorAll("[data-open-file]")).map((button) => ({
+    file: button.getAttribute("data-open-file"),
+    title: button.getAttribute("data-title"),
+  }))
 );
 
-await run("2048", async (page) => {
-  await key(page, "ArrowLeft");
-  await key(page, "ArrowDown");
-  await key(page, "ArrowRight");
-});
+if (!games.length) errors.push({ what: "no cards on files.html" });
 
-await run("tetris", async (page) => {
-  await click(page, "[data-go]");
-  await page.waitForTimeout(700);
-  await key(page, "ArrowLeft");
-  await key(page, "ArrowUp");
-  await key(page, " ");
-});
+// Each game gets its own page so a crash cannot take the run down with it.
+for (const game of games) {
+  const slug = path.basename(game.file).replace(/\.html?$/, "");
+  const view = await browser.newPage({ viewport: { width: 512, height: 384 } });
+  const log = [];
+  view.on("pageerror", (err) => log.push("pageerror: " + err.message));
+  view.on("console", (msg) => {
+    if (msg.type() === "error") log.push("console: " + msg.text().slice(0, 160));
+  });
 
-await run("breakout", async (page) => {
-  await click(page, "[data-go]");
-  await page.waitForTimeout(300);
-  await click(page, "canvas#game");
-});
+  let status = null;
+  try {
+    const response = await view.goto(BASE + "/" + game.file, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
+    status = response ? response.status() : null;
+  } catch (err) {
+    log.push("goto: " + err.message.split("\n")[0]);
+  }
 
-await run("pong", async (page) => {
-  await click(page, "[data-go]");
-  await page.waitForTimeout(1200);
-});
+  await view.waitForTimeout(4000);
 
-await run("flap", async (page) => {
-  await click(page, "[data-go]");
-  await page.waitForTimeout(500);
-  await click(page, "canvas#game");
-  await page.waitForTimeout(500);
-  await click(page, "canvas#game");
-});
+  const drew = await view.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    let painted = false;
+    if (canvas && canvas.width && canvas.height) {
+      try {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const data = ctx.getImageData(0, 0, Math.min(canvas.width, 400), Math.min(canvas.height, 300)).data;
+          const colours = new Set();
+          for (let i = 0; i < data.length; i += 4 * 53) {
+            colours.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+          }
+          painted = colours.size > 2;
+        }
+      } catch (err) {
+        painted = true; // a WebGL canvas we cannot read still drew something
+      }
+    }
+    const text = (document.body && document.body.innerText ? document.body.innerText : "").trim();
+    return { painted, textLength: text.length, canvas: !!canvas, title: document.title };
+  });
 
-await run("minesweeper", async (page) => {
-  const cells = await page.$$(".cell");
-  await cells[20].click();
-  await page.waitForTimeout(300);
-  if (cells[31]) await cells[31].click({ button: "right" });
-});
+  const shot = path.join(THUMBS, slug + ".jpg");
+  try {
+    await view.screenshot({ path: shot, type: "jpeg", quality: 78 });
+  } catch (err) {
+    log.push("shot: " + err.message.split("\n")[0]);
+  }
 
-// and the page that lists them
-const index = await browser.newPage({ viewport: { width: 1100, height: 900 } });
-const indexLog = [];
-index.on("pageerror", (err) => indexLog.push(String(err.message)));
-await index.goto(BASE + "/files.html", { waitUntil: "load" });
-await index.waitForTimeout(600);
-await shot(index, "files-page");
-const cards = await index.$$(".file-card");
-await index.click(".file-open");
-await index.waitForTimeout(900);
-const framed = await index.evaluate(() => {
+  const alive = status === 200 && (drew.painted || drew.textLength > 20);
+  results.push({ slug, title: game.title, status, drew, alive, log });
+  if (!alive || log.some((line) => line.startsWith("pageerror"))) {
+    errors.push({ slug, status, drew, log });
+  }
+  await view.close();
+}
+
+// close-up on the card grid, for eyeballing the layout
+await page.setViewportSize({ width: 1200, height: 1400 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: path.join(OUT, "files-page.png"), fullPage: false });
+
+await page.click(".file-open");
+await page.waitForTimeout(2500);
+const framed = await page.evaluate(() => {
   const frame = document.querySelector("iframe");
   return frame ? frame.getAttribute("src") : null;
 });
-await shot(index, "files-playing");
-await index.close();
-if (indexLog.length || cards.length !== 7 || !framed) {
-  errors.push({ slug: "files-page", log: indexLog, cards: cards.length, framed });
-}
+await page.screenshot({ path: path.join(OUT, "files-playing.png") });
+await page.close();
 
-// narrow screens, where the header has to fit
 const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await phone.goto(BASE + "/files.html", { waitUntil: "load" });
 await phone.waitForTimeout(500);
-await shot(phone, "files-phone");
+await phone.screenshot({ path: path.join(OUT, "files-phone.png") });
 await phone.close();
 
-const phoneWall = await browser.newPage({ viewport: { width: 390, height: 844 } });
-await phoneWall.goto(BASE + "/", { waitUntil: "load" });
-await phoneWall.waitForTimeout(600);
-await shot(phoneWall, "wall-phone");
-const phoneButton = await phoneWall.evaluate(() => {
-  const link = document.querySelector("a.btn-local");
-  if (!link) return null;
-  const box = link.getBoundingClientRect();
-  return { text: link.textContent.trim(), width: Math.round(box.width), height: Math.round(box.height) };
-});
-await phoneWall.close();
-if (!phoneButton || phoneButton.width < 60) errors.push({ slug: "wall-phone", phoneButton });
-
-// the wall's button
 const wall = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 await wall.goto(BASE + "/", { waitUntil: "load" });
 await wall.waitForTimeout(700);
-await shot(wall, "wall");
+await wall.screenshot({ path: path.join(OUT, "wall.png") });
 const button = await wall.evaluate(() => {
   const link = document.querySelector("a.btn-local");
   return link ? { href: link.getAttribute("href"), text: link.textContent.trim() } : null;
 });
 await wall.close();
-if (!button) errors.push({ slug: "wall", button });
+
+const phoneWall = await browser.newPage({ viewport: { width: 390, height: 844 } });
+await phoneWall.goto(BASE + "/", { waitUntil: "load" });
+await phoneWall.waitForTimeout(500);
+const phoneButton = await phoneWall.evaluate(() => {
+  const link = document.querySelector("a.btn-local");
+  if (!link) return null;
+  const box = link.getBoundingClientRect();
+  return { text: link.textContent.trim(), width: Math.round(box.width) };
+});
+await phoneWall.close();
+
+if (pageLog.length) errors.push({ what: "files.html", log: pageLog });
+if (!button) errors.push({ what: "wall button" });
+if (!framed) errors.push({ what: "no frame after playing a card" });
+if (!phoneButton || phoneButton.width < 60) errors.push({ what: "phone button", phoneButton });
 
 await browser.close();
 
 fs.writeFileSync(
   path.join(OUT, "files.json"),
-  JSON.stringify({ base: BASE, button, phoneButton, results, errors }, null, 2)
+  JSON.stringify({ button, phoneButton, framed, results, errors }, null, 2)
 );
 
-console.log(JSON.stringify({ button, phoneButton, errors: errors.length }, null, 2));
 for (const entry of results) {
   console.log(
-    entry.slug.padEnd(13),
-    "drew:",
-    String(entry.drew).padEnd(5),
-    entry.log.length ? "LOG " + entry.log.join(" | ").slice(0, 200) : "clean",
-    entry.stepError ? "STEP " + entry.stepError : ""
+    entry.slug.padEnd(20),
+    entry.alive ? "alive" : "DEAD ",
+    String(entry.status),
+    entry.drew.painted ? "painted" : "no-paint",
+    entry.log.length ? entry.log[0].slice(0, 120) : ""
   );
 }
+console.log("errors:", errors.length, errors.map((e) => e.slug || e.what).join(", "));
 process.exit(errors.length ? 1 : 0);

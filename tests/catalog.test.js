@@ -135,39 +135,43 @@ check(
 );
 
 /* ---------- the local games ---------- */
-const LOCAL = [
-  "snake", "2048", "tetris", "breakout", "pong", "flap", "minesweeper"
-];
 const filesPage = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
-const gameFiles = LOCAL.map((slug) => path.join(ROOT, "assets/games", slug + ".html"));
+const listed = Array.from(filesPage.matchAll(/(assets\/games\/[A-Za-z0-9._-]+\.html?)/g)).map((m) => m[1]);
+const unique = Array.from(new Set(listed));
 
-check("every local game ships a file", gameFiles.every((file) => fs.existsSync(file)));
+check("the local page lists more than a dozen files", unique.length >= 12, String(unique.length));
+check("every listed file is in the folder", unique.every((rel) => fs.existsSync(path.join(ROOT, rel))));
 check(
-  "the local page links every one of them",
-  LOCAL.every((slug) => filesPage.includes("assets/games/" + slug + ".html"))
+  "the folder holds nothing the page hides",
+  fs.readdirSync(path.join(ROOT, "assets/games")).filter((n) => /\.html?$/.test(n)).length === unique.length
 );
 check(
-  "the local page does not invent others",
-  (filesPage.match(/assets\/games\/[a-z0-9-]+\.html/g) || []).length === LOCAL.length
+  "every local game has a card title",
+  (filesPage.match(/title: "/g) || []).length === unique.length
 );
 check(
-  "the local games never call out to the network",
-  gameFiles.every((file) => {
-    const html = fs.readFileSync(file, "utf8");
-    return !/https?:\/\//.test(html) && !/<script[^>]+src=/i.test(html) && !/<link[^>]+href="http/i.test(html);
+  "the local games do not need this site to be online",
+  unique.every((rel) => {
+    const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    return !/<script[^>]+src=["']https?:/i.test(file) && !/<link[^>]+href=["']https?:[^"']*\.css/i.test(file);
   })
 );
 check(
   "each local game is a complete page",
-  gameFiles.every((file) => {
-    const html = fs.readFileSync(file, "utf8");
-    return /<!doctype html>/i.test(html) && /<canvas|<button/.test(html) && html.length > 2000;
+  unique.every((rel) => {
+    const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    return /<html|<head|<body/i.test(file) && /<canvas|<div|<body/i.test(file) && file.length > 20000;
   })
 );
 check(
-  "every local game has art",
-  LOCAL.every((slug) => fs.existsSync(path.join(ROOT, "assets/img", slug + ".svg")))
+  "the local page credits where the files came from",
+  /github\.com\/CoolDude2349\/Offline-HTML-Games-Pack/.test(filesPage)
 );
+check(
+  "the local files stay small enough to ship",
+  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 40 * 1024 * 1024
+);
+
 check("index loads the app", /assets\/js\/app\.js/.test(index));
 check("index loads the one stylesheet", /assets\/css\/app\.css/.test(index));
 check("index has no old dual-skin leftovers", !/gamekit|data-mode|mode-classroom/i.test(index));

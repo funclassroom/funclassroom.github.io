@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Classroom</title>
-<meta name="description" content="Seven games that ship with the page as plain files. Nothing to block.">
+<meta name="description" content="Twenty games that ship with the page as plain files. Nothing to block.">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="assets/css/app.css?v=20">
+<link rel="stylesheet" href="assets/css/app.css?v=21">
 </head>
 <body>
 <a class="skip" href="#files">Skip to the list</a>
@@ -25,7 +25,7 @@
 <header class="bar">
   <div class="bar-in">
     <a class="logo" href="./">G@M£$</a>
-    <p class="files-crumb">Local files <span>· seven titles in the page itself</span></p>
+    <p class="files-crumb">Local files <span>· twenty titles in the page itself</span></p>
     <div class="bar-actions">
       <a class="btn" href="./">
         <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>
@@ -40,27 +40,33 @@
     <p class="files-kicker"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> Never blocked</p>
     <h1>These are just files.</h1>
     <p class="files-lede">
-      Seven games that ship with this page as plain HTML and JavaScript. There is no
-      third-party embed and no server to refuse a frame, so a filter that blocks a game
-      site has nothing to grab. They run with the wi-fi off.
+      Twenty games that live in this folder as plain HTML, not embeds on
+      somebody else's server. There is no portal, no player to load and no
+      third party that can refuse a frame, so a filter that blocks a game site
+      has nothing to act on.
+    </p>
+    <p class="files-lede files-lede-2">
+      Taken from <a href="https://github.com/CoolDude2349/Offline-HTML-Games-Pack" target="_blank" rel="noopener">CoolDude2349's Offline HTML Games Pack</a>,
+      which holds 352 of them. These are the ones small enough to ship with the
+      page; the whole pack is several gigabytes.
     </p>
     <ul class="files-facts">
-      <li><b>0</b> external requests</li>
-      <li><b>0</b> tracking scripts</li>
-      <li><b>7</b> games that work offline</li>
+      <li><b>20</b> games in this folder</li>
+      <li><b>0</b> third-party embeds</li>
+      <li><b>offline</b> works with the wi-fi off</li>
     </ul>
   </section>
 
   <section id="files" class="files-grid" data-files-grid aria-label="Local games"></section>
 
   <p class="files-note">
-    Progress and high scores stay in this browser, like everything else here.
+    Game saves and high scores stay in this browser, like everything else here.
     <a href="./">Back to all 17,557 titles</a>
   </p>
 </main>
 
 <footer class="foot">
-  <p>G@M£$ <span class="sep">/</span> the whole list is streamed from publishers — this page is the exception.</p>
+  <p>G@M£$ <span class="sep">/</span> the rest of the wall is streamed from publishers — this page is the exception.</p>
 </footer>
 
 <div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="file-title">
@@ -71,7 +77,7 @@
     <div class="player-meta">
       <b id="file-title" data-player-title></b>
       <span>Running from a local file</span>
-      <span class="player-source">no network needed</span>
+      <span class="player-source">no embed</span>
     </div>
     <div class="player-tools">
       <a class="pbtn" data-external target="_blank" rel="noopener" aria-label="Open the file on its own">
@@ -90,20 +96,26 @@
   "use strict";
 
   var GAMES = [
-    { id: "snake", title: "Snake", file: "assets/games/snake.html", art: "assets/img/snake.svg",
-      line: "Eat the apples, don't bite yourself.", how: "Arrows · WASD · swipe" },
-    { id: "2048", title: "2048", file: "assets/games/2048.html", art: "assets/img/2048.svg",
-      line: "Slide the tiles together and reach 2048.", how: "Arrows · WASD · swipe" },
-    { id: "tetris", title: "Tetris", file: "assets/games/tetris.html", art: "assets/img/tetris.svg",
-      line: "Ten wide, twenty tall, and no room for mistakes.", how: "Arrows · space" },
-    { id: "breakout", title: "Breakout", file: "assets/games/breakout.html", art: "assets/img/breakout.svg",
-      line: "One ball, three lives, forty-five bricks.", how: "Mouse · ← →" },
-    { id: "pong", title: "Pong", file: "assets/games/pong.html", art: "assets/img/pong.svg",
-      line: "First to seven. The CPU does not get tired.", how: "Mouse · ↑ ↓" },
-    { id: "flap", title: "Flap", file: "assets/games/flap.html", art: "assets/img/flap.svg",
-      line: "Tap to stay in the air. Mind the pipes.", how: "Space · click · tap" },
-    { id: "minesweeper", title: "Minesweeper", file: "assets/games/minesweeper.html", art: "assets/img/minesweeper.svg",
-      line: "Nine by nine, ten mines, and one guess too many.", how: "Click · right-click · hold" }
+    { file: "assets/games/2048.html", title: "2048", line: "Slide the tiles, merge the numbers, reach 2048." },
+    { file: "assets/games/agar-io-lite.html", title: "Agar.io Lite", line: "Eat smaller blobs and grow. No server, no other players." },
+    { file: "assets/games/bit-planes.htm", title: "Bit Planes", line: "Fly between the towers without clipping a wing." },
+    { file: "assets/games/coreball.html", title: "Coreball", line: "Throw each ball into the ring without hitting another." },
+    { file: "assets/games/doodle-jump.html", title: "Doodle Jump", line: "Bounce up the platforms. Never stop going up." },
+    { file: "assets/games/elastic-face.htm", title: "Elastic Face", line: "Stretch the face, hit the targets, try not to flinch." },
+    { file: "assets/games/evil-glitch.html", title: "Evil Glitch", line: "Something is wrong with this machine. Keep going." },
+    { file: "assets/games/google-dino.html", title: "Dino Run", line: "The Chrome dinosaur, rescued from the internet." },
+    { file: "assets/games/johnny-trigger.html", title: "Johnny Trigger", line: "Aim, fire and clear the room in one shot." },
+    { file: "assets/games/minesweeper.html", title: "Minesweeper", line: "The classic board, mines and all." },
+    { file: "assets/games/opposite-day.html", title: "Opposite Day", line: "Do everything backwards." },
+    { file: "assets/games/paper-io-2.htm", title: "Paper.io 2", line: "Claim territory and cut off the other colours." },
+    { file: "assets/games/pixel-speedrun.html", title: "Pixel Speedrun", line: "A tiny ninja, a lot of spikes, one more go." },
+    { file: "assets/games/sand-game.html", title: "Sand Game", line: "Drop sand, water and fire, and watch it fall." },
+    { file: "assets/games/spacebar-clicker.html", title: "Spacebar Clicker", line: "Press space. Then press it again. Then again." },
+    { file: "assets/games/stack.html", title: "Stack", line: "Drop each block exactly on the one below." },
+    { file: "assets/games/territorial-io.html", title: "Territorial.io", line: "Grow a country and take the map." },
+    { file: "assets/games/trap-the-cat.html", title: "Trap the Cat", line: "Wall the cat in before it reaches the edge." },
+    { file: "assets/games/wordle-unlimited.html", title: "Wordle Unlimited", line: "Six tries, five letters, as many rounds as you like." },
+    { file: "assets/games/zrist.html", title: "Zrist", line: "A one-button climb with a very sharp fall." }
   ];
 
   var grid = document.querySelector("[data-files-grid]");
@@ -114,15 +126,18 @@
   var closeBtn = document.querySelector("[data-close]");
   var fsBtn = document.querySelector("[data-fs]");
   var lastFocus = null;
-  var current = null;
   // Where the page was before a game took over the address bar. Relative
   // links resolve against the address bar, so it has to be exact.
   var home = window.location.pathname + window.location.search;
 
+  function slugOf(file) {
+    return file.replace(/^assets\/games\//, "").replace(/\.html?$/, "");
+  }
+
   GAMES.forEach(function (game) {
     var card = document.createElement("article");
     card.className = "file-card";
-    card.setAttribute("data-file", game.id);
+    card.setAttribute("data-file", game.file);
 
     var open = document.createElement("button");
     open.type = "button";
@@ -133,12 +148,18 @@
 
     var art = document.createElement("span");
     art.className = "file-art";
+    art.setAttribute("data-initial", game.title.charAt(0));
+
     var img = document.createElement("img");
-    img.src = game.art;
+    img.src = "assets/img/pack/" + slugOf(game.file) + ".jpg";
     img.alt = "";
     img.loading = "lazy";
     img.width = 512;
     img.height = 384;
+    img.addEventListener("error", function () {
+      art.classList.add("is-broken");
+      img.remove();
+    });
     art.appendChild(img);
 
     var badge = document.createElement("span");
@@ -159,12 +180,8 @@
     var line = document.createElement("span");
     line.className = "file-line";
     line.textContent = game.line;
-    var how = document.createElement("span");
-    how.className = "file-how";
-    how.textContent = game.how;
     body.appendChild(name);
     body.appendChild(line);
-    body.appendChild(how);
 
     open.appendChild(art);
     open.appendChild(body);
@@ -174,7 +191,6 @@
 
   function openGame(file, title, opener) {
     lastFocus = opener || document.activeElement;
-    current = file;
     titleEl.textContent = title;
     var absolute = new URL(file, window.location.href).href;
     ext.href = absolute;
@@ -200,7 +216,6 @@
     player.setAttribute("aria-hidden", "true");
     stage.innerHTML = "";
     document.body.classList.remove("locked");
-    current = null;
     if (push !== false) {
       try { window.history.replaceState(null, "", home); } catch (err) { /* ignore */ }
     }
@@ -216,12 +231,7 @@
   closeBtn.addEventListener("click", function () { closeGame(true); });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !player.hidden) {
-      closeGame(true);
-      return;
-    }
-    // The games live in their own frame, so a shortcut has to be handed over
-    // when the focus is here rather than inside it.
+    if (event.key === "Escape" && !player.hidden) closeGame(true);
   });
 
   fsBtn.addEventListener("click", function () {
@@ -233,8 +243,7 @@
   });
 
   window.addEventListener("popstate", function () {
-    if (player.hidden) return;
-    closeGame(false);
+    if (!player.hidden) closeGame(false);
   });
 }());
 </script>
