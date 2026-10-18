@@ -14,6 +14,12 @@ only filters local games. Both pages use `assets/js/local-games.js` as their
 shared list; add a game there, its file under `assets/games/`, and its card
 screenshot under `assets/img/pack/`.
 
+**Minecraft** is the one local title marked `featured` in that list, and it is
+the only one treated specially. It leads the local page, it is the first tile
+on the top row of the home page, and it is the first result whenever somebody
+searches for it — on either page, in any sort order. Every other local game
+keeps the order of the shared list and is ranked like any other title.
+
 New additions: **Basket Random** (one-button basketball), **Jumping Shell**
 (puzzle platforming), and **Fireblob** (ice-melting platforming). These files
 come from [CoolDude2349/Offline-HTML-Games-Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack/tree/5dbfcd7a6e788101a8acab50a6cf1af209938641/offline),

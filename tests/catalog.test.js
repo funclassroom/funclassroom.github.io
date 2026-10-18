@@ -120,6 +120,15 @@ check(
   /assets\/games\/minecraft\.html/.test(fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8")) &&
     fs.existsSync(path.join(ROOT, "assets/games/minecraft.html"))
 );
+check(
+  "Minecraft is the one local title that leads the wall",
+  (() => {
+    const list = fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8");
+    const featured = list.match(/featured: true/g) || [];
+    return featured.length === 1 &&
+      /file: "assets\/games\/minecraft\.html", title: "Minecraft", featured: true/.test(list);
+  })()
+);
 
 /* ---------- files ---------- */
 const index = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");

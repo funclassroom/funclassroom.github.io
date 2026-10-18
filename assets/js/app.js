@@ -13,6 +13,14 @@
       title: game.title + " (HTML)",
       rating: 0,
       plays: 0,
+      // The hand-picked local file. It is the one title the wall leads
+      // with; the words are what a search for it looks like.
+      featured: game.featured === true,
+      keywords: game.featured === true
+        ? game.title.toLowerCase().split(/[^a-z0-9]+/).filter(function (word) {
+            return word.length > 2;
+          })
+        : [],
       thumb: "assets/img/pack/" + slug + ".jpg",
       sources: [{ portal: "Local HTML", url: game.file, embed: true }]
     });
@@ -20,6 +28,8 @@
   window.CATALOG = ALL;
   var BY_ID = {};
   ALL.forEach(function (item) { BY_ID[item.id] = item; });
+  // There is only one of these, and it is Minecraft.
+  var FEATURED = ALL.filter(function (item) { return item.featured; });
 
   var KEY = "classroom.state.v1";
   var LEGACY_SAVED = "gams.saved.v1";
@@ -181,12 +191,32 @@
     return embeddable(item).length > 0;
   }
 
+  /* The featured local file leads the wall: it is the one title people come
+     for, and the only one shipped as a real copy of the game. It leads the
+     wall in its own order, and it leads any search that names it — even when
+     the wall is sorted another way. No other local title gets this. */
+  function featuredLeads() {
+    if (!FEATURED.length) return false;
+    // The wall opens in Popular order, and that is where it leads.
+    if (state.sort === "hot") return true;
+    var q = state.q.trim().toLowerCase();
+    if (!q) return false;
+    var words = q.split(/[^a-z0-9]+/).filter(Boolean);
+    if (!words.length) return false;
+    return FEATURED.some(function (item) {
+      return words.some(function (word) { return item.keywords.indexOf(word) !== -1; });
+    });
+  }
+
   function sorted(list) {
     var copy = list.slice();
+    var lead = featuredLeads();
     copy.sort(function (a, b) {
       // A pinned title is the one thing the wall leads with, on every sort:
       // it is hand-added and has no play count to rank by.
       if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+      // The featured local file leads the rest of the wall.
+      if (lead && !!a.featured !== !!b.featured) return a.featured ? -1 : 1;
       // Games that can play inside the page always lead; the rest open in a
       // tab and sit at the end.
       if (playable(a) !== playable(b)) return playable(a) ? -1 : 1;
@@ -262,6 +292,7 @@
     tile.setAttribute("data-id", item.id);
     tile.setAttribute("data-playable", playable(item) ? "1" : "0");
     tile.setAttribute("data-pinned", item.pinned ? "1" : "0");
+    tile.setAttribute("data-featured", item.featured ? "1" : "0");
     tile.setAttribute("data-rating", item.rating.toFixed(1));
 
     var open = document.createElement("button");
@@ -299,6 +330,15 @@
       rating.className = "tile-rating";
       rating.textContent = item.rating.toFixed(1);
       thumb.appendChild(rating);
+    }
+
+    if (item.featured) {
+      // The one title the wall puts first: it is a plain file, so it plays
+      // with the wi-fi off.
+      var badge = document.createElement("span");
+      badge.className = "tile-file";
+      badge.textContent = "OFFLINE";
+      thumb.appendChild(badge);
     }
 
     var portals = {};
