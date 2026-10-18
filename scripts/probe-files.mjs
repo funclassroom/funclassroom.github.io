@@ -48,7 +48,7 @@ async function paintScore(page, selector) {
   }, selector);
 }
 
-async function run(slug, steps) {
+async function run(slug, steps, settle = 1800) {
   const page = await browser.newPage({ viewport: { width: 960, height: 640 } });
   const log = [];
   page.on("pageerror", (err) => log.push("pageerror: " + err.message));
@@ -64,7 +64,7 @@ async function run(slug, steps) {
   } catch (err) {
     stepError = err.message.split("\n")[0];
   }
-  await page.waitForTimeout(1800);
+  await page.waitForTimeout(settle);
   const after = await paintScore(page, "canvas#game");
   const text = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " ").trim().slice(0, 120));
   await shot(page, slug);
@@ -80,16 +80,17 @@ async function run(slug, steps) {
 const click = (page, selector) => page.click(selector);
 const key = (page, k) => page.keyboard.press(k);
 
-await run("snake", async (page) => {
-  await click(page, "[data-go]");
-  await page.waitForTimeout(500);
-  // circle a little, so the shot catches it alive rather than against a wall
-  await key(page, "ArrowDown");
-  await page.waitForTimeout(420);
-  await key(page, "ArrowLeft");
-  await page.waitForTimeout(420);
-  await key(page, "ArrowUp");
-});
+await run(
+  "snake",
+  async (page) => {
+    await click(page, "[data-go]");
+    await page.waitForTimeout(320);
+    // turn once, so the shot catches it mid-slither rather than in a wall
+    await key(page, "ArrowDown");
+    await page.waitForTimeout(320);
+  },
+  500
+);
 
 await run("2048", async (page) => {
   await key(page, "ArrowLeft");
