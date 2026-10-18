@@ -37,7 +37,7 @@ jobs:
       - name: Open every local file
         run: |
           sleep 2
-          node scripts/probe-files.mjs
+          node scripts/probe-files.mjs || echo "probe failed" > probe-failed.txt
       - name: Keep the shots and screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,13 +45,14 @@ jobs:
           name: local-files
           path: probe
           if-no-files-found: ignore
-      - name: Commit the card screenshots if they are new
-        if: success()
+      - name: Commit the screenshots, or the report if something failed
+        if: always()
         run: |
           git config user.name "catalog-bot"
           git config user.email "catalog-bot@users.noreply.github.com"
-          git add assets/img/pack
-          if git diff --cached --quiet; then echo "No new screenshots."; exit 0; fi
-          git commit -m "Screenshot the local games"
+          if [ -f probe/files.json ]; then cp probe/files.json local-report.json; fi
+          git add assets/img/pack local-report.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Screenshots and report from the local files run"
           git pull --rebase --autostash
           git push
