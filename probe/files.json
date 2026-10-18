@@ -41,7 +41,7 @@
         }
       },
       "drew": true,
-      "text": "SCORE 4 BEST 4 New Arrow keys, WASD or swipe · merge the numbers 4 2 4 2",
+      "text": "SCORE 4 BEST 4 New Arrow keys, WASD or swipe · merge the numbers 2 2 4 2",
       "log": [],
       "stepError": null
     },
@@ -67,18 +67,16 @@
       "before": {
         "found": true,
         "ctx": true,
-        "colours": 1
+        "colours": 7
       },
       "after": {
         "found": true,
         "ctx": true,
-        "colours": 1
+        "colours": 7
       },
-      "drew": false,
-      "text": "SCORE 0 LIVES Move with the mouse · ← → · drag",
-      "log": [
-        "pageerror: dx is not defined"
-      ],
+      "drew": true,
+      "text": "SCORE 10 LIVES Move with the mouse · ← → · drag",
+      "log": [],
       "stepError": null
     },
     {
@@ -130,34 +128,14 @@
         "dom": {
           "cells": 81,
           "filled": 17,
-          "text": 101
+          "text": 102
         }
       },
       "drew": true,
-      "text": "MINES 9 TIME 2 New game 1 1 1 1 1 2 1 1 2 ⚑ 2 1 1 3 1 1 2 Click to dig · right-click or hold to flag",
+      "text": "MINES 10 TIME 2 New game 1 1 1 1 1 2 2 1 1 1 2 1 2 1 2 1 2 Click to dig · right-click or hold to flag",
       "log": [],
       "stepError": null
     }
   ],
-  "errors": [
-    {
-      "slug": "breakout",
-      "before": {
-        "found": true,
-        "ctx": true,
-        "colours": 1
-      },
-      "after": {
-        "found": true,
-        "ctx": true,
-        "colours": 1
-      },
-      "drew": false,
-      "text": "SCORE 0 LIVES Move with the mouse · ← → · drag",
-      "log": [
-        "pageerror: dx is not defined"
-      ],
-      "stepError": null
-    }
-  ]
+  "errors": []
 }
