@@ -146,20 +146,24 @@
   function resize() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     var box = cv.getBoundingClientRect();
+    var oldW = W || box.width;
+    var oldH = H || box.height;
     W = Math.max(240, box.width);
     H = Math.max(200, box.height);
     cv.width = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
-    if (bricks) {
-      layoutBricks();
-      paddle.w = paddleWidth();
-      paddle.x = Math.min(Math.max(0, paddle.x * dx), W - paddle.w);
-      paddle.y = H - 34;
-      ball.x *= dx; ball.y *= dy;
-      if (attached) ball.y = paddle.y - 12;
-      ball.r = Math.max(5, Math.min(9, W / 90));
-    }
+    if (!bricks) return;
+
+    layoutBricks();
+    paddle.w = paddleWidth();
+    paddle.x = Math.min(Math.max(0, (paddle.x / oldW) * W), W - paddle.w);
+    paddle.y = H - 34;
+    ball.x = Math.min(W - ball.r, Math.max(ball.r, (ball.x / oldW) * W));
+    ball.y = (ball.y / oldH) * H;
+    ball.r = Math.max(5, Math.min(9, W / 90));
+    if (attached) ball.y = paddle.y - 12;
   }
+
 
   function launch() {
     if (!running || !attached) return;
