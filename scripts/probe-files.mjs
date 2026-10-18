@@ -7,10 +7,8 @@ import { chromium } from "playwright";
 const BASE = process.env.BASE || "http://127.0.0.1:8765";
 const OUT = process.env.OUT || "probe";
 fs.mkdirSync(OUT, { recursive: true });
-const COMMIT_SHOTS = process.env.COMMIT_SHOTS === "1";
 
 
-process.on("exit", () => { if (COMMIT_SHOTS) console.log("shots in " + OUT); });
 
 const browser = await chromium.launch({
   args: ["--enable-unsafe-swiftshader", "--use-gl=swiftshader"],
