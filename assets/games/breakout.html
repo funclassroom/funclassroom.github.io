@@ -89,25 +89,40 @@
     paintChrome();
   }
 
+  // Brick rectangles depend on the canvas size, so they are laid out from
+  // their row and column every time the canvas changes, never frozen at
+  // whatever size the window happened to be first.
+  function layoutBricks() {
+    var gap = Math.max(4, Math.min(7, W * 0.006));
+    var margin = Math.max(14, W * 0.03);
+    var top = Math.max(46, Math.min(64, H * 0.11));
+    var bh = Math.max(14, Math.min(28, H * 0.048));
+    var bw = Math.max(8, (W - margin * 2 - gap * (COLS - 1)) / COLS);
+    bricks.forEach(function (b) {
+      b.x = margin + b.col * (bw + gap);
+      b.y = top + b.row * (bh + gap);
+      b.w = bw;
+      b.h = bh;
+    });
+  }
+
   function buildLevel() {
     bricks = [];
-    var gap = 6;
-    var margin = 24;
-    var top = 54;
-    var bw = (W - margin * 2 - gap * (COLS - 1)) / COLS;
-    var bh = Math.max(16, Math.min(26, H * 0.045));
     for (var r = 0; r < ROWS; r += 1) {
       for (var c = 0; c < COLS; c += 1) {
         bricks.push({
-          x: margin + c * (bw + gap),
-          y: top + r * (bh + gap),
-          w: bw,
-          h: bh,
+          row: r,
+          col: c,
+          x: 0,
+          y: 0,
+          w: 0,
+          h: 0,
           color: COLORS[r % COLORS.length],
           alive: true
         });
       }
     }
+    if (W > 0) layoutBricks();
   }
 
   function paddleWidth() { return Math.max(80, W * 0.17); }
@@ -131,16 +146,12 @@
   function resize() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     var box = cv.getBoundingClientRect();
-    var oldW = W || box.width;
-    var oldH = H || box.height;
     W = Math.max(240, box.width);
     H = Math.max(200, box.height);
     cv.width = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
     if (bricks) {
-      var dx = W / oldW;
-      var dy = H / oldH;
-      bricks.forEach(function (b) { b.x *= dx; b.y *= dy; b.w *= dx; b.h *= dy; });
+      layoutBricks();
       paddle.w = paddleWidth();
       paddle.x = Math.min(Math.max(0, paddle.x * dx), W - paddle.w);
       paddle.y = H - 34;
@@ -354,6 +365,10 @@
 
   reset();
   resize();
+  // reset() runs before the canvas has a size, so the wall is laid out once
+  // the measurements exist.
+  if (bricks) layoutBricks();
+  resetBall();
   paintChrome();
   window.requestAnimationFrame(frame);
 }());
