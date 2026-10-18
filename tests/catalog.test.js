@@ -177,7 +177,7 @@ check(
 );
 check(
   "the local files stay small enough to ship",
-  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 40 * 1024 * 1024
+  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 150 * 1024 * 1024
 );
 
 check("index loads the app", /assets\/js\/app\.js/.test(index));

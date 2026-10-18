@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Classroom</title>
-<meta name="description" content="Nineteen games that ship with the page as plain files. Nothing to block.">
+<meta name="description" content="Thirty-three titles that ship with the page as plain files. Nothing to block.">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="assets/css/app.css?v=21">
+<link rel="stylesheet" href="assets/css/app.css?v=22">
 </head>
 <body>
 <a class="skip" href="#files">Skip to the list</a>
@@ -20,12 +20,14 @@
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
   <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7"/><path d="M16 21h5v-5M21 21l-6-6M8 3H3v5M3 3l6 6"/></symbol>
 </svg>
 
 <header class="bar">
   <div class="bar-in">
     <a class="logo" href="./">G@M£$</a>
-    <p class="files-crumb">Local files <span>· nineteen titles in the page itself</span></p>
+    <p class="files-crumb">100% Unblocked <span>· thirty-three titles in the page itself</span></p>
     <div class="bar-actions">
       <a class="btn" href="./">
         <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>
@@ -40,34 +42,61 @@
     <p class="files-kicker"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> Never blocked</p>
     <h1>These are just files.</h1>
     <p class="files-lede">
-      Nineteen games that live in this folder as plain HTML, not embeds on
+      Thirty-three titles that live in this folder as plain HTML, not embeds on
       somebody else's server. There is no portal, no player to load and no
-      third party that can refuse a frame, so a filter that blocks a game site
+      third party that can refuse a frame, so a filter that blocks a site
       has nothing to act on.
     </p>
     <p class="files-lede files-lede-2">
       Taken from <a href="https://github.com/CoolDude2349/Offline-HTML-Games-Pack" target="_blank" rel="noopener">CoolDude2349's Offline HTML Games Pack</a>,
-      which holds 352 of them. These are the ones small enough to ship with the
-      page and that still load cleanly on their own; the whole pack is several
-      gigabytes.
+      which holds 352 of them — the small classics plus the heavy legends
+      (Slope, Retro Bowl, OvO, Bad Piggies and friends), every one checked to
+      load with no network at all.
     </p>
     <ul class="files-facts">
-      <li><b>19</b> games in this folder</li>
+      <li><b>33</b> titles in this folder</li>
       <li><b>0</b> third-party embeds</li>
       <li><b>offline</b> works with the wi-fi off</li>
     </ul>
   </section>
 
-  <section id="files" class="files-grid" data-files-grid aria-label="Local games"></section>
+  <section class="recent" data-files-recent hidden aria-label="Recently played here">
+    <h2>Recently played here</h2>
+    <div class="recent-list" data-files-recent-list></div>
+  </section>
+
+  <div class="files-tools">
+    <div class="search files-search">
+      <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="fq" type="search" placeholder="Filter these 33 titles" autocomplete="off" spellcheck="false" aria-label="Filter these titles">
+    </div>
+    <button type="button" class="btn btn-dark" data-surprise>
+      <svg class="ico" aria-hidden="true"><use href="#i-shuffle"/></svg>
+      <span>Surprise me</span>
+    </button>
+    <span class="files-count" data-files-count></span>
+  </div>
+
+  <section id="files" class="files-grid" data-files-grid aria-label="Local titles"></section>
+
+  <p class="files-note" data-files-empty hidden>
+    Nothing matches that filter.
+    <button type="button" class="link" data-files-clear>Show everything</button>
+  </p>
 
   <p class="files-note">
-    Game saves and high scores stay in this browser, like everything else here.
+    Saves and high scores stay in this browser, like everything else here.
     <a href="./">Back to all 17,557 titles</a>
   </p>
 </main>
 
 <footer class="foot">
   <p>G@M£$ <span class="sep">/</span> the rest of the wall is streamed from publishers — this page is the exception.</p>
+  <p class="foot-data">
+    <span>Teacher walking over? Press <kbd>`</kbd> to exit fast.</span>
+    <a class="link" href="https://classroom.google.com/">Quick exit</a>
+    <button type="button" class="link" data-blank>Blank tab</button>
+  </p>
 </footer>
 
 <div class="player" data-player hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="file-title">
@@ -115,8 +144,25 @@
     { file: "assets/games/territorial-io.html", title: "Territorial.io", line: "Grow a country and take the map." },
     { file: "assets/games/trap-the-cat.html", title: "Trap the Cat", line: "Wall the cat in before it reaches the edge." },
     { file: "assets/games/wordle-unlimited.html", title: "Wordle Unlimited", line: "Six tries, five letters, as many rounds as you like." },
-    { file: "assets/games/zrist.html", title: "Zrist", line: "A one-button climb with a very sharp fall." }
+    { file: "assets/games/zrist.html", title: "Zrist", line: "A one-button climb with a very sharp fall." },
+    { file: "assets/games/slope.html", title: "Slope", line: "Roll the neon ball down the endless void. Do not blink." },
+    { file: "assets/games/retro-bowl.html", title: "Retro Bowl", line: "Call the plays, manage the roster, win the Bowl." },
+    { file: "assets/games/ovo.html", title: "OvO", line: "Sprint, slide and dive through brutal parkour trials." },
+    { file: "assets/games/stickman-hook.html", title: "Stickman Hook", line: "Grapple, swing and bounce to the finish line." },
+    { file: "assets/games/drive-mad.htm", title: "Drive Mad", line: "One hundred stunt tracks. No brakes were harmed." },
+    { file: "assets/games/flappy-bird.html", title: "Flappy Bird", line: "Thread the pipes. You already know this one." },
+    { file: "assets/games/cookie-clicker.htm", title: "Cookie Clicker", line: "Bake cookies. Then bake many more cookies." },
+    { file: "assets/games/level-devil.html", title: "Level Devil", line: "The floor is lava and the exit is a lie." },
+    { file: "assets/games/fireboy-and-watergirl.html", title: "Fireboy & Watergirl", line: "Two players, one temple. Do not mix them up." },
+    { file: "assets/games/bad-piggies.html", title: "Bad Piggies", line: "Build a machine out of junk, steal the eggs." },
+    { file: "assets/games/fruit-ninja.html", title: "Fruit Ninja", line: "Slice everything in the air. Dodge the bombs." },
+    { file: "assets/games/pac-man.html", title: "Pac-Man", line: "Eat every dot, dodge every ghost." },
+    { file: "assets/games/crossy-road.htm", title: "Crossy Road", line: "Hop the roads and rivers. Beat your best." },
+    { file: "assets/games/soccer-random.htm", title: "Soccer Random", line: "Wobbly one-button football chaos for two." }
   ];
+
+  var RECENT_KEY = "classroom.files.v1";
+  var MAX_RECENT = 8;
 
   var grid = document.querySelector("[data-files-grid]");
   var player = document.querySelector("[data-player]");
@@ -125,13 +171,66 @@
   var ext = document.querySelector("[data-external]");
   var closeBtn = document.querySelector("[data-close]");
   var fsBtn = document.querySelector("[data-fs]");
+  var search = document.getElementById("fq");
+  var countEl = document.querySelector("[data-files-count]");
+  var emptyNote = document.querySelector("[data-files-empty]");
+  var recentWrap = document.querySelector("[data-files-recent]");
+  var recentList = document.querySelector("[data-files-recent-list]");
   var lastFocus = null;
-  // Where the page was before a game took over the address bar. Relative
+  // Where the page was before a title took over the address bar. Relative
   // links resolve against the address bar, so it has to be exact.
   var home = window.location.pathname + window.location.search;
 
   function slugOf(file) {
     return file.replace(/^assets\/games\//, "").replace(/\.html?$/, "");
+  }
+
+  function bySlug(slug) {
+    for (var i = 0; i < GAMES.length; i++) {
+      if (slugOf(GAMES[i].file) === slug) return GAMES[i];
+    }
+    return null;
+  }
+
+  function readRecent() {
+    try {
+      var raw = JSON.parse(window.localStorage.getItem(RECENT_KEY));
+      if (Array.isArray(raw)) return raw.filter(function (s) { return !!bySlug(s); }).slice(0, MAX_RECENT);
+    } catch (err) { /* storage blocked: no recents, no problem */ }
+    return [];
+  }
+
+  function writeRecent(slug) {
+    var list = [slug].concat(readRecent().filter(function (s) { return s !== slug; })).slice(0, MAX_RECENT);
+    try { window.localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (err) { /* ignore */ }
+    renderRecent();
+  }
+
+  function renderRecent() {
+    if (!recentWrap) return;
+    var list = readRecent();
+    recentWrap.hidden = list.length === 0;
+    recentList.innerHTML = "";
+    list.forEach(function (slug) {
+      var game = bySlug(slug);
+      if (!game) return;
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "recent-chip";
+      chip.setAttribute("data-open-file", game.file);
+      chip.setAttribute("data-title", game.title);
+      var img = document.createElement("img");
+      img.src = "assets/img/pack/" + slug + ".jpg";
+      img.alt = "";
+      img.loading = "lazy";
+      img.width = 88;
+      img.height = 66;
+      var text = document.createElement("span");
+      text.textContent = game.title;
+      chip.appendChild(img);
+      chip.appendChild(text);
+      recentList.appendChild(chip);
+    });
   }
 
   GAMES.forEach(function (game) {
@@ -164,7 +263,7 @@
 
     var badge = document.createElement("span");
     badge.className = "file-badge";
-    badge.textContent = "HTML file";
+    badge.textContent = "OFFLINE";
     art.appendChild(badge);
 
     var play = document.createElement("span");
@@ -189,6 +288,27 @@
     grid.appendChild(card);
   });
 
+  function visibleCards() {
+    return Array.prototype.filter.call(grid.children, function (card) {
+      return !card.hidden;
+    });
+  }
+
+  function applyFilter() {
+    var q = (search.value || "").trim().toLowerCase();
+    var shown = 0;
+    Array.prototype.forEach.call(grid.children, function (card) {
+      var button = card.querySelector("[data-open-file]");
+      var hay = (button.getAttribute("data-title") + " " + slugOf(button.getAttribute("data-open-file")).replace(/-/g, " ")).toLowerCase();
+      var hit = !q || hay.indexOf(q) !== -1 ||
+        q.split(/\s+/).every(function (word) { return hay.indexOf(word) !== -1; });
+      card.hidden = !hit;
+      if (hit) shown += 1;
+    });
+    emptyNote.hidden = shown !== 0;
+    countEl.textContent = q ? shown + " of " + GAMES.length : "";
+  }
+
   function openGame(file, title, opener) {
     lastFocus = opener || document.activeElement;
     titleEl.textContent = title;
@@ -206,6 +326,7 @@
     player.hidden = false;
     player.setAttribute("aria-hidden", "false");
     document.body.classList.add("locked");
+    writeRecent(slugOf(file));
     try { window.history.pushState({ f: file }, "", absolute); } catch (err) { /* file:// */ }
     closeBtn.focus({ preventScroll: true });
   }
@@ -222,16 +343,57 @@
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
   }
 
-  grid.addEventListener("click", function (event) {
+  function openFrom(event) {
     var button = event.target.closest("[data-open-file]");
     if (!button) return;
+    // Recent chips live outside the grid; their opener is the chip itself.
     openGame(button.getAttribute("data-open-file"), button.getAttribute("data-title"), button);
-  });
+  }
+
+  grid.addEventListener("click", openFrom);
+  if (recentList) recentList.addEventListener("click", openFrom);
 
   closeBtn.addEventListener("click", function () { closeGame(true); });
 
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && !player.hidden) closeGame(true);
+    // Panic key: one tap looks like homework again. Ignored while typing.
+    if (event.key === "`" && !/^(input|textarea|select)$/i.test(event.target.tagName)) {
+      window.location.href = "https://classroom.google.com/";
+    }
+  });
+
+  // Blank tab: reopen this page inside an about:blank tab so the address
+  // bar shows nothing at all.
+  var blankBtn = document.querySelector("[data-blank]");
+  if (blankBtn) blankBtn.addEventListener("click", function () {
+    var win = window.open("about:blank", "_blank");
+    if (!win) return;
+    var url = window.location.href.replace(/</g, "%3C");
+    win.document.write(
+      "<!doctype html><html><head><title>Classroom</title></head>" +
+      "<body style='margin:0'><iframe src='" + url + "' style='border:0;width:100vw;height:100vh' allowfullscreen></iframe></body></html>"
+    );
+    win.document.close();
+  });
+
+  if (search) {
+    search.addEventListener("input", applyFilter);
+    var clear = document.querySelector("[data-files-clear]");
+    if (clear) clear.addEventListener("click", function () {
+      search.value = "";
+      applyFilter();
+      search.focus();
+    });
+  }
+
+  var surprise = document.querySelector("[data-surprise]");
+  if (surprise) surprise.addEventListener("click", function () {
+    var cards = visibleCards();
+    if (!cards.length) return;
+    var pick = cards[Math.floor(Math.random() * cards.length)];
+    var button = pick.querySelector("[data-open-file]");
+    openGame(button.getAttribute("data-open-file"), button.getAttribute("data-title"), surprise);
   });
 
   fsBtn.addEventListener("click", function () {
@@ -245,6 +407,8 @@
   window.addEventListener("popstate", function () {
     if (!player.hidden) closeGame(false);
   });
+
+  renderRecent();
 }());
 </script>
 </body>

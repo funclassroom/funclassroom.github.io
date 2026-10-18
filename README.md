@@ -131,9 +131,10 @@ game.
 - 120 tiles to a page, with a **Show more** button, so a 16,000-title wall
   still paints in one frame
 - Save titles, and a row of the last eight you opened
-- `#p=<slug>` deep links, `Esc` to close, `/` to search
-- **Local files** in the header: nineteen games that are plain files, on their own
-  page, with no embed to load
+- `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
+- Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
+- **100% Unblocked** in the header: thirty-three titles that are plain files,
+  on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
   tried automatically; if every one fails, the player says so, apologises, and
@@ -144,15 +145,17 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **Local files** in the header, lists nineteen games
-that ship with the site as plain HTML under `assets/games/`. No embed, no
-portal, no third party that can refuse a frame: the page opens a file from its
-own folder, and a filter aimed at a game site has nothing to act on.
+`files.html`, reached from **100% Unblocked** in the header, lists thirty-three
+titles that ship with the site as plain HTML under `assets/games/`. No embed,
+no portal, no third party that can refuse a frame: the page opens a file from
+its own folder, and a filter aimed at a game site has nothing to act on.
 
 They come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
 which collects 352 single-file games. That pack is several gigabytes, so this
-site carries the smallest that still make a good wall — the largest here
-is 1.4 MB and the whole folder is about 11 MB. A few are left out: `Indev.html`
+site carries thirty-three hand-picked ones: the small classics plus the heavy
+legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and more).
+Slope is the largest at 26 MB and the whole folder is about 116 MB. A few are
+left out: `Indev.html`
 pulls a Cloudflare analytics beacon and would not have been offline at all, and
 `agar-io-lite.html` asks for an image that is not in the pack.
 
@@ -166,7 +169,7 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the nineteen titles that are plain files
+files.html               the thirty-three titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
