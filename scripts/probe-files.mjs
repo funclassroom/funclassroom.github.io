@@ -23,11 +23,17 @@ async function shot(page, name) {
   await page.screenshot({ path: path.join(OUT, name + ".png") });
 }
 
-/* A canvas that has been painted has more than one colour in it. */
+/* A canvas that has been painted has more than one colour in it. Games drawn
+   with DOM nodes are checked by what they put on screen instead. */
 async function paintScore(page, selector) {
   return page.evaluate((sel) => {
     const canvas = document.querySelector(sel);
-    if (!canvas) return { found: false };
+    if (!canvas) {
+      const cells = document.querySelectorAll(".cell");
+      const filled = Array.from(cells).filter((c) => c.textContent.trim() || c.dataset.v).length;
+      const text = document.body.innerText.trim().length;
+      return { found: false, dom: { cells: cells.length, filled, text } };
+    }
     const ctx = canvas.getContext("2d");
     if (!ctx) return { found: true, ctx: false };
     const { width, height } = canvas;
@@ -62,9 +68,10 @@ async function run(slug, steps) {
   const after = await paintScore(page, "canvas#game");
   const text = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " ").trim().slice(0, 120));
   await shot(page, slug);
-  const entry = { slug, before, after, text, log, stepError };
+  const drew = after.found ? after.colours >= 3 : (after.dom && after.dom.cells > 0 && after.dom.filled > 0);
+  const entry = { slug, before, after, drew, text, log, stepError };
   results.push(entry);
-  if (log.length || stepError || !after.found || after.colours < 3) {
+  if (log.length || stepError || !drew) {
     errors.push(entry);
   }
   await page.close();
@@ -75,10 +82,13 @@ const key = (page, k) => page.keyboard.press(k);
 
 await run("snake", async (page) => {
   await click(page, "[data-go]");
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(500);
+  // circle a little, so the shot catches it alive rather than against a wall
   await key(page, "ArrowDown");
-  await page.waitForTimeout(900);
-  await key(page, "ArrowRight");
+  await page.waitForTimeout(420);
+  await key(page, "ArrowLeft");
+  await page.waitForTimeout(420);
+  await key(page, "ArrowUp");
 });
 
 await run("2048", async (page) => {
@@ -164,8 +174,8 @@ console.log(JSON.stringify({ button, errors: errors.length }, null, 2));
 for (const entry of results) {
   console.log(
     entry.slug.padEnd(13),
-    "colours:",
-    String(entry.after.colours).padEnd(3),
+    "drew:",
+    String(entry.drew).padEnd(5),
     entry.log.length ? "LOG " + entry.log.join(" | ").slice(0, 200) : "clean",
     entry.stepError ? "STEP " + entry.stepError : ""
   );

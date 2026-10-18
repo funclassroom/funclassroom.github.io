@@ -136,14 +136,30 @@ game.
 No frameworks, no build step, no backend. `localStorage` holds saves and
 recents; nothing is sent anywhere.
 
+## The files that cannot be blocked
+
+`files.html`, reached from **Local files** in the header, lists seven games that
+ship with the site as plain `.html` files under `assets/games/`. No embed, no
+third-party host, no network request at all: they run from the same folder as
+the page, so a filter that blocks a game website has nothing to act on, and they
+work with the wi-fi off. Each one is a self-contained canvas or DOM game with
+keyboard, mouse and touch controls, and high scores stay in localStorage.
+
+`scripts/probe-files.mjs` serves the repo and plays all seven in Chromium —
+starting each game, checking it actually paints, and failing if a frame throws.
+`.github/workflows/local-files.yml` runs it whenever a game changes.
+
 ## Files
 
 ```
 index.html               the page
+files.html               the seven titles that are plain files
 404.html                 not-found page
+assets/games/*.html      Snake, 2048, Tetris, Breakout, Pong, Flap, Minesweeper
 assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,557 rows)
 assets/js/app.js         search, sort, saves, recents, player
+assets/img/*.svg         hand-drawn cards for the local titles
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft)
 tests/ui.test.js         DOM behaviour
