@@ -1,6 +1,8 @@
 /* Classroom — one tile per game, several sources behind each tile.
-   If a source refuses to load, the player walks down the mirrors until one
-   works; if every one refuses, it says so and apologises. */
+   A source marked non-embeddable opens in a new tab and never enters the
+   iframe; if every route refuses to load, the player says so and apologises.
+   The loading card stays up until the frame answers, so a slow or blocked
+   game is never a silent black screen. */
 (function () {
   "use strict";
 
@@ -36,7 +38,6 @@
   var LEGACY_RECENT = "gams.recent.v1";
   var MAX_RECENT = 8;
   var SLOW_LOAD_MS = 12000;
-  var GIVE_UP_MS = 22000;
   var EAGER_IMAGES = 24;
   var BATCH = 120;
   var SCROLL_SAVE_MS = 350;
@@ -589,9 +590,12 @@
 
   /* ---------- sources ---------- */
 
-  // Every source is attempted; the publisher decides whether it renders.
+  // A source marked non-embeddable is known to refuse framing: MadKidGames
+  // answers X-Frame-Options: SAMEORIGIN and renders black anywhere but its
+  // own domain. Mounting those anyway is what used to fill the player with a
+  // dead black frame, so only real candidates are handed to the iframe.
   function embeddable(item) {
-    return item.sources.slice();
+    return item.sources.filter(function (source) { return source.embed !== false; });
   }
 
   function sourcesFor(item) {
@@ -646,6 +650,7 @@
     state.active = id;
     state.sourceIndex = -1;
     state.loaded = false;
+    state.loadedPortal = null;
 
     dom.playerTitle.textContent = item.title;
     dom.playerSub.textContent = (item.rating > 0 ? item.rating.toFixed(1) + " stars · " : "") +
@@ -661,7 +666,12 @@
     // Freeze the order for this session: a portal failing mid-way must not
     // shuffle the queue under the user's feet.
     state.queue = sourcesFor(item);
-    attemptSource(0);
+
+    // A title whose every route refuses framing (MadKidGames, mostly) gets
+    // the explanation panel instead of a black iframe.
+    if (!state.queue.length) showBlocked(item, []);
+    else attemptSource(0);
+
     dom.close.focus({ preventScroll: true });
 
     if (opts.push !== false) {
@@ -691,6 +701,7 @@
 
     state.sourceIndex = index;
     state.loaded = false;
+    state.loadedPortal = null;
 
     var source = sources[index];
     state.currentId = state.active;
@@ -725,11 +736,16 @@
     frame.setAttribute("allowfullscreen", "");
     frame.setAttribute("frameborder", "0");
 
+    // A frame that is torn down must not report its load into the next one.
+    var token = (state.frameToken = (state.frameToken || 0) + 1);
+
     frame.addEventListener("load", function () {
+      if (token !== state.frameToken) return;
       // The document answered. Whether it then draws a game is the
       // publisher's business, and there is no honest way for this page to
       // see inside a cross-origin frame — so never call it broken here.
       state.loaded = true;
+      state.loadedPortal = source.portal;
       state.loadingFrame = false;
       dom.loading.hidden = true;
       window.clearTimeout(dom.loadTimer);
@@ -738,18 +754,15 @@
 
     dom.stage.appendChild(frame);
 
-    // The overlay must never be the thing that hides a working game: it comes
-    // away after a moment whether or not `load` fired.
+    // Keep the spinner up while the document is actually loading. Hiding it
+    // on a fixed timer is what left a silent black stage behind slow games.
     window.clearTimeout(dom.loadTimer);
-    dom.loadTimer = window.setTimeout(function () {
-      dom.loading.hidden = true;
-    }, 3500);
-
     window.clearTimeout(dom.slowTimer);
     dom.slowTimer = window.setTimeout(function () {
-      if (state.loaded) return;
+      if (state.loaded || token !== state.frameToken) return;
       dom.loadLink.hidden = false;
-      dom.source.textContent = "still loading — use “Try another source” if it stays blank";
+      dom.loadingText.textContent = "This one is taking a while";
+      dom.source.textContent = "still loading — open it in a new tab if it stays blank";
     }, SLOW_LOAD_MS);
   }
 
@@ -773,16 +786,30 @@
     clearStage();
     dom.loading.hidden = true;
     dom.next.hidden = true;
+    dom.next.disabled = true;
 
-    var attempt = sources.length || item.sources.length;
-    dom.source.textContent = attempt + (attempt === 1 ? " source" : " sources") + " tried";
-    dom.blocked.querySelector("h2").textContent = "This one would not load";
+    var title = dom.blocked.querySelector("h2");
+    var walled = item.sources.filter(function (source) { return source.embed === false; });
+    var attempt = sources.length;
 
-    dom.blockedText.textContent = (attempt === 1
-      ? "The only source for this title gave us nothing back. "
-      : "All " + attempt + " sources for this title gave us nothing back. ") +
-      "That usually means the site is refusing frames or is down — not that the game is broken. " +
-      "It opens fine in its own tab.";
+    if (attempt === 0) {
+      // Nothing was even attempted: every route is known to refuse framing.
+      // This is the MadKidGames case, and it used to be a black iframe.
+      dom.source.textContent = "not embeddable";
+      title.textContent = "This one will not be framed";
+      dom.blockedText.textContent = item.sources.length
+        ? item.sources[0].portal + " does not allow its games inside another page, " +
+          "so it cannot play here. It still works in its own tab — sorry for the extra click."
+        : "This title has no working route at the moment. Sorry about that.";
+    } else {
+      dom.source.textContent = attempt + (attempt === 1 ? " source" : " sources") + " tried";
+      title.textContent = "This one would not load";
+      dom.blockedText.textContent = (attempt === 1
+        ? "The only source for this title gave us nothing back. "
+        : "All " + attempt + " sources for this title gave us nothing back. ") +
+        "That usually means the site is refusing frames or is down — not that the game is broken. " +
+        "It opens fine in its own tab.";
+    }
 
     dom.blockedList.innerHTML = "";
     item.sources.forEach(function (source) {
@@ -791,15 +818,22 @@
       link.href = source.url;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = source.portal + " — " + source.url.replace(/^https:\/\//, "");
+      link.textContent = source.portal + (source.embed === false
+        ? " — opens in a new tab"
+        : " — " + source.url.replace(/^https:\/\//, ""));
       li.appendChild(link);
       dom.blockedList.appendChild(li);
     });
 
-    var first = item.sources[0];
-    dom.blockedOpen.hidden = false;
-    dom.blockedOpen.href = first.url;
-    dom.blockedOpen.textContent = "Open on " + first.portal;
+    var first = (walled.length ? walled : sources.length ? sources : item.sources)[0];
+    if (first) {
+      dom.blockedOpen.hidden = false;
+      dom.blockedOpen.href = first.url;
+      dom.blockedOpen.textContent = (attempt === 0 ? "Play on " : "Open on ") + first.portal;
+    } else {
+      dom.blockedOpen.hidden = true;
+      dom.blockedOpen.removeAttribute("href");
+    }
 
     dom.blocked.hidden = false;
   }
@@ -812,12 +846,15 @@
     // Rebuild the queue: portals that failed are now last, so a retry starts
     // with one that has not been given a chance yet.
     state.queue = sourcesFor(item);
+    if (!state.queue.length) { showBlocked(item, []); return; }
     attemptSource(0);
   }
 
   function clearStage() {
     window.clearTimeout(dom.loadTimer);
     window.clearTimeout(dom.slowTimer);
+    // Bump the token so a frame being removed cannot claim it loaded.
+    state.frameToken = (state.frameToken || 0) + 1;
     var frame = $(".player-frame", dom.stage);
     if (frame) frame.remove();
   }
@@ -826,16 +863,15 @@
     var opts = options || {};
     if (!state.active) return;
 
-    if (state.loaded && state.sourceIndex >= 0) {
-      var item = BY_ID[state.active];
-      var sources = item ? sourcesFor(item) : [];
-      if (sources[state.sourceIndex]) noteGood(state.active, sources[state.sourceIndex].portal);
-    }
+    // Remember the portal that actually answered, not whatever happens to
+    // sit at the old index after the queue is re-sorted for failures.
+    if (state.loadedPortal) noteGood(state.active, state.loadedPortal);
 
     state.active = null;
     state.sourceIndex = -1;
     state.queue = null;
     state.loaded = false;
+    state.loadedPortal = null;
     state.loadingFrame = false;
     clearStage();
     dom.loading.hidden = false;

@@ -67,26 +67,30 @@ backup with it. That is why `html5.gamemonetize.co` and `gamemonetize.com` are
 not both listed for the same title unless a second domain exists.
 
 The player learns from real attempts only: a portal that actually failed in the
-frame moves to the back for that device. It never pre-judges a host — a
-`fetch()` is filtered differently from an iframe, so a reachability ping gave
-false "blocked" answers and hid sources that played fine.
+frame moves to the back for that device. It never pre-judges a host from a
+`fetch()` — a reachability ping is filtered differently from an iframe, so it
+gave false "blocked" answers and hid sources that played fine. The one fact it
+does trust is the builder's `embeddable` flag, which comes from the publisher's
+own `X-Frame-Options` / `Content-Security-Policy` headers.
 
-Every tile carries at least one route and most carry two, tried in order.
-No source is marked unplayable ahead of time: the frame is attempted, and only
-a real failure moves on to the next route. When all of them fail, the player
-says the title would not load and offers the publisher in a new tab.
+Every tile carries at least one route and most carry two, tried in order. A
+source the builder marked non-embeddable is never mounted in the iframe: the
+player shows the explanation panel and a prominent new-tab button straight
+away, so a known wall cannot become a black screen. When the attempted routes
+all fail, the player says so and offers the publisher in a new tab.
 
 Every title appears once. A tile only carries more than one source when the
 same game exists on more than one portal, and the extra sources are never shown
-as separate tiles — the player walks down them only when the one above refuses
+as separate tiles — the player offers the next one when the route above refuses
 to load.
 
 MadKidGames is the catalogue the site started from. `/full/<slug>` is the bare
 player, but it only renders for pages on madkidgames.com — from anywhere else it
-shows an empty frame. So when a title also exists on GameMonetize, that route
-opens first and MadKid becomes the backup. Their pages sit behind a bot
-wall that answers automated checks with a Cloudflare challenge, which is why
-the build cannot verify them; the browser can.
+shows an empty, black frame. Its routes are therefore kept as new-tab links and
+never mounted in the iframe; a title that also exists on GameMonetize opens that
+route first. MadKid-only tiles sit after the playable ones in the wall. Their
+pages sit behind a bot wall that answers automated checks with a Cloudflare
+challenge, which is why the build cannot verify them; the browser can.
 
 ### Titles no feed carries
 
@@ -180,9 +184,10 @@ game.
 - **100% Unblocked** in the header: 141 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
-- A fallback chain: if a route will not load, the next one for that game is
-  tried automatically; if every one fails, the player says so, apologises, and
-  offers the portal in a new tab
+- If a route fails, **Try another source** walks to the next one; if every one
+  fails, the player says so, apologises, and offers the portal in a new tab
+- Loading stays on screen until the frame answers, so a slow game is never a
+  silent black page; local files show the same card (Minecraft is 76 MB)
 
 No frameworks, no build step, no backend. `localStorage` holds saves and
 recents; nothing is sent anywhere.
@@ -289,7 +294,7 @@ files.html               the 141 titles that are plain files
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,556 rows)
+assets/js/catalog.js     generated catalogue (17,568 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (currently none)

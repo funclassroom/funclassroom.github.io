@@ -97,8 +97,11 @@ def madkidgames(existing):
             "rating": existing.get(slug, {}).get("rating", 0.0),
             "plays": existing.get(slug, {}).get("plays", 0),
             # /full/ is the bare player — the same thing the site shows once
-            # you strip its header, menu and footer.
-            "embed": True,
+            # you strip its header, menu and footer. It only renders for
+            # pages on madkidgames.com (X-Frame-Options: SAMEORIGIN), so it
+            # must never be mounted in an iframe here: off-domain it paints
+            # a black frame. It is kept as the new-tab route instead.
+            "embed": False,
         })
     return games
 

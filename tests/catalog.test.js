@@ -64,9 +64,17 @@ check(
   new Set(CATALOG.flatMap((g) => g.sources.map((s) => new URL(s.url).hostname))).size >= 3
 );
 check(
-  "MadKid is kept as the backup, not dropped",
-  CATALOG.filter((g) => g.sources.some((s) => s.portal === "madkidgames.com")).length ===
-    CATALOG.filter((g) => g.sources.some((s) => s.portal === "madkidgames.com")).length
+  "MadKid is kept as the new-tab route, never framed",
+  (() => {
+    const mad = CATALOG.flatMap((g) => g.sources).filter((s) => s.portal === "madkidgames.com");
+    // X-Frame-Options: SAMEORIGIN — an iframe here is always a black frame.
+    return mad.length >= 500 && mad.every((s) => s.embed === false);
+  })(),
+  CATALOG.flatMap((g) => g.sources).filter((s) => s.portal === "madkidgames.com" && s.embed).length + " still framed"
+);
+check(
+  "only MadKid routes are marked unembeddable",
+  CATALOG.flatMap((g) => g.sources).every((s) => s.embed || s.portal === "madkidgames.com")
 );
 check(
   "every tile has at least one source",
