@@ -161,6 +161,17 @@ check(
   (localGames.match(/title: "/g) || []).length === unique.length
 );
 check(
+  "every local game says what it is in one line",
+  (() => {
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(localGames, sandbox);
+    return sandbox.window.LOCAL_GAMES.every(
+      (game) => typeof game.line === "string" && game.line.length > 20 && /[.!?]$/.test(game.line.trim())
+    );
+  })()
+);
+check(
   "the local games do not need this site to be online",
   unique.every((rel) => {
     const file = fs
@@ -212,9 +223,12 @@ check(
   "the local page credits where the files came from",
   /github\.com\/CoolDude2349\/Offline-HTML-Games-Pack/.test(filesPage)
 );
+// The whole site is served as a plain GitHub Pages source tree, and Pages
+// stops building past 1 GB. The bundled games are all of that budget, so the
+// folder is held to 860 MB and everything else has to fit in what is left.
 check(
   "the local files stay small enough to ship",
-  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 440 * 1024 * 1024
+  unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 860 * 1024 * 1024
 );
 
 check("index loads the app", /assets\/js\/app\.js/.test(index));

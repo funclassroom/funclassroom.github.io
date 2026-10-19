@@ -26,7 +26,8 @@ concurrency:
 jobs:
   play:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 135 files, several of them tens of megabytes, each opened in its own tab.
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
