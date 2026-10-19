@@ -13,6 +13,8 @@
     ALL.push({
       id: "local-" + slug,
       title: game.title + " (HTML)",
+      description: game.line || "A self-contained HTML game stored with this site.",
+      local: true,
       rating: 0,
       plays: 0,
       // The hand-picked local file. It is the one title the wall leads
@@ -65,6 +67,8 @@
     sort: "hot",
     savedOnly: false,
     tag: "",
+    availability: "all",
+    genre: "all",
     active: null,
     sourceIndex: 0,
     lastFocus: null,
@@ -84,7 +88,7 @@
 
   function emptyStore() {
     return {
-      v: 2, saved: [], recent: [], sort: "hot", cloak: "classroom",
+      v: 2, saved: [], recent: [], sort: "hot", cloak: "classroom", theme: "light", largeText: false, highContrast: false,
       plays: {}, last: {}, scroll: 0, good: {}, bad: {}
     };
   }
@@ -99,8 +103,11 @@
 
     if (Array.isArray(raw.saved)) fresh.saved = raw.saved.filter(isId);
     if (Array.isArray(raw.recent)) fresh.recent = raw.recent.filter(isId).slice(0, MAX_RECENT);
-    if (/^(hot|top|az)$/.test(raw.sort)) fresh.sort = raw.sort;
+    if (/^(hot|top|az|low)$/.test(raw.sort)) fresh.sort = raw.sort;
     if (typeof raw.cloak === "string" && CLOAKS[raw.cloak]) fresh.cloak = raw.cloak;
+    if (raw.theme === "dark") fresh.theme = "dark";
+    fresh.largeText = raw.largeText === true;
+    fresh.highContrast = raw.highContrast === true;
     if (typeof raw.scroll === "number" && raw.scroll >= 0) fresh.scroll = Math.round(raw.scroll);
 
     ["plays", "last", "good", "bad"].forEach(function (field) {
@@ -226,6 +233,10 @@
         if (b.rating !== a.rating) return b.rating - a.rating;
         return b.plays - a.plays;
       }
+      if (state.sort === "low") {
+        if (a.plays !== b.plays) return a.plays - b.plays;
+        return a.title.localeCompare(b.title);
+      }
       return b.plays - a.plays;
     });
     return copy;
@@ -267,20 +278,35 @@
     dom.tags.hidden = top.length === 0;
   }
 
+  function genreOf(item) {
+    var text = (item.title + " " + (item.description || "") + " " + (item.keywords || []).join(" ")).toLowerCase();
+    if (/puzzle|riddle|blox|2048|chess|sudoku|brain|logic|escape|room|mine/.test(text)) return "puzzle";
+    if (/racing|race|drift|driving|car|bike|moto|parking|rider|truck|kart/.test(text)) return "racing";
+    if (/basket|football|soccer|tennis|golf|baseball|cricket|sports|pool|bowling|hockey/.test(text)) return "sports";
+    if (/tower defense|bloons|strategy|war|kingdom|battle|idle|tycoon|empire/.test(text)) return "strategy";
+    if (/action|shooter|shoot|combat|fight|fighting|sword|zombie|vex|platform|run|stick|sniper|ninja/.test(text)) return "action";
+    return "arcade";
+  }
+
   function visible() {
     var q = state.q.trim().toLowerCase();
     return sorted(ALL.filter(function (item) {
       if (state.savedOnly && store.saved.indexOf(item.id) === -1) return false;
       if (state.tag && tagOf(item) !== state.tag) return false;
+      if (state.genre !== "all" && genreOf(item) !== state.genre) return false;
+      if (state.availability === "local" && !item.local) return false;
+      if (state.availability === "embedded" && !playable(item)) return false;
+      if (state.availability === "external" && playable(item)) return false;
       if (!q) return true;
-      var hay = item.title.toLowerCase();
+      var titleHay = (item.title + " " + item.id.replace(/-/g, " ")).toLowerCase();
+      var hay = (titleHay + " " + (item.description || "") + " " + item.sources.map(function (source) { return source.portal; }).join(" ")).toLowerCase();
       if (hay.indexOf(q) !== -1) return true;
-      if (item.id.replace(/-/g, " ").indexOf(q) !== -1) return true;
 
-      // Every word must appear somewhere: "car park" finds "Car Parking".
+      // For multi-word searches keep every word tied to the title, so broad
+      // descriptive copy cannot make unrelated games crowd the results.
       var words = q.split(/\s+/).filter(Boolean);
       return words.length > 1 && words.every(function (word) {
-        return hay.indexOf(word) !== -1;
+        return titleHay.indexOf(word) !== -1;
       });
     }));
   }
@@ -402,6 +428,7 @@
     appendBatch();
 
     dom.shown.textContent = state.list.length === ALL.length ? "" : state.list.length + " of " + ALL.length;
+    if (dom.resultsStatus) dom.resultsStatus.textContent = state.list.length + " titles shown";
     dom.empty.hidden = state.list.length !== 0;
     dom.grid.hidden = state.list.length === 0;
 
@@ -563,6 +590,24 @@
     win.document.close();
   }
 
+  function applyDisplaySettings() {
+    document.documentElement.setAttribute("data-theme", store.theme === "dark" ? "dark" : "light");
+    document.documentElement.classList.toggle("large-text", store.largeText === true);
+    document.documentElement.classList.toggle("high-contrast", store.highContrast === true);
+    if (dom.contrastToggle) {
+      dom.contrastToggle.textContent = store.highContrast ? "Standard contrast" : "High contrast";
+      dom.contrastToggle.setAttribute("aria-pressed", store.highContrast ? "true" : "false");
+    }
+    if (dom.themeToggle) {
+      dom.themeToggle.textContent = store.theme === "dark" ? "Use light theme" : "Use dark theme";
+      dom.themeToggle.setAttribute("aria-pressed", store.theme === "dark" ? "true" : "false");
+    }
+    if (dom.textToggle) {
+      dom.textToggle.textContent = store.largeText ? "Standard text" : "Larger text";
+      dom.textToggle.setAttribute("aria-pressed", store.largeText ? "true" : "false");
+    }
+  }
+
   function paintFooter() {
     var picks = store.saved.length;
     var visits = Object.keys(store.plays).length;
@@ -651,7 +696,15 @@
 
     dom.playerTitle.textContent = item.title;
     dom.playerSub.textContent = (item.rating > 0 ? item.rating.toFixed(1) + " stars · " : "") +
-      (item.plays > 0 ? shortNum(item.plays) + " plays" : "new arrival");
+      (item.plays > 0 ? shortNum(item.plays) + " plays" : "new arrival") +
+      " · " + (item.local ? "local file · works offline" : playable(item) ? "publisher embed" : "opens in a new tab");
+    if (dom.playerDescription) dom.playerDescription.textContent = item.description ||
+      "Publisher-hosted title. Controls and content vary; check the game's own instructions.";
+    if (dom.reportGame) {
+      var reportTitle = encodeURIComponent("Broken or incorrect title: " + item.title);
+      var reportBody = encodeURIComponent("Title: " + item.title + "\nID: " + item.id + "\nPage: " + window.location.href + "\n\nWhat happened?\n");
+      dom.reportGame.href = "https://github.com/funclassroom/funclassroom.github.io/issues/new?title=" + reportTitle + "&body=" + reportBody;
+    }
 
     dom.blocked.hidden = true;
     dom.player.hidden = false;
@@ -1000,6 +1053,8 @@
     dom.player = $("[data-player]");
     dom.playerTitle = $("[data-player-title]");
     dom.playerSub = $("[data-player-sub]");
+    dom.playerDescription = $("[data-player-description]");
+    dom.reportGame = $("[data-report-game]");
     dom.stage = $("[data-stage]");
     dom.loading = $("[data-loading]");
     dom.loadingText = $("[data-loading-text]");
@@ -1023,12 +1078,23 @@
     dom.reset = $("[data-reset]");
     dom.cloaks = $$("[data-cloak]");
     dom.blank = $("[data-blank]");
+    dom.availability = $("[data-availability]");
+    dom.genre = $("[data-genre]");
+    dom.filterReset = $("[data-filter-reset]");
+    dom.resultsStatus = $("[data-results-status]");
+    dom.export = $("[data-export]");
+    dom.importTrigger = $("[data-import-trigger]");
+    dom.importFile = $("[data-import]");
+    dom.themeToggle = $("[data-theme-toggle]");
+    dom.textToggle = $("[data-text-toggle]");
+    dom.contrastToggle = $("[data-contrast-toggle]");
 
     if (!dom.grid) return;
 
     state.persist = storageWorks();
     state.sort = store.sort;
     applyCloak(store.cloak, false);
+    applyDisplaySettings();
 
     dom.count.textContent = String(ALL.length);
     var footCount = $("[data-foot-count]");
@@ -1045,6 +1111,16 @@
       dom.searchClear.hidden = state.q.length === 0;
       renderGrid();
     }
+
+    function onFilter() { renderGrid(); }
+    dom.availability.addEventListener("change", function () { state.availability = dom.availability.value; onFilter(); });
+    dom.genre.addEventListener("change", function () { state.genre = dom.genre.value; onFilter(); });
+    dom.filterReset.addEventListener("click", function () {
+      state.availability = "all"; state.genre = "all"; state.tag = ""; state.savedOnly = false;
+      dom.availability.value = "all"; dom.genre.value = "all";
+      if (dom.tags) Array.prototype.forEach.call(dom.tags.children, function (chip) { chip.setAttribute("aria-pressed", "false"); });
+      render();
+    });
 
     dom.q.addEventListener("input", onSearch);
 
@@ -1148,6 +1224,54 @@
       }, SCROLL_SAVE_MS);
     }, { passive: true });
 
+    if (dom.export) dom.export.addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify({ app: "G@M£$", exported: new Date().toISOString(), data: store }, null, 2)], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement("a"); link.href = url; link.download = "classroom-saved-data.json";
+      document.body.appendChild(link); link.click(); link.remove(); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    });
+    if (dom.importTrigger && dom.importFile) {
+      dom.importTrigger.addEventListener("click", function () { dom.importFile.click(); });
+      dom.importFile.addEventListener("change", function () {
+        var file = dom.importFile.files && dom.importFile.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var parsed = JSON.parse(reader.result);
+            var incoming = parsed && parsed.data ? parsed.data : parsed;
+            if (!incoming || !Array.isArray(incoming.saved) || !Array.isArray(incoming.recent)) throw new Error("Invalid file");
+            var next = emptyStore();
+            next.saved = incoming.saved.filter(function (id) { return BY_ID[id]; });
+            next.recent = incoming.recent.filter(function (id) { return BY_ID[id]; }).slice(0, MAX_RECENT);
+            ["plays", "last", "good", "bad"].forEach(function (key) { if (incoming[key] && typeof incoming[key] === "object") next[key] = incoming[key]; });
+            if (/^(hot|top|az|low)$/.test(incoming.sort)) next.sort = incoming.sort;
+            if (CLOAKS[incoming.cloak]) next.cloak = incoming.cloak;
+            next.theme = incoming.theme === "dark" ? "dark" : "light";
+            next.largeText = incoming.largeText === true;
+            next.highContrast = incoming.highContrast === true;
+            store = next; state.sort = next.sort; state.savedOnly = false;
+            applyCloak(next.cloak, false); applyDisplaySettings(); save();
+            dom.sorts.forEach(function (button) { button.setAttribute("aria-pressed", button.dataset.sort === state.sort ? "true" : "false"); });
+            render();
+            window.alert("Saved data imported on this device.");
+          } catch (err) { window.alert("That file is not a valid saved-data export."); }
+          dom.importFile.value = "";
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    if (dom.themeToggle) dom.themeToggle.addEventListener("click", function () {
+      store.theme = store.theme === "dark" ? "light" : "dark"; applyDisplaySettings(); save();
+    });
+    if (dom.textToggle) dom.textToggle.addEventListener("click", function () {
+      store.largeText = !store.largeText; applyDisplaySettings(); save();
+    });
+    if (dom.contrastToggle) dom.contrastToggle.addEventListener("click", function () {
+      store.highContrast = !store.highContrast; applyDisplaySettings(); save();
+    });
+
     var resetArmed = false;
     var resetTimer = 0;
     dom.reset.addEventListener("click", function () {
@@ -1164,13 +1288,27 @@
       resetArmed = false;
       dom.reset.textContent = "Clear saved data";
       store = emptyStore();
+      state.sort = store.sort;
       state.savedOnly = false;
+      state.availability = "all"; state.genre = "all"; state.tag = "";
+      dom.availability.value = "all"; dom.genre.value = "all";
+      dom.sorts.forEach(function (button) { button.setAttribute("aria-pressed", button.dataset.sort === state.sort ? "true" : "false"); });
+      applyCloak(store.cloak, false); applyDisplaySettings();
       save();
       render();
     });
 
     document.addEventListener("keydown", function (event) {
       var typing = /^(input|textarea|select)$/i.test(event.target.tagName);
+      if (event.key === "Tab" && state.active) {
+        var focusable = $$("button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])", dom.player)
+          .filter(function (node) { return !node.hidden && node.offsetParent !== null; });
+        if (focusable.length) {
+          var firstFocus = focusable[0], lastFocus = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === firstFocus) { event.preventDefault(); lastFocus.focus(); }
+          else if (!event.shiftKey && document.activeElement === lastFocus) { event.preventDefault(); firstFocus.focus(); }
+        }
+      }
       if (event.key === "Escape") {
         if (state.active) { event.preventDefault(); closePlayer(); return; }
         if (state.q) { dom.q.value = ""; onSearch(); return; }

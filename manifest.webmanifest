@@ -1,0 +1,13 @@
+{
+  "name": "G@M£$ — Classroom",
+  "short_name": "Classroom",
+  "description": "A searchable wall of browser games, with a collection of self-contained offline HTML games.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f6f7",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "assets/img/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

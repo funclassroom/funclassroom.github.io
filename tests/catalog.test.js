@@ -266,11 +266,21 @@ check(
     !/fetch\([\s\S]{0,200}JSON\.stringify/.test(app)
 );
 check(
-  "the page makes no network requests of its own",
-  (app.match(/window\.fetch\(/g) || []).length === 0
+  "saved state is never sent through app requests",
+  (app.match(/window\.fetch\(/g) || []).length === 0 &&
+    !/sendBeacon|XMLHttpRequest|navigator\.send/.test(app) &&
+    !/fetch\([\s\S]{0,200}JSON\.stringify/.test(app)
 );
 check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
 check("the page offers a way to wipe its own data", /data-reset/.test(index));
+check("Cloudflare Web Analytics is present on both static site pages", /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(index) && /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(filesPage));
+check("Cloudflare Web Analytics is retained in bundled game pages", fs.readdirSync(path.join(ROOT, "assets/games")).some((name) => /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))));
+check("Hanger 2 has no remote Cloudflare CDN dependency", !/cdnjs\.cloudflare\.com/.test(fs.readFileSync(path.join(ROOT, "assets/games/hanger-2.html"), "utf8")));
+check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
+check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
+check("offline copies are user-selected, not bulk downloaded", /CACHE_GAME/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")) && /Save offline/.test(filesPage));
+check("problem reports go to GitHub issues", /github\.com\/funclassroom\/funclassroom\.github\.io\/issues/.test(index) && fs.existsSync(path.join(ROOT, ".github/ISSUE_TEMPLATE/bug_report.md")));
+check("the main page offers local-data export and import", /data-export/.test(index) && /data-import/.test(index));
 check("the old game files are gone", !fs.existsSync(path.join(ROOT, "assets/js/games")));
 check("portal adapters exist", fs.existsSync(path.join(ROOT, "scripts/portals.py")));
 check(
