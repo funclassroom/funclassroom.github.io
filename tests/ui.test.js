@@ -232,7 +232,7 @@ function titles(document) {
     type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
-      cards.length === 135 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 141 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(

@@ -7,7 +7,7 @@ with a chalkboard icon; the page is a plain grid of playable titles.
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **135 local HTML games**.
+The main search includes publisher titles and the **141 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
@@ -20,7 +20,14 @@ on the top row of the home page, and it is the first result whenever somebody
 searches for it — on either page, in any sort order. Every other local game
 keeps the order of the shared list and is ranked like any other title.
 
-The latest batch is **46 more titles** from the same pack, at revision
+The latest batch is **6 more titles** from the same pack, at revision
+`5dbfcd7a6e788101a8acab50a6cf1af209938641`, kept unmodified: **Parking Fury 2**
+and **3**, **Dadish 2**, **3D Free Kick**, **Idle Dice** and **Agar.io Lite**.
+Two that were copied and then removed for the size ceiling are **Awesome
+Tanks** and **Moto X3M 2**, and one for the ad rule: **12 Mini Battles** loads
+an SDK from `ixl.com.net`, a look-alike domain, even though its page paints.
+
+The latest large batch was **46 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`, kept unmodified. The sequels and
 series the folder was missing: **Fireboy & Watergirl 2, 3 and 4**, **Bloons TD
 2, 3 and 4**, **World's Hardest Game** with **2** and **3**, **Riddle School**
@@ -170,7 +177,7 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: 135 titles that are plain files,
+- **100% Unblocked** in the header: 141 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - A fallback chain: if a route will not load, the next one for that game is
@@ -182,12 +189,12 @@ recents; nothing is sent anywhere.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists 135 titles
+`files.html`, reached from **100% Unblocked** in the header, lists 141 titles
 that ship with the site as plain HTML under `assets/games/`. No embed, no
 portal, no third party that can refuse a frame: the page opens a file from its
 own folder, and a filter aimed at a game site has nothing to act on.
 
-134 of them come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
+140 of them come from [CoolDude2349's Offline HTML Games Pack](https://github.com/CoolDude2349/Offline-HTML-Games-Pack),
 which collects 352 single-file games. All 352 would be 5.3 GB, so this site
 carries a hand-picked set that fits inside the size budget: the small classics,
 the heavy legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and
@@ -198,13 +205,13 @@ the **Eaglercraft 26.2 (zeus)** offline download from
 self-contained HTML file (SHA-256
 `3cbcc8f3193006bf1c231de8df1f6a59c5ff2b8458571282ce0b68ff51589ffe`, about
 76 MB, no external scripts) that replaced the old streamed Eaglercraft embed.
-It is the largest file in the folder and the whole folder is about 886 MB, so
+It is the largest file in the folder and the whole folder is about 930 MB, so
 its first load takes a while.
 
 ### Picking which of the 352 to ship
 
 Two limits decide the list. GitHub Pages stops building past a **1 GB source
-tree**, so `tests/catalog.test.js` holds `assets/games/` to 860 MB and a new
+tree**, so `tests/catalog.test.js` holds `assets/games/` to 900 MB and a new
 title has to be worth the megabytes it costs. The other limit is honesty: a
 file that fetches its engine from a CDN is not an offline game, so it is not
 shipped no matter how good the title is.
@@ -233,20 +240,35 @@ the ones a school network would notice:
 - and nothing that a school network should not be asked to explain
   (`Pico's School`).
 
-The remaining gap is size, not judgement. The other 218 titles in the pack
-would add 4.9 GB: most of the Papa's restaurant series, the Snail Bob and
-Wheely sequels, `Bloons TD 5`, `Angry Birds Space`, `Vex 7` and `Vex 8`, and the
-few whose pack copy is not really offline (`Geometry Dash` still pulls its
-sounds, `Jetpack Joyride` still fetches its build from a CDN). Adding more means
-removing something first, and the size check in the test suite is what makes that
-argument happen out loud instead of at 1 GB.
+The remaining gap is size, not judgement. 210 titles in the pack are still
+not here and would add about 4.4 GB. Every one was downloaded at that revision
+and screened against the rules above; 147 carry no external script, stylesheet,
+beacon, ad marker or CDN build. Of those, the six in this batch open in
+Chromium with external requests blocked and never ask for the network, and
+fourteen more were checked the same way and booted but did not fit the
+remaining megabyte budget: `Slope 3`, `Vex 7`, `Vex 8`, `Time Shooter 2`,
+`Awesome Tanks`, `Awesome Tanks 2`, `Vex X3M 2`, `Ice Dodo`, `Moto X3M`,
+`Moto X3M 2`, `Moto X3M 3`, `Polytrack`, `KittyToy` and `Funny Battle`. They
+are first in line when room appears. Beyond them are most of the Papa's restaurant series, the Snail Bob
+and Wheely sequels, `Bloons TD 5` and `Angry Birds Space`, plus the few whose
+pack copy is not really offline (`Geometry Dash` still pulls its sounds,
+`Jetpack Joyride` still fetches its build from a CDN). Adding more means
+removing something first, and the size check in the test suite is what makes
+that argument happen out loud instead of at 1 GB.
+
+A number of the pack's newer exports wrap the game in a `player.load(...)`
+bootstrap that did not initialise in the test browser (`Bloons TD 5`,
+`Duck Life 2` to `5`, `Motherload`, `Wheely`, `Snail Bob 2`, `Run`,
+`Space is Key 2`, `Flood Runner 3` and `4`, `Earn to Die 2`, `Papa's Burgeria`,
+`This is The Only Level Too`). The same wrapper also failed on files this site
+already ships, so those copies were set aside rather than declared broken.
 
 Card art for a new title is a screenshot the probe takes, so a freshly added
 game shows a plain title card until `local-files.yml` has run once and
 committed its real screenshot.
 
 That is also why the folder is committed in the open rather than hidden behind
-a download: 135 files at 886 MB is the whole site, and cloning it once is the
+a download: 141 files at 930 MB is the whole site, and cloning it once is the
 point. Because a `git clone` of the folder and a **Save linked file** produce
 the same thing, the pack is also usable offline straight from the repository:
 clone it, or copy `assets/games/` onto a memory stick, and every file in there
@@ -262,7 +284,7 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the 135 titles that are plain files
+files.html               the 141 titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
