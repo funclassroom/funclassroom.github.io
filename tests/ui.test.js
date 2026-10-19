@@ -213,7 +213,12 @@ function titles(document) {
 
     check("the local page is a Classroom tab", page.title === "Classroom");
     type(window, page.querySelector("#fq"), "basket");
-    check("local search only returns local HTML games", Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden).every((card) => /basket-random\.html$/.test(card.getAttribute("data-file"))));
+    check(
+      "local search only returns local HTML games",
+      Array.from(page.querySelectorAll(".file-card"))
+        .filter((card) => !card.hidden)
+        .every((card) => /^assets\/games\/[A-Za-z0-9._-]+\.html?$/.test(card.getAttribute("data-file")))
+    );
     check("local search finds the new basketball game", page.querySelector('[data-file="assets/games/basket-random.html"]').hidden === false);
     type(window, page.querySelector("#fq"), "minecraft");
     check(
@@ -227,7 +232,7 @@ function titles(document) {
     type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
-      cards.length === 89 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 135 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(
