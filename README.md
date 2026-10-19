@@ -20,6 +20,8 @@ on the top row of the home page, and it is the first result whenever somebody
 searches for it — on either page, in any sort order. Every other local game
 keeps the order of the shared list and is ranked like any other title.
 
+The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack, kept unmodified. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
+
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`, kept unmodified: **Parking Fury 2**
 and **3**, **Dadish 2**, **3D Free Kick**, **Idle Dice** and **Agar.io Lite**.
@@ -223,13 +225,14 @@ the **Eaglercraft 26.2 (zeus)** offline download from
 self-contained HTML file (SHA-256
 `3cbcc8f3193006bf1c231de8df1f6a59c5ff2b8458571282ce0b68ff51589ffe`, about
 76 MB, no external scripts) that replaced the old streamed Eaglercraft embed.
-It is the largest file in the folder and the whole folder is about 930 MB, so
+It is the largest file in the folder and the whole folder is about 942 MB, so
 its first load takes a while.
 
 ### Picking which of the 352 to ship
 
 Two limits decide the list. GitHub Pages stops building past a **1 GB source
-tree**, so `tests/catalog.test.js` holds `assets/games/` to 900 MB and a new
+tree**, so `tests/catalog.test.js` holds `assets/games/` to **900 MiB**. The
+folder is now within about **1.16 MiB** of that project-level ceiling; a new
 title has to be worth the megabytes it costs. The other limit is honesty: a
 file that fetches its engine from a CDN is not an offline game, so it is not
 shipped no matter how good the title is.
@@ -263,9 +266,9 @@ not here and would add about 4.4 GB. Every one was downloaded at that revision
 and screened against the rules above; 147 carry no external script, stylesheet,
 beacon, ad marker or CDN build. Of those, the six in this batch open in
 Chromium with external requests blocked and never ask for the network, and
-fourteen more were checked the same way and booted but did not fit the
-remaining megabyte budget: `Slope 3`, `Vex 7`, `Vex 8`, `Time Shooter 2`,
-`Awesome Tanks`, `Awesome Tanks 2`, `Vex X3M 2`, `Ice Dodo`, `Moto X3M`,
+thirteen more were checked the same way and booted but did not fit the
+remaining megabyte budget: `Slope 3`, `Vex 7`, `Vex 8`, `Awesome Tanks`,
+`Awesome Tanks 2`, `Vex X3M 2`, `Ice Dodo`, `Moto X3M`,
 `Moto X3M 2`, `Moto X3M 3`, `Polytrack`, `KittyToy` and `Funny Battle`. They
 are first in line when room appears. Beyond them are most of the Papa's restaurant series, the Snail Bob
 and Wheely sequels, `Bloons TD 5` and `Angry Birds Space`, plus the few whose
