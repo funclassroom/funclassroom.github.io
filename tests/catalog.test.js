@@ -185,6 +185,30 @@ check(
   })
 );
 check(
+  "the Wordle page's scripts parse",
+  (() => {
+    const rel = unique.find((file) => /wordle-unlimited\.html$/.test(file));
+    if (!rel) return false;
+    const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    const scripts = Array.from(file.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi))
+      .filter((m) => !/\bsrc\s*=/i.test(m[1] || ""))
+      .map((m) => m[2]);
+    return (
+      scripts.length === 2 &&
+      scripts.some((body) => body.includes('customElements.define("game-app"')) &&
+      scripts.every((body) => {
+        try {
+          new vm.Script(body);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      })
+    );
+  })(),
+  "a literal </script> in the bundle ends the script early and leaves a blank page"
+);
+check(
   "the local page credits where the files came from",
   /github\.com\/CoolDude2349\/Offline-HTML-Games-Pack/.test(filesPage)
 );
