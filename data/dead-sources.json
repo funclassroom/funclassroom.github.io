@@ -1,39 +1,7 @@
 {
-  "checkedAt": "2026-10-19T13:11:06.182Z",
+  "checkedAt": "2026-10-19T16:12:16.377Z",
   "checked": 1500,
-  "dead": 2,
-  "urls": [
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=92rgvlnfyvms2w91puiip5hr27x4y3uj/",
-    "https://html5.gamemonetize.co/yyj5qy42bo7g9ikyu97ibwq2e1ly8pee/"
-  ],
-  "detail": [
-    {
-      "id": "57848",
-      "title": "Colorful Assort Game",
-      "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=92rgvlnfyvms2w91puiip5hr27x4y3uj/",
-      "status": 302,
-      "failed": null,
-      "sub": {
-        "frames": 1,
-        "canvas": 0,
-        "text": "Failed to start the game.\nPlease try reloading the page or restarting the app.\nOK"
-      },
-      "dead": true
-    },
-    {
-      "id": "49841",
-      "title": "Marine Mahjong",
-      "portal": "gamemonetize.com",
-      "url": "https://html5.gamemonetize.co/yyj5qy42bo7g9ikyu97ibwq2e1ly8pee/",
-      "status": 200,
-      "failed": null,
-      "sub": {
-        "frames": 1,
-        "canvas": 0,
-        "text": ""
-      },
-      "dead": true
-    }
-  ]
+  "dead": 0,
+  "urls": [],
+  "detail": []
 }
