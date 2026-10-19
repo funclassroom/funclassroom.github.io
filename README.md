@@ -20,7 +20,7 @@ on the top row of the home page, and it is the first result whenever somebody
 searches for it — on either page, in any sort order. Every other local game
 keeps the order of the shared list and is ranked like any other title.
 
-The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack. Standalone Cloudflare analytics beacons have been removed from bundled files; gameplay and assets remain intact. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
+The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack. The original Cloudflare Web Analytics beacons are retained on the site and bundled HTML pages; gameplay and assets remain intact. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
 
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
@@ -168,8 +168,10 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 - your sort choice, display preferences, and how far down the wall you had scrolled
 - a "Pick up where you left off" card built from that history
 
-Nothing is uploaded and there is no analytics or account. **Export my data**
-creates a JSON file locally; **Import data** restores it in this browser. The
+Saved picks, history and preferences are not uploaded and there is no account.
+Cloudflare Web Analytics is enabled on the site and bundled HTML pages, but it
+does not carry saved-game state. **Export my data** creates a JSON file locally;
+**Import data** restores it in this browser. The
 footer has a two-step **Clear saved data** button. The separate **Clear offline
 downloads** action removes downloaded game files from Cache Storage.
 
@@ -214,9 +216,10 @@ game.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
-`localStorage` and Cache Storage remain in this browser; there is no Cloudflare
-analytics or third-party analytics code. The optional Hanger 2 debug editor no
-longer injects its remote dat.GUI CDN script; normal game play is unaffected.
+`localStorage` and Cache Storage remain in this browser; the site's Cloudflare
+Web Analytics beacon is the only site-level analytics integration. The optional
+Hanger 2 debug editor no longer injects its remote dat.GUI CDN script; normal
+game play is unaffected.
 
 ## The files that cannot be blocked
 
