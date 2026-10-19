@@ -1,24 +1,7 @@
 {
-  "checkedAt": "2026-10-19T18:34:39.549Z",
+  "checkedAt": "2026-10-19T19:33:39.474Z",
   "checked": 1500,
-  "dead": 1,
-  "urls": [
-    "https://html5.gamemonetize.co/1i7zcuha9c8hxrzbru0y5ndgpmp97kbr/"
-  ],
-  "detail": [
-    {
-      "id": "61692",
-      "title": "Noob Click: The Rise of Noob",
-      "portal": "gamemonetize.com",
-      "url": "https://html5.gamemonetize.co/1i7zcuha9c8hxrzbru0y5ndgpmp97kbr/",
-      "status": null,
-      "failed": "net::ERR_TIMED_OUT",
-      "sub": {
-        "frames": 1,
-        "canvas": 0,
-        "text": ""
-      },
-      "dead": true
-    }
-  ]
+  "dead": 0,
+  "urls": [],
+  "detail": []
 }
