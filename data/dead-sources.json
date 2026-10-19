@@ -1,47 +1,32 @@
 {
-  "checkedAt": "2026-10-19T12:17:51.562Z",
+  "checkedAt": "2026-10-19T13:11:06.182Z",
   "checked": 1500,
-  "dead": 3,
+  "dead": 2,
   "urls": [
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=mrccgcvib1l5gzqelr1dknq5upuu39tn/",
-    "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/"
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=92rgvlnfyvms2w91puiip5hr27x4y3uj/",
+    "https://html5.gamemonetize.co/yyj5qy42bo7g9ikyu97ibwq2e1ly8pee/"
   ],
   "detail": [
     {
-      "id": "29583",
-      "title": "City Inferno Scape Buggy or Die Today",
+      "id": "57848",
+      "title": "Colorful Assort Game",
       "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
-      "status": 302,
-      "failed": null,
-      "sub": {
-        "frames": 1,
-        "canvas": 1,
-        "text": "Game not found!\nPlease upload your game."
-      },
-      "dead": true
-    },
-    {
-      "id": "76744",
-      "title": "Crystal Craash",
-      "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=mrccgcvib1l5gzqelr1dknq5upuu39tn/",
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=92rgvlnfyvms2w91puiip5hr27x4y3uj/",
       "status": 302,
       "failed": null,
       "sub": {
         "frames": 1,
         "canvas": 0,
-        "text": "✦ TAP TO PLAY ✦\nCRYSTAL CRUSH — GEM MERGE"
+        "text": "Failed to start the game.\nPlease try reloading the page or restarting the app.\nOK"
       },
       "dead": true
     },
     {
-      "id": "49563",
-      "title": "Jinx & Minx Tower Escape",
+      "id": "49841",
+      "title": "Marine Mahjong",
       "portal": "gamemonetize.com",
-      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/",
-      "status": 302,
+      "url": "https://html5.gamemonetize.co/yyj5qy42bo7g9ikyu97ibwq2e1ly8pee/",
+      "status": 200,
       "failed": null,
       "sub": {
         "frames": 1,
