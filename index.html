@@ -8,7 +8,8 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2713%27%20fill%3D%27%230F9D58%27%2F%3E%3Crect%20x%3D%2711.5%27%20y%3D%2715.5%27%20width%3D%2741%27%20height%3D%2733%27%20rx%3D%273.5%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2725%27%20cy%3D%2727%27%20r%3D%274.3%27%20fill%3D%27%23F4B400%27%2F%3E%3Cpath%20d%3D%27M17.2%2041.5c0-4.5%203.5-7.2%207.8-7.2s7.8%202.7%207.8%207.2z%27%20fill%3D%27%23F4B400%27%2F%3E%3Crect%20x%3D%2737.6%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%234285F4%27%2F%3E%3Crect%20x%3D%2745%27%20y%3D%2723%27%20width%3D%274.2%27%20height%3D%2718.5%27%20rx%3D%272.1%27%20fill%3D%27%23DB4437%27%2F%3E%3C%2Fsvg%3E">
-<link rel="stylesheet" href="assets/css/app.css?v=23">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="assets/css/app.css?v=24">
 </head>
 <body>
 <a class="skip" href="#grid">Skip to the list</a>
@@ -50,6 +51,7 @@
       <button type="button" data-sort="hot" aria-pressed="true">Popular</button>
       <button type="button" data-sort="top" aria-pressed="false">Top rated</button>
       <button type="button" data-sort="az" aria-pressed="false">A–Z</button>
+      <button type="button" data-sort="low" aria-pressed="false">Least played</button>
     </div>
   </div>
 
@@ -83,6 +85,35 @@
 
   <div class="tags" data-tags hidden></div>
 
+  <div class="filter-bar" aria-label="Filter titles">
+    <label>Availability
+      <select data-availability aria-label="Filter by availability">
+        <option value="all">All titles</option>
+        <option value="local">Offline files</option>
+        <option value="embedded">Plays here</option>
+        <option value="external">New tab only</option>
+      </select>
+    </label>
+    <label>Type
+      <select data-genre aria-label="Filter by type">
+        <option value="all">All types</option>
+        <option value="action">Action</option>
+        <option value="puzzle">Puzzle</option>
+        <option value="racing">Racing</option>
+        <option value="sports">Sports</option>
+        <option value="strategy">Strategy</option>
+        <option value="arcade">Arcade</option>
+      </select>
+    </label>
+    <button type="button" class="link" data-filter-reset>Reset filters</button>
+    <span class="sr-only" data-results-status aria-live="polite"></span>
+  </div>
+
+  <details class="site-help">
+    <summary>How this page works</summary>
+    <p>Search titles or descriptions, then filter by game type and whether a title plays here or is a local file. Press <kbd>/</kbd> to search and <kbd>Esc</kbd> to close the player. Saved titles and history stay in this browser; use Export/Import to move them between devices.</p>
+    <p>Publisher games need an internet connection and their publisher may refuse to load. Local HTML games can be saved to this browser for offline play. This site has no account, analytics, or server-side storage; the catalogue itself is served as static files from GitHub Pages.</p>
+  </details>
   <section id="grid" class="grid" aria-label="Titles"></section>
 
   <div class="more-wrap">
@@ -99,8 +130,21 @@
   <p>G@M£$ <span class="sep">/</span> <span data-foot-count>16,000+</span> titles, streamed from the publishers. Nothing is hosted here.</p>
   <p class="foot-data">
     <span data-storage-note>Picks, history and scroll position are saved in this browser.</span>
+    <button type="button" class="link" data-export>Export my data</button>
+    <button type="button" class="link" data-import-trigger>Import data</button>
+    <input type="file" accept="application/json,.json" data-import hidden aria-label="Choose a saved data file">
     <button type="button" class="link" data-reset>Clear saved data</button>
+    <button type="button" class="link" data-clear-offline>Clear offline downloads</button>
     <span class="build" data-build></span>
+  </p>
+  <p class="foot-data site-settings">
+    <span>Display:</span>
+    <button type="button" class="link" data-theme-toggle aria-pressed="false">Use dark theme</button>
+    <button type="button" class="link" data-text-toggle aria-pressed="false">Larger text</button>
+    <button type="button" class="link" data-contrast-toggle aria-pressed="false">High contrast</button>
+    <button type="button" class="link" data-install hidden>Install app</button>
+    <a class="link" href="https://github.com/funclassroom/funclassroom.github.io/issues/new?template=bug_report.md" target="_blank" rel="noopener">Report a problem on GitHub</a>
+    <a class="link" href="https://github.com/funclassroom/funclassroom.github.io" target="_blank" rel="noopener">Source on GitHub</a>
   </p>
   <p class="foot-data foot-stealth">
     <span class="stealth-label">Tab look:</span>
@@ -124,6 +168,8 @@
       <b id="player-title" data-player-title></b>
       <span data-player-sub></span>
       <span class="player-source" data-source></span>
+      <span class="player-description" data-player-description></span>
+      <a class="player-report" data-report-game target="_blank" rel="noopener">Report this title on GitHub</a>
     </div>
     <div class="player-tools">
       <button type="button" class="pbtn pbtn-wide" data-next hidden>Try another source</button>
@@ -172,7 +218,7 @@
 
 <script src="assets/js/catalog.js?v=23"></script>
 <script src="assets/js/local-games.js?v=4"></script>
-<script src="assets/js/app.js?v=26"></script>
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5c8537ca1595433fbe40c6e770fb9738"}'></script><!-- End Cloudflare Web Analytics -->
+<script src="assets/js/app.js?v=27"></script>
+<script src="assets/js/pwa.js?v=1"></script>
 </body>
 </html>

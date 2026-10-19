@@ -935,6 +935,32 @@ function titles(document) {
     await tick();
     const { window } = dom;
     const { document } = window;
+    const availability = document.querySelector("[data-availability]");
+    availability.value = "local";
+    availability.dispatchEvent(new window.Event("change", { bubbles: true }));
+    check("offline filter shows only local titles", Array.from(document.querySelectorAll(".tile")).every((tile) => tile.dataset.id.indexOf("local-") === 0));
+    availability.value = "embedded";
+    availability.dispatchEvent(new window.Event("change", { bubbles: true }));
+    check("embedded filter excludes new-tab-only titles", Array.from(document.querySelectorAll(".tile")).every((tile) => tile.dataset.playable === "1"));
+    const genre = document.querySelector("[data-genre]");
+    genre.value = "puzzle";
+    genre.dispatchEvent(new window.Event("change", { bubbles: true }));
+    check("type filter updates the accessible results status", /^\d+ titles shown$/.test(document.querySelector("[data-results-status]").textContent));
+    click(window, document.querySelector("[data-theme-toggle]"));
+    check("dark theme can be enabled", document.documentElement.getAttribute("data-theme") === "dark");
+    click(window, document.querySelector("[data-text-toggle]"));
+    check("larger text preference is applied", document.documentElement.classList.contains("large-text"));
+    click(window, document.querySelector("[data-contrast-toggle]"));
+    check("high contrast preference is applied", document.documentElement.classList.contains("high-contrast"));
+    check("settings stay in local browser storage", readStore(window).theme === "dark" && readStore(window).largeText && readStore(window).highContrast);
+    dom.window.close();
+  }
+
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
     click(window, document.querySelector('.tile[data-playable="1"] .tile-open'));
     const fav = document.querySelector("[data-player-fav]");
     check("the player has a save button", !!fav);

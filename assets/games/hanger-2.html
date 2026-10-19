@@ -2536,8 +2536,6 @@
                 var i = t.call(this, e) || this;
                 if (i.state.add("boot", o.default), i.state.add("preloader", a.default), EDITOR_MODE) {
                     i.state.add("title", l.default);
-                    var s = document.createElement("script");
-                    s.setAttribute("src", "https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"), document.body.appendChild(s)
                 } else i.state.add("title", h.default);
                 return i.state.start("boot"), i
             }
@@ -19334,6 +19332,7 @@
                 t.config;
                 t.config.cacheRandomBlockPositions(), t.config.cacheEventPositions(), this.level = new r.default(this.game, t.config), this.level.blockCount = 5 * this.level.config.length, this.level.create(), this.level.scale.set(.7), this.level.y = 100, t.destroy()
             }, e.prototype.initDATGUI = function() {
+                if (typeof window.dat === "undefined") return;
                 var t = this;
                 if (dat || setTimeout(function() {
                         t.initDATGUI

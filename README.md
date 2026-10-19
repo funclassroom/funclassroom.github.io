@@ -20,17 +20,17 @@ on the top row of the home page, and it is the first result whenever somebody
 searches for it — on either page, in any sort order. Every other local game
 keeps the order of the shared list and is ranked like any other title.
 
-The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack, kept unmodified. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
+The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack. Standalone Cloudflare analytics beacons have been removed from bundled files; gameplay and assets remain intact. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
 
 The latest batch is **6 more titles** from the same pack, at revision
-`5dbfcd7a6e788101a8acab50a6cf1af209938641`, kept unmodified: **Parking Fury 2**
+`5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
 and **3**, **Dadish 2**, **3D Free Kick**, **Idle Dice** and **Agar.io Lite**.
 Two that were copied and then removed for the size ceiling are **Awesome
 Tanks** and **Moto X3M 2**, and one for the ad rule: **12 Mini Battles** loads
 an SDK from `ixl.com.net`, a look-alike domain, even though its page paints.
 
 The latest large batch was **46 more titles** from the same pack, at revision
-`5dbfcd7a6e788101a8acab50a6cf1af209938641`, kept unmodified. The sequels and
+`5dbfcd7a6e788101a8acab50a6cf1af209938641`. The sequels and
 series the folder was missing: **Fireboy & Watergirl 2, 3 and 4**, **Bloons TD
 2, 3 and 4**, **World's Hardest Game** with **2** and **3**, **Riddle School**
 and **2**, **Vex 4, 5, 6** and **Vex X3M**, **Duck Life**, **Snail Bob**, **Moto
@@ -165,12 +165,13 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 
 - titles you saved
 - the last eight you opened, with timestamps and visit counts
-- your sort choice and how far down the wall you had scrolled
+- your sort choice, display preferences, and how far down the wall you had scrolled
 - a "Pick up where you left off" card built from that history
 
-Nothing is uploaded: there is no analytics, no request carrying any of it, and
-the only way it leaves the device is if you clear the site data. The footer has
-a two-step **Clear saved data** button.
+Nothing is uploaded and there is no analytics or account. **Export my data**
+creates a JSON file locally; **Import data** restores it in this browser. The
+footer has a two-step **Clear saved data** button. The separate **Clear offline
+downloads** action removes downloaded game files from Cache Storage.
 
 **The local files** save wherever their own code decides, which for most of
 them is this browser's `localStorage` under the site's own origin. They are not
@@ -186,8 +187,9 @@ game.
 
 ## The page
 
-- Search (multi-word: "car park" finds "Car Parking"), plus Popular / Top rated / A–Z
-- Genre chips built from the catalogue itself, no hand-kept taxonomy
+- Search titles and descriptions (multi-word: "car park" finds "Car Parking"), plus Popular / Top rated / A–Z / Least played
+- Availability filters for offline files, in-page titles, and new-tab-only titles; game-type filters for action, puzzle, racing, sports, strategy and arcade
+- Display options for dark mode, larger text and high contrast; reduced-motion follows the operating system setting
 - "More like what you played" — suggestions derived on the device from titles
   you already opened, with nothing sent anywhere
 - Save straight from the player, not just the tile
@@ -203,9 +205,18 @@ game.
   fails, the player says so, apologises, and offers the portal in a new tab
 - Loading stays on screen until the frame answers, so a slow game is never a
   silent black page; local files show the same card (Minecraft is 76 MB)
+- A short help section explains keyboard shortcuts, publisher availability and
+  local storage; report links create GitHub issues with the selected title
+- A static GitHub Pages PWA caches the site shell; on the local-files page,
+  **Save offline** downloads only the selected standalone HTML game to this
+  browser. Those files can be removed separately. Publisher-hosted games still
+  need the internet.
 
-No frameworks, no build step, no backend. `localStorage` holds saves and
-recents; nothing is sent anywhere.
+No frameworks, no build step, no server-side backend. The site is static on
+GitHub Pages, with a same-origin service worker for optional offline caching.
+`localStorage` and Cache Storage remain in this browser; there is no Cloudflare
+analytics or third-party analytics code. The optional Hanger 2 debug editor no
+longer injects its remote dat.GUI CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 

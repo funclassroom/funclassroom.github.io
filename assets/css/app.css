@@ -1445,3 +1445,95 @@ a { color: inherit; }
   font-size: 11.5px;
   font-weight: 700;
 }
+
+/* Filters, local display preferences, and offline/PWA controls */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 0 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.filter-bar label { display: inline-flex; align-items: center; gap: 7px; }
+.filter-bar select {
+  min-height: 34px;
+  padding: 0 28px 0 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.filter-bar .link { font-size: 12px; }
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.player-description { max-width: min(60vw, 740px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-report { color: #b8c7ff; font-size: 11px; text-decoration: underline; white-space: nowrap; }
+.offline-status { margin: 0; padding: 5px 12px; background: #202127; color: #eceef3; font-size: 12px; }
+.offline-status:empty { display: none; }
+[data-offline-game] { min-width: 116px; }
+[data-offline-game]:disabled { opacity: .65; cursor: progress; }
+.site-settings { align-items: center; }
+.site-settings button, .site-settings a { font-size: 12px; }
+.large-text body { font-size: 17px; }
+.large-text .tile-title { font-size: 15px; }
+.large-text .tile-meta, .large-text .btn, .large-text .tag { font-size: 14px; }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111318;
+  --surface: #1a1d24;
+  --ink: #f2f4f8;
+  --ink-2: #d1d5df;
+  --muted: #a7adba;
+  --line: #353944;
+  --line-2: #505563;
+  --accent: #ff7968;
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .search,
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .sorts,
+html[data-theme="dark"] .tag,
+html[data-theme="dark"] .recent-chip,
+html[data-theme="dark"] .files-facts li,
+html[data-theme="dark"] .files-kicker { background-color: var(--surface); color: var(--ink); }
+html[data-theme="dark"] .sorts button[aria-pressed="true"],
+html[data-theme="dark"] .btn-dark,
+html[data-theme="dark"] .tag[aria-pressed="true"] { background: #f2f4f8; color: #15161a; }
+html[data-theme="dark"] .search input { color: var(--ink); }
+html[data-theme="dark"] .tile-thumb,
+html[data-theme="dark"] .tile-thumb.is-broken::after,
+html[data-theme="dark"] .tile-fallback { background: #252832; }
+html[data-theme="dark"] .tile-fav { background: rgba(30, 33, 41, .95); color: var(--ink-2); }
+html.high-contrast {
+  --muted: #4c5058;
+  --line: #7c8088;
+  --line-2: #555a63;
+}
+html[data-theme="dark"].high-contrast { --muted: #e0e4ec; --line: #9ca3af; --line-2: #c2c8d2; }
+html.high-contrast :focus-visible { outline: 3px solid #1463d6; outline-offset: 3px; }
+html.high-contrast .tile-title, html.high-contrast .tile-meta,
+html.high-contrast .files-note, html.high-contrast .foot p { font-weight: 650; }
+
+@media (max-width: 780px) {
+  .filter-bar { gap: 8px; }
+  .filter-bar label { flex: 1 1 145px; justify-content: space-between; }
+  .filter-bar select { flex: 1; min-width: 0; }
+  .player-description { max-width: 42vw; }
+}
+@media (max-width: 460px) {
+  .sorts { max-width: 100%; overflow-x: auto; }
+  .sorts button { padding: 0 9px; font-size: 11.5px; white-space: nowrap; }
+  .player-report { display: none; }
+  .player-tools [data-offline-game] { width: auto; padding: 0 8px; font-size: 10px; }
+}
