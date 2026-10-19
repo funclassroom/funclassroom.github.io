@@ -232,10 +232,10 @@ check(
   /github\.com\/CoolDude2349\/Offline-HTML-Games-Pack/.test(filesPage)
 );
 // The whole site is served as a plain GitHub Pages source tree, and a
-// published site may be no larger than 1 GB. The bundled games are all of
-// that budget, so the folder is held to 900 MB — which leaves roughly 60 MB
-// of headroom under the limit once the rest of the site is counted — and
-// everything else has to fit in what is left.
+// published site may be no larger than 1 GB. The bundled games take most of
+// that budget, so the folder is held to 900 MiB. That leaves roughly 48 MB
+// under the published-site limit for the rest of the current site and a
+// modest safety margin.
 check(
   "the local files stay small enough to ship",
   unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 900 * 1024 * 1024
