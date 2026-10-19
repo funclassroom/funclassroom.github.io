@@ -59,7 +59,7 @@ Three feeds plus a short hand-written list, merged into one wall by title:
 | --- | --- | --- |
 | GameMonetize's public feed | ~15,800 | `html5.gamemonetize.co` (+ `gamemonetize.com` wrapper) |
 | HTMLGames' public embed index | 1,244 | `cdn.htmlgames.com` |
-| MadKidGames sitemap | 506 | `www.madkidgames.com` |
+| MadKidGames sitemap | 508 | `www.madkidgames.com` |
 | `scripts/extras.py`, by hand | 0 | — (currently empty) |
 
 Routes are chosen **one per domain**, so a block on one host never takes the
@@ -84,13 +84,26 @@ same game exists on more than one portal, and the extra sources are never shown
 as separate tiles — the player offers the next one when the route above refuses
 to load.
 
-MadKidGames is the catalogue the site started from. `/full/<slug>` is the bare
-player, but it only renders for pages on madkidgames.com — from anywhere else it
-shows an empty, black frame. Its routes are therefore kept as new-tab links and
-never mounted in the iframe; a title that also exists on GameMonetize opens that
-route first. MadKid-only tiles sit after the playable ones in the wall. Their
-pages sit behind a bot wall that answers automated checks with a Cloudflare
-challenge, which is why the build cannot verify them; the browser can.
+### MadKidGames embeds
+
+All **508 MadKidGames sources** are enabled for in-page play using
+`https://www.madkidgames.com/full/<slug>`, matching the count advertised on
+[their HTML5 catalogue](https://www.madkidgames.com/html5-games). Existing games,
+local files, metadata and alternate sources are preserved. The scheduled
+catalogue builder continues importing the full MadKidGames sitemap and marks
+these sources embeddable on future refreshes.
+
+**Publisher setup required:** MadKidGames' game-page “Ads.txt Requirement” says
+website owners must copy the supplied ads.txt entries to their site's root
+`ads.txt`, then email their domain to **admin@madkidgames.com** for approval.
+Use their current entries; do not invent publisher IDs or copy unrelated
+entries from the portal's own ads.txt. This repository does not yet contain
+those entries or evidence of domain approval. Their player may show
+“Embedding unavailable” until setup is complete. Preview domains may need
+separate approval. The existing new-tab fallback remains available.
+
+The catalogue and player are tested locally; live playback of all 508 games
+has not been verified from an approved deployment.
 
 ### Titles no feed carries
 

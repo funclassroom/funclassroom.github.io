@@ -590,10 +590,7 @@
 
   /* ---------- sources ---------- */
 
-  // A source marked non-embeddable is known to refuse framing: MadKidGames
-  // answers X-Frame-Options: SAMEORIGIN and renders black anywhere but its
-  // own domain. Mounting those anyway is what used to fill the player with a
-  // dead black frame, so only real candidates are handed to the iframe.
+  // Keep explicitly non-embeddable routes as new-tab fallbacks.
   function embeddable(item) {
     return item.sources.filter(function (source) { return source.embed !== false; });
   }
@@ -667,7 +664,7 @@
     // shuffle the queue under the user's feet.
     state.queue = sourcesFor(item);
 
-    // A title whose every route refuses framing (MadKidGames, mostly) gets
+    // A title whose every route refuses framing gets
     // the explanation panel instead of a black iframe.
     if (!state.queue.length) showBlocked(item, []);
     else attemptSource(0);
@@ -794,7 +791,6 @@
 
     if (attempt === 0) {
       // Nothing was even attempted: every route is known to refuse framing.
-      // This is the MadKidGames case, and it used to be a black iframe.
       dom.source.textContent = "not embeddable";
       title.textContent = "This one will not be framed";
       dom.blockedText.textContent = item.sources.length

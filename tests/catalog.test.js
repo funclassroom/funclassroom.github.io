@@ -64,13 +64,13 @@ check(
   new Set(CATALOG.flatMap((g) => g.sources.map((s) => new URL(s.url).hostname))).size >= 3
 );
 check(
-  "MadKid is kept as the new-tab route, never framed",
+  "all 508 MadKid games are available as in-page sources",
   (() => {
     const mad = CATALOG.flatMap((g) => g.sources).filter((s) => s.portal === "madkidgames.com");
-    // X-Frame-Options: SAMEORIGIN — an iframe here is always a black frame.
-    return mad.length >= 500 && mad.every((s) => s.embed === false);
+    return new Set(mad.map((s) => s.url)).size >= 508 && mad.every((s) =>
+      s.embed === true && /^https:\/\/www\.madkidgames\.com\/full\/[a-z0-9-]+$/.test(s.url));
   })(),
-  CATALOG.flatMap((g) => g.sources).filter((s) => s.portal === "madkidgames.com" && s.embed).length + " still framed"
+  CATALOG.flatMap((g) => g.sources).filter((s) => s.portal === "madkidgames.com" && !s.embed).length + " not enabled"
 );
 check(
   "only MadKid routes are marked unembeddable",
@@ -289,7 +289,7 @@ check("package version is 4.x", /^4\./.test(pkg.version), pkg.version);
 check("npm test runs both suites", /ui\.test\.js/.test(pkg.scripts.test) && /catalog\.test\.js/.test(pkg.scripts.test));
 check("no build step is required", !pkg.scripts.build);
 check("README explains the disguise", /tab reads \*\*Classroom\*\*/i.test(readme));
-check("README states the count", readme.includes("506"));
+check("README states the MadKid count", readme.includes("508"));
 
 console.log("\n  DATA: " + pass + " passed, " + fail + " failed\n");
 if (fail) {

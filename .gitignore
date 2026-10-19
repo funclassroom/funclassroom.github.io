@@ -5,3 +5,6 @@ npm-debug.log*
 __pycache__/
 probe/
 local-report.json
+
+# Non-destructive browser audit output
+madkid-audit.json
