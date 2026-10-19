@@ -1,24 +1,24 @@
 {
-  "checkedAt": "2026-10-19T09:42:00.205Z",
+  "checkedAt": "2026-10-19T12:17:51.562Z",
   "checked": 1500,
   "dead": 3,
   "urls": [
-    "https://html5.gamemonetize.co/92rgvlnfyvms2w91puiip5hr27x4y3uj/",
-    "https://html5.gamemonetize.co/mrccgcvib1l5gzqelr1dknq5upuu39tn/",
-    "https://html5.gamemonetize.co/uh42l3gg002jgw3gupjl0ikom592ftyo/"
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=mrccgcvib1l5gzqelr1dknq5upuu39tn/",
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/"
   ],
   "detail": [
     {
-      "id": "57848",
-      "title": "Colorful Assort Game",
+      "id": "29583",
+      "title": "City Inferno Scape Buggy or Die Today",
       "portal": "gamemonetize.com",
-      "url": "https://html5.gamemonetize.co/92rgvlnfyvms2w91puiip5hr27x4y3uj/",
-      "status": 200,
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=oa29qaiepzpozmupky4u51yhxur06bd2/",
+      "status": 302,
       "failed": null,
       "sub": {
         "frames": 1,
-        "canvas": 0,
-        "text": "Failed to start the game.\nPlease try reloading the page or restarting the app.\nOK"
+        "canvas": 1,
+        "text": "Game not found!\nPlease upload your game."
       },
       "dead": true
     },
@@ -26,8 +26,8 @@
       "id": "76744",
       "title": "Crystal Craash",
       "portal": "gamemonetize.com",
-      "url": "https://html5.gamemonetize.co/mrccgcvib1l5gzqelr1dknq5upuu39tn/",
-      "status": 200,
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=mrccgcvib1l5gzqelr1dknq5upuu39tn/",
+      "status": 302,
       "failed": null,
       "sub": {
         "frames": 1,
@@ -40,8 +40,8 @@
       "id": "49563",
       "title": "Jinx & Minx Tower Escape",
       "portal": "gamemonetize.com",
-      "url": "https://html5.gamemonetize.co/uh42l3gg002jgw3gupjl0ikom592ftyo/",
-      "status": 200,
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=uh42l3gg002jgw3gupjl0ikom592ftyo/",
+      "status": 302,
       "failed": null,
       "sub": {
         "frames": 1,
