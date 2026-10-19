@@ -324,7 +324,16 @@ def main():
         entries = verify(entries)
 
     def order_key(entry):
-        return (0 if entry["id"] in pin_ids else 1, -entry["plays"], entry["title"].lower())
+        # A route that can play in the page leads. A tile whose only sources
+        # refuse framing (MadKidGames) sits after all the playable ones, so
+        # the wall never opens on a black frame.
+        playable = any(source["embed"] for source in entry["sources"])
+        return (
+            0 if entry["id"] in pin_ids else 1,
+            0 if playable else 1,
+            -entry["plays"],
+            entry["title"].lower(),
+        )
 
     entries.sort(key=order_key)
 

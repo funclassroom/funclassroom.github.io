@@ -272,6 +272,14 @@ function titles(document) {
       page.querySelector("[data-player-title]").textContent === "2048"
     );
     check(
+      "the local player shows a loading card",
+      !page.querySelector("[data-loading]").hidden &&
+        /Loading 2048/.test(page.querySelector("[data-loading-text]").textContent)
+    );
+    frame.dispatchEvent(new window.Event("load"));
+    await tick();
+    check("the loading card clears when the file answers", page.querySelector("[data-loading]").hidden);
+    check(
       "there is a way to open the file on its own",
       page.querySelector("[data-external]").getAttribute("href") ===
         "https://example.test/assets/games/2048.html"
@@ -577,7 +585,7 @@ function titles(document) {
     dom.window.close();
   }
 
-  /* a source that will not load is tried first, then excused */
+  /* a portal that refuses framing never gets an iframe */
   {
     const dom = boot("", null, miniCatalog([{
       id: "walled", title: "Walled Garden",
@@ -588,22 +596,23 @@ function titles(document) {
     const { document } = window;
 
     click(window, document.querySelector(".tile-open"));
-    check("the source is still attempted", document.querySelectorAll("iframe").length === 1);
-    check("nothing is condemned up front", document.querySelector("[data-blocked]").hidden);
-    check("the tile shows how many sources it has", !document.querySelector(".tile-mirrors"));
-
-    click(window, document.querySelector("[data-next]"));
-    check("the panel appears only after the attempt", !document.querySelector("[data-blocked]").hidden);
+    check("no iframe for a non-embeddable source", document.querySelectorAll("iframe").length === 0);
+    check("the panel is shown straight away", !document.querySelector("[data-blocked]").hidden);
     check(
-      "it says the title would not load",
-      /would not load/.test(document.querySelector("[data-blocked]").textContent)
+      "it explains the no-frame rule",
+      /does not allow its games inside another page/.test(document.querySelector("[data-blocked-text]").textContent)
+    );
+    check(
+      "it says the title will not be framed",
+      /will not be framed/.test(document.querySelector("[data-blocked]").textContent)
     );
     check(
       "it offers the new-tab button",
       !document.querySelector("[data-blocked-open]").hidden &&
         document.querySelector("[data-blocked-open]").getAttribute("href") === "https://walled.test/full/game"
     );
-    check("the new tab button is named", /Open on walled\.test/.test(document.querySelector("[data-blocked-open]").textContent));
+    check("the new tab button is named", /Play on walled\.test/.test(document.querySelector("[data-blocked-open]").textContent));
+    check("the tile has no source badge", !document.querySelector(".tile-mirrors"));
     dom.window.close();
   }
 
@@ -621,11 +630,45 @@ function titles(document) {
     click(window, document.querySelector(".tile-open"));
     check("first source loads", /portal1\.test/.test(document.querySelector("iframe").src));
     click(window, document.querySelector("[data-next]"));
+    check("second source loads", /portal2\.test/.test(document.querySelector("iframe").src));
     click(window, document.querySelector("[data-next]"));
-    check("the third source is tried too", /walled\.test/.test(document.querySelector("iframe").src));
-    click(window, document.querySelector("[data-next]"));
+    check("the walled source is never mounted", document.querySelectorAll("iframe").length === 0);
     check("running out brings the panel", !document.querySelector("[data-blocked]").hidden);
-    check("there is always a way out", !document.querySelector("[data-blocked-open]").hidden);
+    check(
+      "there is always a way out",
+      !document.querySelector("[data-blocked-open]").hidden &&
+        document.querySelector("[data-blocked-open]").getAttribute("href") === "https://walled.test/x"
+    );
+    check(
+      "the walled route is labelled",
+      /opens in a new tab/.test(document.querySelector("[data-blocked-list]").textContent)
+    );
+    dom.window.close();
+  }
+
+  /* the portal that actually answered is the one remembered */
+  {
+    const dom = boot("", null, miniCatalog([{ id: "multi", title: "Multi Source", sources: sourcesFor(3) }]));
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    click(window, document.querySelector(".tile-open"));
+    click(window, document.querySelector("[data-next]"));
+    check("the second source is mounted", /portal2\.test/.test(document.querySelector("iframe").src));
+    document.querySelector("iframe").dispatchEvent(new window.Event("load"));
+    click(window, document.querySelector("[data-close]"));
+
+    const good = readStore(window).good;
+    check("only the loaded source is remembered", good.multi === "portal2.test", JSON.stringify(good));
+    check("the skipped source is not promoted", good.multi !== "portal3.test");
+
+    click(window, document.querySelector(".tile-open"));
+    check(
+      "reopening resumes the source that answered",
+      /portal2\.test/.test(document.querySelector("iframe").src),
+      document.querySelector("iframe").src
+    );
     dom.window.close();
   }
 
@@ -663,9 +706,16 @@ function titles(document) {
 
     const other = boot("#p=subway-surfers");
     await tick();
+    const otherDoc = other.window.document;
     check(
-      "deep link to the old portal opens a player",
-      other.window.document.querySelectorAll("iframe").length === 1
+      "deep link to a walled title opens the explanation panel",
+      !otherDoc.querySelector("[data-player]").hidden &&
+        otherDoc.querySelectorAll("iframe").length === 0 &&
+        !otherDoc.querySelector("[data-blocked]").hidden
+    );
+    check(
+      "the walled deep link still names the title",
+      otherDoc.querySelector("[data-player-title]").textContent === "Subway Surfers"
     );
     other.window.close();
     dom.window.close();
