@@ -138,4 +138,10 @@ window.LOCAL_GAMES = [
     { file: "assets/games/flood-runner-2.html", title: "Flood Runner 2", line: "Sprint the rooftops, slide the gaps and never touch the water." },
     { file: "assets/games/breaking-the-bank.html", title: "Breaking the Bank", line: "A Flash-era heist: get in, grab the cash and get out again." },
     { file: "assets/games/helix-jump.html", title: "Helix Jump", line: "Drop down a spinning tower and smash every platform beneath you." },
+    { file: "assets/games/agar-io-lite.html", title: "Agar.io Lite", line: "Eat the small cells, dodge the big ones and grow your blob in a solo arena." },
+    { file: "assets/games/3d-free-kick.html", title: "3D Free Kick", line: "Curl the ball over the wall and past the keeper in a three-dimensional free-kick contest." },
+    { file: "assets/games/parking-fury-2.html", title: "Parking Fury 2", line: "Slip the sedan past patrol cars and squeeze into the space before the clock runs out." },
+    { file: "assets/games/idle-dice.html", title: "Idle Dice", line: "Roll the dice, bank the points and upgrade the dice while the numbers keep climbing." },
+    { file: "assets/games/parking-fury-3.html", title: "Parking Fury 3", line: "A rain-slick night shift of tight spaces, headlights and not a scratch allowed." },
+    { file: "assets/games/dadish-2.html", title: "Dadish 2", line: "The dad burger is back, hunting his missing children across a new set of worlds." },
   ];
