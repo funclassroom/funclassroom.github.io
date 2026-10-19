@@ -294,7 +294,7 @@ files.html               the 141 titles that are plain files
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,556 rows)
+assets/js/catalog.js     generated catalogue (17,568 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (currently none)
