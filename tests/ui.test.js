@@ -708,13 +708,14 @@ function titles(document) {
     await tick();
     const otherDoc = other.window.document;
     check(
-      "deep link to a walled title opens the explanation panel",
+      "MadKid deep link mounts its player",
       !otherDoc.querySelector("[data-player]").hidden &&
-        otherDoc.querySelectorAll("iframe").length === 0 &&
-        !otherDoc.querySelector("[data-blocked]").hidden
+        otherDoc.querySelectorAll("iframe").length === 1 &&
+        otherDoc.querySelector("iframe").getAttribute("src") === "https://www.madkidgames.com/full/subway-surfers" &&
+        otherDoc.querySelector("[data-blocked]").hidden
     );
     check(
-      "the walled deep link still names the title",
+      "the MadKid deep link names the title",
       otherDoc.querySelector("[data-player-title]").textContent === "Subway Surfers"
     );
     other.window.close();

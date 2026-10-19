@@ -238,9 +238,7 @@ def main():
     # Sources that can actually play inside the page come first; a tile whose
     # only source forbids framing is still kept, it just opens in a new tab.
     def play_rank(game):
-        # What the tile opens first. MadKid's embed renders black anywhere
-        # outside madkidgames.com, so a title we also have on a feed we can
-        # frame opens that one and keeps MadKid as the backup.
+        # Keep existing feed priority; other embeddable routes are fallbacks.
         return (
             0 if game.get("pin") else 1,
             0 if game["portal"] == "gamemonetize.com" else 1,
@@ -325,7 +323,7 @@ def main():
 
     def order_key(entry):
         # A route that can play in the page leads. A tile whose only sources
-        # refuse framing (MadKidGames) sits after all the playable ones, so
+        # refuse framing sits after all the playable ones, so
         # the wall never opens on a black frame.
         playable = any(source["embed"] for source in entry["sources"])
         return (

@@ -96,12 +96,10 @@ def madkidgames(existing):
             "slug": slug,
             "rating": existing.get(slug, {}).get("rating", 0.0),
             "plays": existing.get(slug, {}).get("plays", 0),
-            # /full/ is the bare player — the same thing the site shows once
-            # you strip its header, menu and footer. It only renders for
-            # pages on madkidgames.com (X-Frame-Options: SAMEORIGIN), so it
-            # must never be mounted in an iframe here: off-domain it paints
-            # a black frame. It is kept as the new-tab route instead.
-            "embed": False,
+            # MadKid advertises these players at /html5-games. Publishers
+            # must configure ads.txt and obtain domain approval; this is not
+            # a blanket prohibition on third-party framing.
+            "embed": True,
         })
     return games
 
