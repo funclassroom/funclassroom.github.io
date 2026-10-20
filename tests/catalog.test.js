@@ -278,6 +278,17 @@ check(
     .every((rel) => !/cloudflareinsights|cloudflare\.com|Cloudflare Web Analytics/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
 );
 check("Hanger 2 has no remote Cloudflare CDN dependency", !/cdnjs\.cloudflare\.com/.test(fs.readFileSync(path.join(ROOT, "assets/games/hanger-2.html"), "utf8")));
+check(
+  "Microsoft Clarity is installed in the head of every site page",
+  ["index.html", "files.html", "404.html"].every((rel) => {
+    const head = (fs.readFileSync(path.join(ROOT, rel), "utf8").match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
+    return /www\.clarity\.ms\/tag\//.test(head) && /"z0ayxg09fq"/.test(head);
+  })
+);
+check(
+  "the bundled game files carry no Clarity tag",
+  fs.readdirSync(path.join(ROOT, "assets/games")).every((name) => !/clarity\.ms|z0ayxg09fq/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8")))
+);
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
 check("offline copies are user-selected, not bulk downloaded", /CACHE_GAME/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")) && /Save offline/.test(filesPage));
