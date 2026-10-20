@@ -1,0 +1,24 @@
+# Cloudflare Workers uploads the whole assets directory, and unlike Pages it
+# does not skip node_modules or .git on its own. Wrangler refuses any single
+# asset over 25 MiB, so one dependency binary - node_modules/workerd/bin/workerd
+# is 134 MiB - fails the entire deploy with "Asset too large".
+#
+# Keep the upload to the site itself: no dependencies, no history, no tooling.
+node_modules
+**/node_modules
+.DS_Store
+**/.DS_Store
+*.log
+**/*.log
+.git
+.github
+.wrangler
+tests
+scripts
+data
+catalog-report.json
+package.json
+package-lock.json
+README.md
+.gitignore
+.assetsignore

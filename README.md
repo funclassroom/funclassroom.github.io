@@ -389,10 +389,10 @@ assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
 assets/img/share/og-cover.png  the 1200x630 card a shared link shows
 assets/css/app.css       all styling
-assets/js/catalog.js     generated catalogue (17,568 rows)
+assets/js/catalog.js     generated catalogue (17,573 rows)
 assets/js/app.js         search, sort, saves, recents, player
 scripts/build-catalog.py catalogue generator
-scripts/extras.py        titles added by hand (currently none)
+scripts/extras.py        titles added by hand (Minecraft and its spare route)
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
 ```
@@ -406,8 +406,24 @@ npm test      # jsdom, no network
 
 ## Deployment
 
-Static files on GitHub Pages, branch `arena/22c34602-classroom`, folder `/`.
-Push, and Pages rebuilds.
+The live site is static files on GitHub Pages, branch `arena/22c34602-classroom`,
+folder `/`. Push, and Pages rebuilds.
+
+### Cloudflare Workers
+
+The same folder can be deployed as Workers static assets (`npx wrangler deploy`
+with `assets.directory` set to the repo root). Two things make that fail if you
+forget them:
+
+- **`.assetsignore`** — Workers uploads the whole directory and, unlike Pages,
+  does not skip `node_modules`, `.git` or `.DS_Store`. The build container's
+  `node_modules/workerd/bin/workerd` is 134 MiB and trips the 25 MiB per-file
+  limit, and this repo's `.git` is ~450 MB. The ignore list keeps the upload to
+  the site itself (~310 files, 782 MB, biggest file 15.6 MB).
+- **The address** — a Worker's free hostname is `*.workers.dev`, which the
+  school blocks, the same way it blocks `*.pages.dev` and `*.r2.dev`. A Worker
+  is useful here as storage or a mirror, not as the URL in front of a class,
+  unless a custom domain is added.
 
 ## On images and AI
 
