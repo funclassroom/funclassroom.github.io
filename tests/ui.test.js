@@ -10,6 +10,7 @@ const HTML = fs
 const CATALOG_JS = fs.readFileSync(path.join(ROOT, "assets/js/catalog.js"), "utf8");
 const LOCAL_JS = fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8");
 const APP_JS = fs.readFileSync(path.join(ROOT, "assets/js/app.js"), "utf8");
+const FEEDBACK_JS = fs.readFileSync(path.join(ROOT, "assets/js/feedback.js"), "utf8");
 const FILES_HTML = fs.readFileSync(path.join(ROOT, "files.html"), "utf8");
 
 let pass = 0;
@@ -40,6 +41,7 @@ function boot(hash, seed, catalogJs) {
   dom.window.eval(catalogJs || CATALOG_JS);
   if (!catalogJs) dom.window.eval(LOCAL_JS);
   dom.window.eval(APP_JS);
+  dom.window.eval(FEEDBACK_JS);
   return dom;
 }
 
@@ -209,6 +211,18 @@ function titles(document) {
     const cards = Array.from(page.querySelectorAll(".file-card"));
 
     check("the local page is a Classroom tab", page.title === "Classroom");
+
+    window.eval(FEEDBACK_JS);
+    const fbTrigger = page.querySelector("[data-feedback]");
+    check("the local page offers feedback too", !!fbTrigger);
+    fbTrigger.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    check(
+      "the local page opens the same dialog",
+      page.querySelector("[data-feedback-dialog]").hidden === false
+    );
+    page.querySelector("[data-feedback-dialog] [data-fb-cancel]").dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true })
+    );
     type(window, page.querySelector("#fq"), "basket");
     check(
       "local search only returns local HTML games",
@@ -964,6 +978,77 @@ function titles(document) {
     check(
       "the tile agrees",
       document.querySelector("[data-fav]").getAttribute("aria-pressed") === "true"
+    );
+    dom.window.close();
+  }
+
+  /* feedback */
+  {
+    const dom = boot();
+    await tick();
+    const { window } = dom;
+    const { document } = window;
+
+    const trigger = document.querySelector("[data-feedback]");
+    check("the page offers a feedback link", !!trigger);
+    trigger.focus();
+    trigger.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    const dialog = document.querySelector("[data-feedback-dialog]");
+    check("the feedback dialog opens", !!dialog && dialog.hidden === false);
+    check("focus moves into the dialog", dialog.contains(document.activeElement));
+    check("it says the issue needs a GitHub account", /GitHub account/i.test(dialog.textContent));
+
+    const request = dialog.querySelector('input[value="request"]');
+    request.checked = true;
+    request.dispatchEvent(new window.Event("change", { bubbles: true }));
+    check("requesting a game asks which one", dialog.querySelector("[data-fb-game]").hidden === false);
+
+    const tabs = [];
+    window.open = function (url) { tabs.push(url); return {}; };
+    dialog.querySelector('[name="fb-game"]').value = "Bloons TD 5";
+    dialog.querySelector('[name="fb-message"]').value = "The one everyone keeps asking for.";
+    dialog.querySelector(".fb-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+
+    const note = dialog.querySelector("[data-fb-note]");
+    const requestUrl = decodeURIComponent(((note.querySelector("a") || {}).href || "").replace(/\+/g, " "));
+    check(
+      "a game request opens GitHub in a new tab",
+      tabs.length === 1 && tabs[0].indexOf("https://github.com/funclassroom/funclassroom.github.io/issues/new?") === 0
+    );
+    check(
+      "a game request becomes a labelled GitHub issue",
+      note.hidden === false &&
+        requestUrl.indexOf("/issues/new?") !== -1 &&
+        /labels=game-request/.test(requestUrl) &&
+        requestUrl.indexOf("[Game request] Bloons TD 5") !== -1 &&
+        requestUrl.indexOf("The one everyone keeps asking for.") !== -1
+    );
+
+    dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    check("Escape closes the feedback dialog", dialog.hidden === true);
+    check("focus goes back to the button that opened it", document.activeElement === trigger);
+
+    trigger.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    const bug = dialog.querySelector('input[value="bug"]');
+    bug.checked = true;
+    bug.dispatchEvent(new window.Event("change", { bubbles: true }));
+    dialog.querySelector('[name="fb-message"]').value = "";
+    dialog.querySelector(".fb-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    check(
+      "an empty bug report is refused before GitHub opens",
+      dialog.querySelector("[data-fb-error]").hidden === false
+    );
+
+    dialog.querySelector('[name="fb-message"]').value = "The Slope tile opens a blank frame.";
+    dialog.querySelector(".fb-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    const bugUrl = decodeURIComponent(((dialog.querySelector("[data-fb-note] a") || {}).href || "").replace(/\+/g, " "));
+    check(
+      "a bug becomes a bug issue with the page and browser attached",
+      tabs.length === 2 &&
+        /labels=bug/.test(bugUrl) &&
+        bugUrl.indexOf("[Bug] The Slope tile opens a blank frame.") !== -1 &&
+        bugUrl.indexOf("example.test") !== -1
     );
     dom.window.close();
   }

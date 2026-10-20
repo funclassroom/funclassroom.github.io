@@ -1,7 +1,7 @@
 /* GitHub Pages-only offline shell and explicitly saved local games. */
-const VERSION = "classroom-shell-v3";
+const VERSION = "classroom-shell-v4";
 const GAME_CACHE = "classroom-offline-games-v1";
-const SHELL = ["./", "index.html", "files.html", "manifest.webmanifest", "assets/css/app.css", "assets/js/catalog.js", "assets/js/local-games.js", "assets/js/app.js", "assets/js/pwa.js", "assets/js/attribution.js", "assets/img/app-icon.svg"];
+const SHELL = ["./", "index.html", "files.html", "manifest.webmanifest", "assets/css/app.css", "assets/js/catalog.js", "assets/js/local-games.js", "assets/js/app.js", "assets/js/feedback.js", "assets/js/pwa.js", "assets/js/attribution.js", "assets/img/app-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));

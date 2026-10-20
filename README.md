@@ -274,6 +274,10 @@ game.
   silent black page; local files show the same card
 - A short help section explains keyboard shortcuts, publisher availability and
   local storage; report links create GitHub issues with the selected title
+- **Send feedback** in the footer of both pages opens one small dialog: say
+  something is broken or request a game, and it becomes a GitHub issue with
+  the page, browser and your words already in it. Nothing is sent from the
+  site, and no address is published — a free GitHub account is all it needs
 - A static GitHub Pages PWA caches the site shell; on the local-files page,
   **Save offline** downloads only the selected standalone HTML game to this
   browser. Those files can be removed separately. Publisher-hosted games still
@@ -394,8 +398,10 @@ assets/img/share/og-cover.png  the 1200x630 card a shared link shows
 assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,573 rows)
 assets/js/app.js         search, sort, saves, recents, player
+assets/js/feedback.js    the footer feedback dialog (GitHub issues, no email)
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft and its spare route)
+.github/ISSUE_TEMPLATE  the bug and game-request forms the dialog mirrors
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
 ```
