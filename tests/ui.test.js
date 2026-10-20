@@ -131,28 +131,25 @@ function titles(document) {
         /^assets\/img\/(pack\/)?[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
       )
     );
+    type(dom.window, document.querySelector("#q"), "minecraft");
+    await tick();
     check(
-      "nothing is pinned and the streamed Minecraft tile is gone",
+      "the streamed Minecraft tile is on the wall, unpinned",
       (() => {
-        const first = document.querySelector(".tile");
-        return (
-          first.getAttribute("data-pinned") === "0" &&
-          !document.querySelector('.tile[data-id="minecraft"]') &&
-          first.querySelector(".tile-title").textContent !== "Minecraft"
-        );
-      })(),
-      document.querySelector(".tile .tile-title").textContent
+        const tile = document.querySelector('.tile[data-id="minecraft"]');
+        return !!tile && tile.getAttribute("data-pinned") === "0" &&
+          tile.querySelector(".tile-title").textContent === "Minecraft";
+      })()
+    );
+    type(dom.window, document.querySelector("#q"), "");
+    await tick();
+    check(
+      "the streamed Minecraft tile is not marked as a local file",
+      !document.querySelector('.tile[data-id="minecraft"] .tile-file')
     );
     check(
-      "the wall opens with the local Minecraft file",
-      document.querySelector(".tile").getAttribute("data-id") === "local-minecraft" &&
-        document.querySelector(".tile").getAttribute("data-featured") === "1",
-      document.querySelector(".tile").getAttribute("data-id")
-    );
-    check(
-      "the local Minecraft tile says it plays offline",
-      document.querySelector(".tile .tile-file") &&
-        document.querySelector(".tile .tile-file").textContent === "OFFLINE"
+      "no local tile is featured now that Minecraft streams",
+      document.querySelectorAll('.tile[data-featured="1"]').length === 0
     );
     check(
       "tiles name themselves for screen readers",
@@ -222,17 +219,13 @@ function titles(document) {
     check("local search finds the new basketball game", page.querySelector('[data-file="assets/games/basket-random.html"]').hidden === false);
     type(window, page.querySelector("#fq"), "minecraft");
     check(
-      "the local search leads with Minecraft",
-      (() => {
-        const shown = Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden);
-        return shown.length === 1 && shown[0].getAttribute("data-file") === "assets/games/minecraft.html";
-      })(),
-      Array.from(page.querySelectorAll(".file-card")).filter((card) => !card.hidden).map((card) => card.getAttribute("data-file")).join(",")
+      "the local page has no Minecraft to find any more",
+      Array.from(page.querySelectorAll(".file-card")).every((card) => card.hidden)
     );
     type(window, page.querySelector("#fq"), "");
     check(
       "every local title gets a card",
-      cards.length === 139 && cards.length === page.querySelectorAll("[data-open-file]").length,
+      cards.length === 138 && cards.length === page.querySelectorAll("[data-open-file]").length,
       String(cards.length)
     );
     check(
@@ -255,8 +248,9 @@ function titles(document) {
     check("no frame until asked", page.querySelectorAll("iframe").length === 0);
 
     check(
-      "Minecraft leads the local page",
-      page.querySelector("[data-open-file]").getAttribute("data-open-file") === "assets/games/minecraft.html"
+      "the local page starts with the first bundled title",
+      page.querySelector("[data-open-file]").getAttribute("data-open-file") === "assets/games/2048.html",
+      page.querySelector("[data-open-file]").getAttribute("data-open-file")
     );
     click(window, page.querySelector('[data-open-file="assets/games/2048.html"]'));
     const frame = page.querySelector("iframe");
@@ -360,8 +354,8 @@ function titles(document) {
 
     type(window, input, "minecraft");
     check(
-      "searching for Minecraft puts the local file first",
-      document.querySelector(".tile").getAttribute("data-id") === "local-minecraft",
+      "searching for Minecraft puts the streamed tile first",
+      document.querySelector(".tile").getAttribute("data-id") === "minecraft",
       document.querySelector(".tile").getAttribute("data-id")
     );
     check(

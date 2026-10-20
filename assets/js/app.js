@@ -216,15 +216,34 @@
     });
   }
 
+  /* How well a title answers the search box: 0 for the title itself, then a
+     title that starts with it, then one that only mentions it. Without this a
+     search for "minecraft" put "MineClicker Idle Minecraft Clicker" (5,441
+     plays) above Minecraft (no play count). */
+  function matchScore(item, q) {
+    var title = item.title.toLowerCase();
+    if (title === q) return 0;
+    if (title.indexOf(q) === 0) return 1;
+    if (title.indexOf(q) !== -1) return 2;
+    return 3;
+  }
+
   function sorted(list) {
     var copy = list.slice();
     var lead = featuredLeads();
+    var query = state.q.trim().toLowerCase();
     copy.sort(function (a, b) {
       // A pinned title is the one thing the wall leads with, on every sort:
       // it is hand-added and has no play count to rank by.
       if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
       // The featured local file leads the rest of the wall.
       if (lead && !!a.featured !== !!b.featured) return a.featured ? -1 : 1;
+      // A search ranks by how well the title answers it, before anything else.
+      if (query) {
+        var ea = matchScore(a, query);
+        var eb = matchScore(b, query);
+        if (ea !== eb) return ea - eb;
+      }
       // Games that can play inside the page always lead; the rest open in a
       // tab and sit at the end.
       if (playable(a) !== playable(b)) return playable(a) ? -1 : 1;

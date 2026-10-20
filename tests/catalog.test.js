@@ -118,24 +118,40 @@ check(
   CATALOG.every((g) => /^https:\/\//.test(g.thumb) || /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(g.thumb))
 );
 check(
-  "the streamed Minecraft tile has been removed from the catalogue",
-  !CATALOG.some((g) => g.id === "minecraft") &&
-    CATALOG.every((g) => g.sources.every((s) => !/eymenwsmc|workers\.dev/.test(s.url))) &&
-    CATALOG.every((g) => !g.pinned)
-);
-check(
-  "Minecraft lives with the local files instead",
-  /assets\/games\/minecraft\.html/.test(fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8")) &&
-    fs.existsSync(path.join(ROOT, "assets/games/minecraft.html"))
-);
-check(
-  "Minecraft is the one local title that leads the wall",
+  "Minecraft is a streamed tile again, not a bundled one",
   (() => {
-    const list = fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8");
-    const featured = list.match(/featured: true/g) || [];
-    return featured.length === 1 &&
-      /file: "assets\/games\/minecraft\.html", title: "Minecraft", featured: true/.test(list);
+    const tile = CATALOG.filter((g) => g.id === "minecraft");
+    return tile.length === 1 &&
+      tile[0].pinned === false &&
+      tile[0].sources.length === 1 &&
+      tile[0].sources[0].portal === "eaglercraft.com" &&
+      tile[0].sources[0].url === "https://eaglercraft.com/play" &&
+      tile[0].sources[0].embed === true;
   })()
+);
+check(
+  "the old Minecraft host is gone for good",
+  CATALOG.every((g) => g.sources.every((s) => !/eymenwsmc|workers\.dev/.test(s.url)))
+);
+check(
+  "nothing is pinned, so every sort is the sort that was asked for",
+  CATALOG.every((g) => !g.pinned)
+);
+check(
+  "the 76 MB Minecraft bundle is out of the folder and the list",
+  !fs.existsSync(path.join(ROOT, "assets/games/minecraft.html")) &&
+    !fs.existsSync(path.join(ROOT, "assets/img/pack/minecraft.jpg")) &&
+    !/file: "assets\/games\/minecraft\.html"/.test(fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8"))
+);
+check(
+  "the builder puts Minecraft back on the next rebuild",
+  /"id":\s*"minecraft"/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8")) &&
+    /eaglercraft\.com\/play/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8")) &&
+    !/"pin":\s*True/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8"))
+);
+check(
+  "nothing local is featured now that Minecraft streams",
+  (fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8").match(/featured: true/g) || []).length === 0
 );
 
 /* ---------- files ---------- */
