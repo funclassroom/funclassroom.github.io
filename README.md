@@ -169,10 +169,10 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 - a "Pick up where you left off" card built from that history
 
 Saved picks, history and preferences are not uploaded and there is no account.
-There is no analytics or tracking script on the site or in the bundled HTML
-pages. **Export my data** creates a JSON file locally;
-**Import data** restores it in this browser. The
-footer has a two-step **Clear saved data** button. The separate **Clear offline
+The site pages load Microsoft Clarity for visit and session analytics; the
+bundled HTML game files carry no analytics tag. **Export my data** creates a
+JSON file locally; **Import data** restores it in this browser. The footer has
+a two-step **Clear saved data** button. The separate **Clear offline
 downloads** action removes downloaded game files from Cache Storage.
 
 **The local files** save wherever their own code decides, which for most of
@@ -216,10 +216,10 @@ game.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
-`localStorage` and Cache Storage remain in this browser; the site carries no
-site-level analytics integration. The optional
-Hanger 2 debug editor no longer injects its remote dat.GUI CDN script; normal
-game play is unaffected.
+`localStorage` and Cache Storage remain in this browser; the only site-level
+analytics integration is the Microsoft Clarity tag in the head of the site
+pages. The optional Hanger 2 debug editor no longer injects its remote dat.GUI
+CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 
