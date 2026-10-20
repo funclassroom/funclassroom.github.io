@@ -289,6 +289,58 @@ check(
   "the bundled game files carry no Clarity tag",
   fs.readdirSync(path.join(ROOT, "assets/games")).every((name) => !/clarity\.ms|z0ayxg09fq/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8")))
 );
+// A pasted link is the only way anybody arrives on a noindex page, so the
+// preview tags are part of the product, not decoration.
+check(
+  "both shareable pages carry a large link preview",
+  [index, filesPage].every((html) => {
+    const head = (html.match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
+    return /property="og:title"/.test(head) && /property="og:description"/.test(head) &&
+      /property="og:image" content="https?:\/\/[^"]+\.png"/.test(head) &&
+      /property="og:image:width" content="1200"/.test(head) &&
+      /property="og:image:height" content="630"/.test(head) &&
+      /name="twitter:card" content="summary_large_image"/.test(head);
+  })
+);
+check(
+  "the share image exists and is 1200x630",
+  (() => {
+    const file = path.join(ROOT, "assets/img/share/og-cover.png");
+    if (!fs.existsSync(file)) return false;
+    const buf = fs.readFileSync(file);
+    return buf.slice(1, 4).toString() === "PNG" && buf.readUInt32BE(16) === 1200 && buf.readUInt32BE(20) === 630;
+  })()
+);
+check(
+  "the offline pitch leads both pages",
+  /data-local-count/.test(index) && /works with the wi-fi off|network off/i.test(index) &&
+    /wi-fi off/i.test(filesPage)
+);
+check(
+  "the removed heavy titles are gone for good",
+  !["assets/games/slope.html", "assets/games/plants-vs-zombies.html", "assets/img/pack/slope.jpg", "assets/img/pack/plants-vs-zombies.jpg"]
+    .some((rel) => fs.existsSync(path.join(ROOT, rel))) && !/file: "assets\/games\/(slope|plants-vs-zombies)\.html"/.test(localGames)
+);
+check(
+  "both pages read the ?ref= channel tag",
+  /assets\/js\/attribution\.js/.test(index) && /assets\/js\/attribution\.js/.test(filesPage) &&
+    /assets\/js\/attribution\.js/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8"))
+);
+check(
+  "the attribution helper tags Clarity with the channel and nothing else",
+  (() => {
+    const src = fs.readFileSync(path.join(ROOT, "assets/js/attribution.js"), "utf8");
+    return /clarity\("set", "channel"/.test(src) &&
+      !/fetch\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(src) &&
+      !/localStorage/.test(src);
+  })()
+);
+check(
+  "the README lists a tagged link per channel",
+  /https:\/\/funclassroom\.github\.io\/\?ref=discord/.test(readme) &&
+    /https:\/\/funclassroom\.github\.io\/\?ref=tiktok/.test(readme) &&
+    /https:\/\/funclassroom\.github\.io\/files\.html\?ref=/.test(readme)
+);
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
 check("offline copies are user-selected, not bulk downloaded", /CACHE_GAME/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")) && /Save offline/.test(filesPage));
