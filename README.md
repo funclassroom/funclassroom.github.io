@@ -1,9 +1,9 @@
 # Classroom
 
-**138 games that keep playing when the network does not.** They are single
+**129 games that keep playing when the network does not.** They are single
 HTML files served from this repository, so there is no embed, no player to
 load and no third party that can refuse a frame — with the wi-fi off, they
-still open. Behind that is a wall of 17,556 streamed publisher titles for when
+still open. Behind that is a wall of 17,572 streamed publisher titles for when
 the network is fine.
 
 The tab reads **Classroom** with a chalkboard icon, and the page is a plain
@@ -13,7 +13,7 @@ grid of playable titles.
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **138 local HTML games**.
+The main search includes publisher titles and the **129 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
@@ -31,13 +31,14 @@ It needs the network, unlike anything under `assets/games/`. Nothing is marked `
 still works (it makes a title lead the local page and its own search) but no
 title uses it.
 
-The two heaviest titles, **Slope** (25 MB) and **Plants vs Zombies** (21 MB),
-and Minecraft (76 MB) have been removed to buy back hosting headroom, so the
-count is **138 local games** and Minecraft streams instead. The game files now
-total **819,873,619 bytes**; the 900 MiB test budget leaves **123,844,781
-bytes** — about **118 MiB** for another title. The analytics beacons that
-shipped with some pack pages have been stripped; gameplay and assets remain
-intact.
+The heaviest titles have been removed to buy back hosting headroom: **Slope**
+(25 MB), **Plants vs Zombies** (21 MB), Minecraft (76 MB), and the latest cuts —
+**Vex 4, 5, 6 and X3M** (47.5 MB), **Angry Birds**, **Happy Wheels**, **Snail
+Bob**, **Basketball Stars** and **Time Shooter 3**. The folder is **129 local
+games** and Minecraft streams instead. The game files now total **706,727,076
+bytes**; the 900 MiB test budget leaves **236,991,324 bytes** — about **226
+MiB** for another title. The analytics beacons that shipped with some pack
+pages have been stripped; gameplay and assets remain intact.
 
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
@@ -53,14 +54,13 @@ series the folder was missing: **Fireboy & Watergirl 2, 3 and 4**, **Bloons TD
 and **2**, **Vex 4, 5, 6** and **Vex X3M**, **Duck Life**, **Snail Bob**, **Moto
 X3M Winter**, **Run 2**, **Bob the Robber 2**, **Earn to Die**, **Flood Runner
 2**, **Free Rider 3**, **Dadish 3**, **Learn to Fly** and **Papa's Pizzeria**.
-The heavy names now bundled rather than streamed: **Angry Birds**,
-**Happy Wheels**, **Among Us**, **Age of War**, **Super Mario 64** and
+The heavy names bundled at the time: **Angry Birds** and **Happy Wheels**
+(both since removed), **Among Us**, **Age of War**, **Super Mario 64** and
 **Retro Bowl College**. **Plants vs Zombies** and **Slope** were bundled too and
 then removed again for size. The rest are the small classics that fit what the size
 budget leaves: **Bloxorz**, **Tag**, **Bad Ice Cream**, **Space is Key**, **This
-is The Only Level**, **8 Ball Classic**, **1 on 1 Tennis**, **Basketball
-Stars**, **Time Shooter 3**, **Helix Jump**, **Hill Climb Racing Lite**, **Pou**
-and **Breaking the Bank**.
+is The Only Level**, **8 Ball Classic**, **1 on 1 Tennis**, **Helix Jump**,
+**Hill Climb Racing Lite**, **Pou** and **Breaking the Bank**.
 
 Earlier additions were **Basket Random** (one-button basketball), **Jumping
 Shell** (puzzle platforming) and **Fireblob** (ice-melting platforming), all
@@ -265,7 +265,7 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: 138 titles that are plain files,
+- **100% Unblocked** in the header: 129 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - If a route fails, **Try another source** walks to the next one; if every one
@@ -288,7 +288,7 @@ CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists 138 titles
+`files.html`, reached from **100% Unblocked** in the header, lists 129 titles
 that ship with the site as plain HTML under `assets/games/`. No embed, no
 portal, no third party that can refuse a frame: the page opens a file from its
 own folder, and a filter aimed at a game site has nothing to act on.
@@ -348,8 +348,11 @@ thirteen more were checked the same way and booted but did not fit the
 remaining megabyte budget: `Slope 3`, `Vex 7`, `Vex 8`, `Awesome Tanks`,
 `Awesome Tanks 2`, `Vex X3M 2`, `Ice Dodo`, `Moto X3M`,
 `Moto X3M 2`, `Moto X3M 3`, `Polytrack`, `KittyToy` and `Funny Battle`. They
-are first in line when room appears. Beyond them are most of the Papa's restaurant series, the Snail Bob
-and Wheely sequels, `Bloons TD 5` and `Angry Birds Space`, plus the few whose
+are first in line when room appears. Room has since appeared — 226 MiB of it —
+but the newest cuts were made to keep the folder well clear of the ceiling
+rather than to swap one set of heavy titles for another. Beyond them are most
+of the Papa's restaurant series, the Snail Bob and Wheely sequels,
+`Bloons TD 5` and `Angry Birds Space`, plus the few whose
 pack copy is not really offline (`Geometry Dash` still pulls its sounds,
 `Jetpack Joyride` still fetches its build from a CDN). Adding more means
 removing something first, and the size check in the test suite is what makes
@@ -367,7 +370,7 @@ game shows a plain title card until `local-files.yml` has run once and
 committed its real screenshot.
 
 That is also why the folder is committed in the open rather than hidden behind
-a download: 138 files at 782 MB is the whole site, and cloning it once is the
+a download: 129 files at 674 MB is the whole site, and cloning it once is the
 point. Because a `git clone` of the folder and a **Save linked file** produce
 the same thing, the pack is also usable offline straight from the repository:
 clone it, or copy `assets/games/` onto a memory stick, and every file in there
@@ -383,7 +386,7 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the 138 titles that are plain files
+files.html               the 129 titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
