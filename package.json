@@ -2,7 +2,7 @@
   "name": "gams",
   "version": "4.1.0",
   "private": true,
-  "description": "G@M\u00a3$ \u2014 17,556 streamable titles plus 141 local HTML games that need no network.",
+  "description": "G@M\u00a3$ \u2014 139 local HTML games that keep playing with the network off, plus 17,556 streamable titles.",
   "scripts": {
     "start": "python3 -m http.server 8000 --bind 0.0.0.0",
     "test": "node tests/ui.test.js && node tests/catalog.test.js"

@@ -1031,6 +1031,11 @@
   /* ---------- start ---------- */
 
   function init() {
+    // The pitch line counts the files instead of hard-coding a number that
+    // drifts every time a title is added or removed.
+    Array.prototype.forEach.call(document.querySelectorAll("[data-local-count]"), function (node) {
+      node.textContent = String((window.LOCAL_GAMES || []).length);
+    });
     dom.grid = $("#grid");
     dom.empty = $("[data-empty]");
     dom.emptyQ = $("[data-empty-q]");

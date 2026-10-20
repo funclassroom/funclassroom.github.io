@@ -1,13 +1,19 @@
 # Classroom
 
-A wall of HTML5 titles behind an unremarkable tab. The tab reads **Classroom**
-with a chalkboard icon; the page is a plain grid of playable titles.
+**139 games that keep playing when the network does not.** They are single
+HTML files served from this repository, so there is no embed, no player to
+load and no third party that can refuse a frame — with the wi-fi off, they
+still open. Behind that is a wall of 17,556 streamed publisher titles for when
+the network is fine.
+
+The tab reads **Classroom** with a chalkboard icon, and the page is a plain
+grid of playable titles.
 
 **Live:** https://socks275.github.io/ClassroomGames/
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **141 local HTML games**.
+The main search includes publisher titles and the **139 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
@@ -20,7 +26,12 @@ on the top row of the home page, and it is the first result whenever somebody
 searches for it — on either page, in any sort order. Every other local game
 keeps the order of the shared list and is ranked like any other title.
 
-The latest size swap removes **Elastic Face** and adds **Time Shooter 2** from that pack. The analytics beacons that shipped with some pack pages have been stripped; gameplay and assets remain intact. The count stays at **141 local games** (140 pack titles plus Minecraft). The game files now total **942,498,007 bytes**; the 900 MiB test budget leaves **1,220,393 bytes**—about **1.16 MiB**, not enough for another Time Shooter 2-sized game. The card image uses artwork embedded in the game file.
+The two heaviest titles, **Slope** (25 MB) and **Plants vs Zombies** (21 MB),
+have been removed to buy back hosting headroom, so the count is **139 local
+games** (138 pack titles plus Minecraft). The game files now total
+**895,469,890 bytes**; the 900 MiB test budget leaves **48,248,510 bytes** —
+about **46 MiB** for another title. The analytics beacons that shipped with
+some pack pages have been stripped; gameplay and assets remain intact.
 
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
@@ -36,9 +47,10 @@ series the folder was missing: **Fireboy & Watergirl 2, 3 and 4**, **Bloons TD
 and **2**, **Vex 4, 5, 6** and **Vex X3M**, **Duck Life**, **Snail Bob**, **Moto
 X3M Winter**, **Run 2**, **Bob the Robber 2**, **Earn to Die**, **Flood Runner
 2**, **Free Rider 3**, **Dadish 3**, **Learn to Fly** and **Papa's Pizzeria**.
-The heavy names now bundled rather than streamed: **Angry Birds**, **Plants vs
-Zombies**, **Happy Wheels**, **Among Us**, **Age of War**, **Super Mario 64** and
-**Retro Bowl College**. The rest are the small classics that fit what the size
+The heavy names now bundled rather than streamed: **Angry Birds**,
+**Happy Wheels**, **Among Us**, **Age of War**, **Super Mario 64** and
+**Retro Bowl College**. **Plants vs Zombies** and **Slope** were bundled too and
+then removed again for size. The rest are the small classics that fit what the size
 budget leaves: **Bloxorz**, **Tag**, **Bad Ice Cream**, **Space is Key**, **This
 is The Only Level**, **8 Ball Classic**, **1 on 1 Tennis**, **Basketball
 Stars**, **Time Shooter 3**, **Helix Jump**, **Hill Climb Racing Lite**, **Pou**
@@ -157,6 +169,48 @@ in place, so a bad feed day cannot wipe the wall. It also drops generative-AI
 titles and a short blocklist of gambling titles (casino, slots, poker). AI-titled
 games are no longer excluded — an earlier rule did that, and it has been removed.
 
+## Getting the link out
+
+The pages carry `noindex,nofollow`, so search engines will not send anybody.
+Every visit starts with a link somebody pasted, which means two things: the
+link needs a preview worth clicking, and it needs to say where it came from.
+
+### Link previews
+
+Both `index.html` and `files.html` carry `og:title`, `og:description`,
+`og:image`, `og:url` and a `twitter:card`, so a pasted link renders as a card
+with the 1200×630 `assets/img/share/og-cover.png` instead of a bare URL. The pages
+stay `noindex`; these tags only shape the preview. The image URLs are absolute
+and point at `https://funclassroom.github.io/`, so **if the site is served from
+another domain, change those three `og:image` / `og:url` values** or the
+preview will 404.
+
+### Telling the channels apart
+
+Clarity counts sessions; it does not say where they came from. Add `?ref=` to
+any link you post and `assets/js/attribution.js` reads it, hands it to Clarity
+as a custom tag called `channel`, and keeps it in `sessionStorage` so a visit
+that starts on the wall and moves on to `files.html` stays credited to the same
+channel. In the Clarity dashboard, break the recording list down by the
+`channel` tag.
+
+Post these, not the bare URL:
+
+| Where | Link |
+| --- | --- |
+| Discord | `https://funclassroom.github.io/?ref=discord` |
+| TikTok | `https://funclassroom.github.io/?ref=tiktok` |
+| YouTube (description) | `https://funclassroom.github.io/?ref=youtube` |
+| Reddit | `https://funclassroom.github.io/?ref=reddit` |
+| GitHub repo | `https://funclassroom.github.io/?ref=github` |
+| QR code in a classroom | `https://funclassroom.github.io/?ref=qr` |
+| A friend, one to one | `https://funclassroom.github.io/?ref=wordofmouth` |
+
+`?utm_source=` works the same way if a tag is forced on you, and the value is
+lowercased and stripped to `[a-z0-9_-]` before it is used. The offline games
+page takes the same parameters:
+`https://funclassroom.github.io/files.html?ref=tiktok`.
+
 ## Progress and saves
 
 Two different kinds of progress exist, and it is worth knowing which is which.
@@ -200,7 +254,7 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: 141 titles that are plain files,
+- **100% Unblocked** in the header: 139 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - If a route fails, **Try another source** walks to the next one; if every one
@@ -223,7 +277,7 @@ CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists 141 titles
+`files.html`, reached from **100% Unblocked** in the header, lists 139 titles
 that ship with the site as plain HTML under `assets/games/`. No embed, no
 portal, no third party that can refuse a frame: the page opens a file from its
 own folder, and a filter aimed at a game site has nothing to act on.
@@ -239,14 +293,14 @@ the **Eaglercraft 26.2 (zeus)** offline download from
 self-contained HTML file (SHA-256
 `3cbcc8f3193006bf1c231de8df1f6a59c5ff2b8458571282ce0b68ff51589ffe`, about
 76 MB, no external scripts) that replaced the old streamed Eaglercraft embed.
-It is the largest file in the folder and the whole folder is about 942 MB, so
+It is the largest file in the folder and the whole folder is about 895 MB, so
 its first load takes a while.
 
 ### Picking which of the 352 to ship
 
 Two limits decide the list. GitHub Pages stops building past a **1 GB source
 tree**, so `tests/catalog.test.js` holds `assets/games/` to **900 MiB**. The
-folder is now within about **1.16 MiB** of that project-level ceiling; a new
+folder is now within about **46 MiB** of that project-level ceiling; a new
 title has to be worth the megabytes it costs. The other limit is honesty: a
 file that fetches its engine from a CDN is not an offline game, so it is not
 shipped no matter how good the title is.
@@ -276,7 +330,9 @@ the ones a school network would notice:
   (`Pico's School`).
 
 The remaining gap is size, not judgement. 210 titles in the pack are still
-not here and would add about 4.4 GB. Every one was downloaded at that revision
+not here and would add about 4.4 GB. `Slope` and `Plants vs Zombies` were
+removed again to keep the folder well clear of the ceiling, which is the same
+trade every future title makes. Every one was downloaded at that revision
 and screened against the rules above; 147 carry no external script, stylesheet,
 beacon, ad marker or CDN build. Of those, the six in this batch open in
 Chromium with external requests blocked and never ask for the network, and
@@ -303,7 +359,7 @@ game shows a plain title card until `local-files.yml` has run once and
 committed its real screenshot.
 
 That is also why the folder is committed in the open rather than hidden behind
-a download: 141 files at 930 MB is the whole site, and cloning it once is the
+a download: 139 files at 894 MB is the whole site, and cloning it once is the
 point. Because a `git clone` of the folder and a **Save linked file** produce
 the same thing, the pack is also usable offline straight from the repository:
 clone it, or copy `assets/games/` onto a memory stick, and every file in there
@@ -319,10 +375,11 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the 141 titles that are plain files
+files.html               the 139 titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
+assets/img/share/og-cover.png  the 1200x630 card a shared link shows
 assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,568 rows)
 assets/js/app.js         search, sort, saves, recents, player
