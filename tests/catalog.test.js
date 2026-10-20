@@ -270,6 +270,37 @@ check(
   unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 900 * 1024 * 1024
 );
 
+check(
+  "the Cloudflare upload leaves node_modules and .git behind",
+  (() => {
+    const file = path.join(ROOT, ".assetsignore");
+    if (!fs.existsSync(file)) return false;
+    const lines = fs
+      .readFileSync(file, "utf8")
+      .split("\n")
+      .map((line) => line.trim().replace(/^\*\*\//, "").replace(/\/$/, ""))
+      .filter((line) => line && line.charAt(0) !== "#");
+    return lines.includes("node_modules") && lines.includes(".git");
+  })()
+);
+check(
+  "no deployable file breaks the 25 MiB Cloudflare asset limit",
+  (() => {
+    const skip = new Set(["node_modules", ".git", ".github", ".wrangler", "tests", "scripts", "data"]);
+    const limit = 25 * 1024 * 1024;
+    const walk = (dir) =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) return skip.has(entry.name) ? [] : walk(full);
+        return [full];
+      });
+    const files = walk(ROOT);
+    const tooBig = files.filter((file) => fs.statSync(file).size > limit);
+    if (tooBig.length) console.log("over the limit:", tooBig.map((f) => path.relative(ROOT, f)));
+    return tooBig.length === 0;
+  })()
+);
+
 check("index loads the app", /assets\/js\/app\.js/.test(index));
 check("index loads the one stylesheet", /assets\/css\/app\.css/.test(index));
 check("index has no old dual-skin leftovers", !/gamekit|data-mode|mode-classroom/i.test(index));
