@@ -21,10 +21,13 @@ shared list; add a game there, its file under `assets/games/`, and its card
 screenshot under `assets/img/pack/`.
 
 **Minecraft is no longer bundled.** It was a 76 MB single file — more than
-every other local title put together — so it is streamed again from
-[eaglercraft.com](https://eaglercraft.com/play) and pinned to the top of the
-wall by `scripts/extras.py`. It needs the network, unlike anything under
-`assets/games/`. Nothing is marked `featured` in the local list now; the flag
+every other local title put together — so it plays from a browser build of the
+game online again, through two routes in `scripts/extras.py`: a self-contained
+EaglercraftX file on
+[johntherriiiippper.github.io](https://johntherriiiippper.github.io/eaglercraftx.html)
+and a maintained build at
+[eaglercraft.q13x.com](https://eaglercraft.q13x.com/1.8.8_2/js/?retina=true).
+It needs the network, unlike anything under `assets/games/`. Nothing is marked `featured` in the local list now; the flag
 still works (it makes a title lead the local page and its own search) but no
 title uses it.
 
@@ -127,17 +130,20 @@ has not been verified from an approved deployment.
 `scripts/extras.py` is a list of games added by hand. They go through the same
 grouping and sorting as a feed, so an extra can never appear twice and a portal
 that later starts carrying the same title just becomes a second route on the
-same tile. Three keys are special: `id` names the tile slug, `pin` keeps it
-above the most-played on every sort, and `exclusive` refuses a feed copy — a
+same tile. Four keys are special: `id` names the tile slug, `pin` keeps it
+above the most-played on every sort, `priority` decides which of several
+routes for one title is tried first, and `exclusive` refuses a feed copy — a
 different game that happens to own the same title is not a fallback.
 
-There is one hand-added entry: **Minecraft**, streamed from
-`https://eaglercraft.com/play` and pinned. It went local once to survive a
-third-party host disappearing, but at 76 MB it was most of the repo's 1 GB and
-one play cost more than a class's month of bandwidth, so it is streamed from
-the project's own player again. If that frame is ever refused, set
-`"embed": False` in `scripts/extras.py` and the tile opens in a new tab
-instead. (The player's iframe still asks for `pointer-lock`, without which
+There is one hand-added title: **Minecraft**, with two routes that both allow
+framing. The obvious host, `eaglercraft.com/play`, answers
+`X-Frame-Options: DENY` (checked 20 October 2026), so the tile could never
+play inside the page; it was pulled. The first route is a single-file
+EaglercraftX build on GitHub Pages — a host that cannot send that header and
+that the school does not block — and the second is a maintained 1.8.8 u53
+distribution in case the personal page disappears. If both frames are ever
+refused, set `"embed": False` in `scripts/extras.py` and the tile opens in a
+new tab instead. (The player's iframe still asks for `pointer-lock`, without which
 mouse-look is dead in games like it.)
 
 ### Why not hundreds of portals
@@ -293,10 +299,9 @@ carries a hand-picked set that fits inside the size budget: the small classics,
 the heavy legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and
 more) and the sequels of both.
 **Minecraft is not one of them.** It was bundled here for a while — the
-Eaglercraft 26.2 (zeus) download, a single 76 MB HTML file — but it is
-streamed again from [eaglercraft.com](https://eaglercraft.com/play) and pinned
-on the main wall, so the folder holds only titles that work with the network
-off. That is also what took the folder from 895 MB down to 782 MB, and the
+Eaglercraft 26.2 (zeus) download, a single 76 MB HTML file — but it plays
+from a browser build online again, so the folder holds only titles that work
+with the network off. That is also what took the folder from 895 MB down to 782 MB, and the
 headroom from 46 MiB to 118 MiB.
 
 ### Picking which of the 352 to ship
@@ -406,11 +411,11 @@ Push, and Pages rebuilds.
 
 ## On images and AI
 
-No image is generated here: every thumbnail is the publisher's own file. The
-only artwork the repo holds is the hand-written SVG tab icon and the 1200x630
-share card. The one remote thumbnail is Minecraft's, which points at
-eaglercraft.com's own version image because a streamed tile needs some art and
-the pack screenshot went with the bundle.
+No image is generated here: every game thumbnail is the publisher's own file.
+The artwork the repo holds is the hand-written SVG tab icon, the 1200x630 share
+card, and one 512x384 grass-block card for Minecraft under
+`assets/img/catalog/` — a streamed tile needs art that still draws when every
+game host is unreachable.
 
 AI-titled titles are no longer filtered — the old blocklist was removed when it
 turned out to be hiding the one Veo title the feeds still carried.

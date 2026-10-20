@@ -115,19 +115,29 @@ check(
 );
 check(
   "every tile has a thumbnail",
-  CATALOG.every((g) => /^https:\/\//.test(g.thumb) || /^assets\/img\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(g.thumb))
+  CATALOG.every((g) => /^https:\/\//.test(g.thumb) || /^assets\/img\/(?:catalog\/)?[a-z0-9-]+\.(png|jpe?g|webp)$/.test(g.thumb))
 );
 check(
-  "Minecraft is a streamed tile again, not a bundled one",
+  "Minecraft has two routes whose hosts allow framing, and local art",
   (() => {
     const tile = CATALOG.filter((g) => g.id === "minecraft");
-    return tile.length === 1 &&
-      tile[0].pinned === false &&
-      tile[0].sources.length === 1 &&
-      tile[0].sources[0].portal === "eaglercraft.com" &&
-      tile[0].sources[0].url === "https://eaglercraft.com/play" &&
-      tile[0].sources[0].embed === true;
+    if (tile.length !== 1) return false;
+    const sources = tile[0].sources;
+    return tile[0].pinned === false &&
+      tile[0].thumb === "assets/img/catalog/minecraft.jpg" &&
+      fs.existsSync(path.join(ROOT, "assets/img/catalog/minecraft.jpg")) &&
+      sources.length === 2 &&
+      sources[0].portal === "johntherriiiippper.github.io" &&
+      sources[0].url === "https://johntherriiiippper.github.io/eaglercraftx.html" &&
+      sources[0].embed === true &&
+      sources[1].portal === "eaglercraft.q13x.com" &&
+      sources[1].url === "https://eaglercraft.q13x.com/1.8.8_2/js/?retina=true" &&
+      sources[1].embed === true;
   })()
+);
+check(
+  "no tile points at the host that refuses to be framed",
+  CATALOG.every((g) => g.sources.every((s) => !/^eaglercraft\.com$/.test(s.portal)))
 );
 check(
   "the old Minecraft host is gone for good",
@@ -144,10 +154,15 @@ check(
     !/file: "assets\/games\/minecraft\.html"/.test(fs.readFileSync(path.join(ROOT, "assets/js/local-games.js"), "utf8"))
 );
 check(
-  "the builder puts Minecraft back on the next rebuild",
-  /"id":\s*"minecraft"/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8")) &&
-    /eaglercraft\.com\/play/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8")) &&
-    !/"pin":\s*True/.test(fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8"))
+  "the builder puts Minecraft back, in the same order, on the next rebuild",
+  (() => {
+    const src = fs.readFileSync(path.join(ROOT, "scripts/extras.py"), "utf8");
+    return /"id":\s*"minecraft"/.test(src) &&
+      /johntherriiiippper\.github\.io\/eaglercraftx\.html/.test(src) &&
+      /eaglercraft\.q13x\.com\/1\.8\.8_2\/js\/\?retina=true/.test(src) &&
+      !/"url":\s*"https:\/\/eaglercraft\.com/.test(src) &&
+      !/"pin":\s*True/.test(src);
+  })()
 );
 check(
   "nothing local is featured now that Minecraft streams",
