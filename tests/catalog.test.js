@@ -182,9 +182,7 @@ check(
 check(
   "the local games do not need this site to be online",
   unique.every((rel) => {
-    const file = fs
-      .readFileSync(path.join(ROOT, rel), "utf8")
-      .replace(/<!-- Cloudflare Web Analytics -->[\s\S]*?<!-- End Cloudflare Web Analytics -->/g, "");
+    const file = fs.readFileSync(path.join(ROOT, rel), "utf8");
     return !/<script[^>]+src=["']https?:/i.test(file) && !/<link[^>]+href=["']https?:[^"']*\.css/i.test(file);
   })
 );
@@ -273,8 +271,12 @@ check(
 );
 check("all persistence uses one namespaced key", (app.match(/localStorage/g) || []).length > 0 && app.includes("classroom.state.v1"));
 check("the page offers a way to wipe its own data", /data-reset/.test(index));
-check("Cloudflare Web Analytics is present on both static site pages", /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(index) && /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(filesPage));
-check("Cloudflare Web Analytics is retained in bundled game pages", fs.readdirSync(path.join(ROOT, "assets/games")).some((name) => /static\.cloudflareinsights\.com\/beacon\.min\.js/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))));
+check(
+  "no page or bundled game carries Cloudflare code",
+  [ "index.html", "files.html", "404.html", "sw.js", "manifest.webmanifest" ]
+    .concat(fs.readdirSync(path.join(ROOT, "assets/games")).map((name) => "assets/games/" + name))
+    .every((rel) => !/cloudflareinsights|cloudflare\.com|Cloudflare Web Analytics/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
+);
 check("Hanger 2 has no remote Cloudflare CDN dependency", !/cdnjs\.cloudflare\.com/.test(fs.readFileSync(path.join(ROOT, "assets/games/hanger-2.html"), "utf8")));
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
