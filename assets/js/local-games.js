@@ -1,8 +1,8 @@
 /* Shared list of locally hosted HTML games for both search pages.
    A title may be marked `featured`, which makes it lead the local page, sit
    on the top row of the home page and come first in its own search. Nothing
-   is featured at the moment: Minecraft used to be, and it is streamed from
-   eaglercraft.com again (scripts/extras.py) rather than bundled here. */
+   is featured at the moment: Minecraft used to be, and it plays from a
+   browser build online again (scripts/extras.py) rather than bundled here. */
 window.LOCAL_GAMES = [
     { file: "assets/games/2048.html", title: "2048", line: "Slide the tiles, merge the numbers, reach 2048." },
     { file: "assets/games/bit-planes.htm", title: "Bit Planes", line: "Fly between the towers without clipping a wing." },

@@ -239,8 +239,11 @@ def main():
     # only source forbids framing is still kept, it just opens in a new tab.
     def play_rank(game):
         # Keep existing feed priority; other embeddable routes are fallbacks.
+        # A hand-added entry can outrank them with `priority`, which is how
+        # Minecraft puts the route we most want tried ahead of its spare.
         return (
             0 if game.get("pin") else 1,
+            game.get("priority", 9),
             0 if game["portal"] == "gamemonetize.com" else 1,
             0 if game.get("embed") else 1,
             game["portal"],

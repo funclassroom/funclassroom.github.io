@@ -128,7 +128,7 @@ function titles(document) {
       "thumbnails are portal art or local pack art",
       Array.from(document.querySelectorAll(".tile-thumb img")).every((img) =>
         /^https:\/\/[a-z0-9.-]+\//.test(img.getAttribute("src")) ||
-        /^assets\/img\/(pack\/)?[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
+        /^assets\/img\/(?:pack|catalog)\/[a-z0-9-]+\.(png|jpe?g|webp)$/.test(img.getAttribute("src"))
       )
     );
     type(dom.window, document.querySelector("#q"), "minecraft");
