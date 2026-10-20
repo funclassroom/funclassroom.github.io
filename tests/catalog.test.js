@@ -428,6 +428,31 @@ check("no build step is required", !pkg.scripts.build);
 check("README explains the disguise", /tab reads \*\*Classroom\*\*/i.test(readme));
 check("README states the MadKid count", readme.includes("508"));
 
+check(
+  "both pages load the feedback dialog",
+  [index, filesPage].every((html) => /assets\/js\/feedback\.js/.test(html))
+);
+check(
+  "the feedback dialog never sends anything itself",
+  (() => {
+    const src = fs.readFileSync(path.join(ROOT, "assets/js/feedback.js"), "utf8");
+    return !/fetch\(|sendBeacon|XMLHttpRequest/.test(src) && /issues\/new/.test(src);
+  })()
+);
+check(
+  "a game can be requested without leaving the page",
+  /labels:\s*game-request/.test(fs.readFileSync(path.join(ROOT, ".github/ISSUE_TEMPLATE/game_request.md"), "utf8")) &&
+    /game-request/.test(fs.readFileSync(path.join(ROOT, "assets/js/feedback.js"), "utf8"))
+);
+check(
+  "the feedback dialog publishes no address of its own",
+  !/mailto:|@[a-z0-9-]+\.[a-z]{2,}/i.test(fs.readFileSync(path.join(ROOT, "assets/js/feedback.js"), "utf8"))
+);
+check(
+  "the page points at the repository that owns the issues",
+  /funclassroom\/funclassroom\.github\.io/.test(fs.readFileSync(path.join(ROOT, "assets/js/feedback.js"), "utf8"))
+);
+
 console.log("\n  DATA: " + pass + " passed, " + fail + " failed\n");
 if (fail) {
   failures.forEach((f) => console.log("   - " + f));
