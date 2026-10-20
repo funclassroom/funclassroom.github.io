@@ -1,7 +1,24 @@
 {
-  "checkedAt": "2026-10-20T19:26:38.199Z",
+  "checkedAt": "2026-10-20T20:02:07.146Z",
   "checked": 1500,
-  "dead": 0,
-  "urls": [],
-  "detail": []
+  "dead": 1,
+  "urls": [
+    "https://html5.gamemonetize.co/yhul7nu531162htf58s70mx2lpcz7ho8/"
+  ],
+  "detail": [
+    {
+      "id": "55188",
+      "title": "Merge TikTok Gravity Knife",
+      "portal": "gamemonetize.com",
+      "url": "https://html5.gamemonetize.co/yhul7nu531162htf58s70mx2lpcz7ho8/",
+      "status": null,
+      "failed": "net::ERR_CONNECTION_RESET",
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": ""
+      },
+      "dead": true
+    }
+  ]
 }
