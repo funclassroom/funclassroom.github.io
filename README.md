@@ -1,6 +1,6 @@
 # Classroom
 
-**139 games that keep playing when the network does not.** They are single
+**138 games that keep playing when the network does not.** They are single
 HTML files served from this repository, so there is no embed, no player to
 load and no third party that can refuse a frame — with the wi-fi off, they
 still open. Behind that is a wall of 17,556 streamed publisher titles for when
@@ -13,25 +13,28 @@ grid of playable titles.
 
 ## Local HTML games and search
 
-The main search includes publisher titles and the **139 local HTML games**.
+The main search includes publisher titles and the **138 local HTML games**.
 Local versions have an **(HTML)** suffix and open the bundled file rather than
 an external publisher. **100% Unblocked** links to `files.html`, whose search
 only filters local games. Both pages use `assets/js/local-games.js` as their
 shared list; add a game there, its file under `assets/games/`, and its card
 screenshot under `assets/img/pack/`.
 
-**Minecraft** is the one local title marked `featured` in that list, and it is
-the only one treated specially. It leads the local page, it is the first tile
-on the top row of the home page, and it is the first result whenever somebody
-searches for it — on either page, in any sort order. Every other local game
-keeps the order of the shared list and is ranked like any other title.
+**Minecraft is no longer bundled.** It was a 76 MB single file — more than
+every other local title put together — so it is streamed again from
+[eaglercraft.com](https://eaglercraft.com/play) and pinned to the top of the
+wall by `scripts/extras.py`. It needs the network, unlike anything under
+`assets/games/`. Nothing is marked `featured` in the local list now; the flag
+still works (it makes a title lead the local page and its own search) but no
+title uses it.
 
 The two heaviest titles, **Slope** (25 MB) and **Plants vs Zombies** (21 MB),
-have been removed to buy back hosting headroom, so the count is **139 local
-games** (138 pack titles plus Minecraft). The game files now total
-**895,469,890 bytes**; the 900 MiB test budget leaves **48,248,510 bytes** —
-about **46 MiB** for another title. The analytics beacons that shipped with
-some pack pages have been stripped; gameplay and assets remain intact.
+and Minecraft (76 MB) have been removed to buy back hosting headroom, so the
+count is **138 local games** and Minecraft streams instead. The game files now
+total **819,873,619 bytes**; the 900 MiB test budget leaves **123,844,781
+bytes** — about **118 MiB** for another title. The analytics beacons that
+shipped with some pack pages have been stripped; gameplay and assets remain
+intact.
 
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
@@ -128,12 +131,14 @@ same tile. Three keys are special: `id` names the tile slug, `pin` keeps it
 above the most-played on every sort, and `exclusive` refuses a feed copy — a
 different game that happens to own the same title is not a fallback.
 
-There are currently no hand-added entries. **Minecraft** used to be the one
-entry, streamed as Eaglercraft from a third-party host; it is now bundled as a
-plain local file instead (see *The files that cannot be blocked* below), so it
-no longer appears as a streamed tile on the main wall. (The player's iframe
-still asks for `pointer-lock`, without which mouse-look is dead in games like
-it.)
+There is one hand-added entry: **Minecraft**, streamed from
+`https://eaglercraft.com/play` and pinned. It went local once to survive a
+third-party host disappearing, but at 76 MB it was most of the repo's 1 GB and
+one play cost more than a class's month of bandwidth, so it is streamed from
+the project's own player again. If that frame is ever refused, set
+`"embed": False` in `scripts/extras.py` and the tile opens in a new tab
+instead. (The player's iframe still asks for `pointer-lock`, without which
+mouse-look is dead in games like it.)
 
 ### Why not hundreds of portals
 
@@ -254,13 +259,13 @@ game.
 - Save titles, and a row of the last eight you opened
 - `#p=<slug>` deep links, `Esc` to close, `/` to search, `` ` `` for a panic exit
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
-- **100% Unblocked** in the header: 139 titles that are plain files,
+- **100% Unblocked** in the header: 138 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - If a route fails, **Try another source** walks to the next one; if every one
   fails, the player says so, apologises, and offers the portal in a new tab
 - Loading stays on screen until the frame answers, so a slow game is never a
-  silent black page; local files show the same card (Minecraft is 76 MB)
+  silent black page; local files show the same card
 - A short help section explains keyboard shortcuts, publisher availability and
   local storage; report links create GitHub issues with the selected title
 - A static GitHub Pages PWA caches the site shell; on the local-files page,
@@ -277,7 +282,7 @@ CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 
-`files.html`, reached from **100% Unblocked** in the header, lists 139 titles
+`files.html`, reached from **100% Unblocked** in the header, lists 138 titles
 that ship with the site as plain HTML under `assets/games/`. No embed, no
 portal, no third party that can refuse a frame: the page opens a file from its
 own folder, and a filter aimed at a game site has nothing to act on.
@@ -287,20 +292,18 @@ which collects 352 single-file games. All 352 would be 5.3 GB, so this site
 carries a hand-picked set that fits inside the size budget: the small classics,
 the heavy legends (Slope, Retro Bowl, OvO, Bad Piggies, Fireboy & Watergirl and
 more) and the sequels of both.
-On top of those, **Minecraft** is bundled as `assets/games/minecraft.html` —
-the **Eaglercraft 26.2 (zeus)** offline download from
-[eaglercraft.com/downloads](https://eaglercraft.com/downloads), one
-self-contained HTML file (SHA-256
-`3cbcc8f3193006bf1c231de8df1f6a59c5ff2b8458571282ce0b68ff51589ffe`, about
-76 MB, no external scripts) that replaced the old streamed Eaglercraft embed.
-It is the largest file in the folder and the whole folder is about 895 MB, so
-its first load takes a while.
+**Minecraft is not one of them.** It was bundled here for a while — the
+Eaglercraft 26.2 (zeus) download, a single 76 MB HTML file — but it is
+streamed again from [eaglercraft.com](https://eaglercraft.com/play) and pinned
+on the main wall, so the folder holds only titles that work with the network
+off. That is also what took the folder from 895 MB down to 782 MB, and the
+headroom from 46 MiB to 118 MiB.
 
 ### Picking which of the 352 to ship
 
 Two limits decide the list. GitHub Pages stops building past a **1 GB source
 tree**, so `tests/catalog.test.js` holds `assets/games/` to **900 MiB**. The
-folder is now within about **46 MiB** of that project-level ceiling; a new
+folder is now within about **118 MiB** of that project-level ceiling; a new
 title has to be worth the megabytes it costs. The other limit is honesty: a
 file that fetches its engine from a CDN is not an offline game, so it is not
 shipped no matter how good the title is.
@@ -359,7 +362,7 @@ game shows a plain title card until `local-files.yml` has run once and
 committed its real screenshot.
 
 That is also why the folder is committed in the open rather than hidden behind
-a download: 139 files at 894 MB is the whole site, and cloning it once is the
+a download: 138 files at 782 MB is the whole site, and cloning it once is the
 point. Because a `git clone` of the folder and a **Save linked file** produce
 the same thing, the pack is also usable offline straight from the repository:
 clone it, or copy `assets/games/` onto a memory stick, and every file in there
@@ -375,7 +378,7 @@ new screenshots.
 
 ```
 index.html               the page
-files.html               the 139 titles that are plain files
+files.html               the 138 titles that are plain files
 404.html                 not-found page
 assets/games/*.html      the games themselves, straight from the offline pack
 assets/img/pack/*.jpg    one screenshot per game, taken by the probe
@@ -404,11 +407,10 @@ Push, and Pages rebuilds.
 ## On images and AI
 
 No image is generated here: every thumbnail is the publisher's own file. The
-only file of artwork in the repo is the hand-written SVG tab icon. The
-Minecraft card on the local page (`assets/img/pack/minecraft.jpg`) is converted
-from the screenshot of the Eaglercraft title screen taken while checking that
-the old embed actually boots — the game has no artwork of its own to point a
-thumbnail at.
+only artwork the repo holds is the hand-written SVG tab icon and the 1200x630
+share card. The one remote thumbnail is Minecraft's, which points at
+eaglercraft.com's own version image because a streamed tile needs some art and
+the pack screenshot went with the bundle.
 
 AI-titled titles are no longer filtered — the old blocklist was removed when it
 turned out to be hiding the one Veo title the feeds still carried.
