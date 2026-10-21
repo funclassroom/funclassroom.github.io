@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Classroom">
 <meta property="og:title" content="129 games that still work when the network is blocked">
-<meta property="og:description" content="Every title on this page is a single HTML file served from the same folder. No embed, no player to load, and they keep playing with the wi-fi off.">
+<meta property="og:description" content="Every title on this page is an HTML file served from the same folder. No embed, no portal to get through, and they keep playing with the wi-fi off.">
 <meta property="og:image" content="https://funclassroom.github.io/assets/img/share/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -64,10 +64,10 @@
     <h1>These games play with the wi-fi off.</h1>
     <p class="files-lede">
       One hundred and twenty-nine titles that live in this folder as plain
-      HTML, not embeds on somebody else's server. Each one is a single file
-      that carries its own art and sound, so there is no portal, no player to
-      load and no third party that can refuse a frame — a filter that blocks a
-      site has nothing to act on.
+      HTML, not embeds on somebody else's server. Each one is a file that
+      carries its own art and sound, so there is no portal, no player to load
+      and no third party that can refuse a frame — a filter that blocks a site
+      has nothing to act on.
     </p>
     <p class="files-lede files-lede-2">
       One hundred and twenty-nine of them come from
@@ -75,8 +75,10 @@
       which holds 352 in all: the small classics, the heavy legends (Retro
       Bowl, OvO, Bad Piggies and friends) and the sequels people keep
       asking for — Bloons TD 2 to 4, Fireboy &amp; Watergirl 2 to 4, Among Us,
-      Duck Life and Papa's Pizzeria. Every one is a single file that
-      carries its own art and sound, checked to need nothing from the network.
+      Duck Life and Papa's Pizzeria. Every one is a file that carries its own
+      art and sound, checked to need nothing from the network — the Flash
+      titles share one copy of the player that runs them, kept once for the
+      whole folder instead of pasted into every page.
       <b>Minecraft</b> is not in this folder any more. It was a 76&nbsp;MB
       single file — more than every other title put together — so it plays
       from a browser build online again, starting with
@@ -347,7 +349,7 @@
     loadingText.textContent = "Loading " + title;
     loadLink.hidden = true;
     loadLink.href = url;
-    // Some single-file games are tens of megabytes and take a while to parse.
+    // Some games are tens of megabytes and take a while to parse.
     // Keep the spinner up instead of leaving a silent black screen behind them.
     loadingTimer = window.setTimeout(function () {
       loadLink.hidden = false;

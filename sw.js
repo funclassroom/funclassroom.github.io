@@ -1,5 +1,5 @@
 /* GitHub Pages-only offline shell and explicitly saved local games. */
-const VERSION = "classroom-shell-v4";
+const VERSION = "classroom-shell-v5";
 const GAME_CACHE = "classroom-offline-games-v1";
 const SHELL = ["./", "index.html", "files.html", "manifest.webmanifest", "assets/css/app.css", "assets/js/catalog.js", "assets/js/local-games.js", "assets/js/app.js", "assets/js/feedback.js", "assets/js/pwa.js", "assets/js/attribution.js", "assets/img/app-icon.svg"];
 
@@ -41,13 +41,28 @@ self.addEventListener("message", (event) => {
   const port = event.ports && event.ports[0];
   const reply = (value) => { if (port) port.postMessage(value); };
   const scope = new URL(self.registration.scope);
+  // A page may lean on a runtime kept once for the whole folder. Saving the
+  // game offline has to bring that copy along, or the saved page starts blank
+  // with the network off. The copy is left in place when a game is removed:
+  // other saved games may be using the same file.
+  const sharedDeps = (gameUrl, markup) =>
+    Array.from(new Set(markup.match(/\.\.\/vendor\/[A-Za-z0-9._/-]+\.zip/g) || []))
+      .map((ref) => new URL(ref, gameUrl))
+      .filter((dep) => dep.origin === scope.origin && dep.pathname.startsWith(scope.pathname + "assets/vendor/"))
+      .map((dep) => dep.href);
   const cacheGame = (path) => {
     if (typeof path !== "string" || !/^assets\/games\/[a-zA-Z0-9._-]+\.html?$/.test(path)) return Promise.reject(new Error("Invalid local game path"));
     const url = new URL(path, scope);
     if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname + "assets/games/")) return Promise.reject(new Error("Outside site scope"));
     return caches.open(GAME_CACHE).then((cache) => fetch(url.href).then((response) => {
       if (!response.ok) throw new Error("Download failed (" + response.status + ")");
-      return cache.put(url.href, response.clone()).then(() => ({ ok: true }));
+      const copy = response.clone();
+      return response.text().then((markup) => {
+        const deps = sharedDeps(url, markup);
+        return cache.put(url.href, copy)
+          .then(() => Promise.all(deps.map((dep) => cache.add(dep))))
+          .then(() => ({ ok: true, shared: deps.length }));
+      });
     }));
   };
   if (data.type === "CACHE_GAME") {
