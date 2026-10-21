@@ -1053,6 +1053,50 @@ function titles(document) {
     dom.window.close();
   }
 
+  /* shared runtimes */
+  {
+    const vm = require("vm");
+    const gamesDir = path.join(ROOT, "assets/games");
+    const names = fs.readdirSync(gamesDir).filter((name) => /\.html?$/.test(name));
+    const shared = names.find((name) => {
+      const text = fs.readFileSync(path.join(gamesDir, name), "utf8");
+      return text.includes("../vendor/ruffle/") && text.includes("JSZip");
+    });
+    check("a game page points at the shared runtime", !!shared);
+
+    const html = fs.readFileSync(path.join(gamesDir, shared), "utf8");
+    const zipUrl = (html.match(/let zipUrl = "([^"]+)"/) || [])[1];
+    const bundle = Array.from(html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi))
+      .map((match) => match[1])
+      .find((body) => body.includes("JSZip"));
+    const at = html.indexOf("async function unzipWebpFromDataUri");
+    const loader = html.slice(at, html.indexOf("}", html.indexOf("return blobUrls;", at)) + 1);
+
+    let made = 0;
+    const box = {
+      console: { log() {} },
+      Blob,
+      atob,
+      Uint8Array,
+      setTimeout,
+      clearTimeout,
+      URL: { createObjectURL: () => "blob:test/" + (++made) },
+      fetch: async (ref) => ({ ok: true, arrayBuffer: async () => fs.readFileSync(path.join(gamesDir, ref)) }),
+    };
+    box.window = box;
+    box.self = box;
+    vm.createContext(box);
+    vm.runInContext(bundle.slice(0, bundle.indexOf("async function unzipWebpFromDataUri")), box);
+    vm.runInContext(loader + ";this.unzip = unzipWebpFromDataUri;", box);
+    const urls = await box.unzip(zipUrl);
+    const entries = Object.keys(urls);
+    check(
+      "the shared runtime still unpacks, wasm and all",
+      entries.length > 0 && entries.some((name) => name.endsWith(".wasm")) && made === entries.length,
+      entries.join(",")
+    );
+  }
+
   console.log("\n  UI: " + pass + " passed, " + fail + " failed\n");
   if (fail) {
     failures.forEach((f) => console.log("   - " + f));

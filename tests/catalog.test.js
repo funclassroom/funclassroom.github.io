@@ -1,5 +1,6 @@
 /* Catalogue + repository integrity. */
 const fs = require("fs");
+const crypto = require("crypto");
 const path = require("path");
 const vm = require("vm");
 
@@ -265,6 +266,83 @@ check(
 // that budget, so the folder is held to 900 MiB. That leaves roughly 48 MB
 // under the published-site limit for the rest of the current site and a
 // modest safety margin.
+// The pack ships each title as a self-contained page, so a runtime shared by
+// many titles used to be pasted into every one of them. It is kept once under
+// assets/vendor now; this is the guard that stops it creeping back.
+// A regex with a repetition count over a 10 MB string blows the V8 stack, so
+// the payloads are read with plain string searches instead.
+const embeddedPayloads = (text) => {
+  const found = [];
+  let at = text.indexOf("data:application/");
+  while (at !== -1) {
+    const comma = text.indexOf(";base64,", at);
+    if (comma === -1) break;
+    const start = comma + ";base64,".length;
+    const end = text.indexOf('"', start);
+    if (end === -1) break;
+    const kind = text.slice(at + "data:application/".length, comma);
+    if (/^(x-zip-compressed|zip)\b/.test(kind)) found.push(text.slice(start, end));
+    at = text.indexOf("data:application/", end);
+  }
+  return found;
+};
+
+check(
+  "no two game pages carry the same embedded payload",
+  (() => {
+    const seen = new Set();
+    for (const name of fs.readdirSync(path.join(ROOT, "assets/games"))) {
+      if (!/\.html?$/.test(name)) continue;
+      const text = fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8");
+      for (const payload of embeddedPayloads(text)) {
+        const digest = crypto.createHash("sha1").update(payload).digest("hex").slice(0, 12);
+        if (seen.has(digest)) return false;
+        seen.add(digest);
+      }
+    }
+    return true;
+  })()
+);
+check(
+  "a shared runtime is on disk once, small enough to ship, and really a zip",
+  (() => {
+    const refs = new Map();
+    for (const name of fs.readdirSync(path.join(ROOT, "assets/games"))) {
+      if (!/\.html?$/.test(name)) continue;
+      const text = fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8");
+      for (const match of text.matchAll(/\.\.\/vendor\/ruffle\/([A-Za-z0-9._-]+\.zip)/g)) {
+        refs.set(match[1], (refs.get(match[1]) || 0) + 1);
+      }
+    }
+    if (!refs.size) return false;
+    return Array.from(refs).every(([file, uses]) => {
+      const full = path.join(ROOT, "assets", "vendor", "ruffle", file);
+      if (!fs.existsSync(full) || uses < 2) return false;
+      const head = fs.readFileSync(full).subarray(0, 2).toString("latin1");
+      return head === "PK" && fs.statSync(full).size < 25 * 1024 * 1024;
+    });
+  })()
+);
+check(
+  "sharing the runtime did not take a game's own art with it",
+  fs.readdirSync(path.join(ROOT, "assets/games"))
+    .filter((name) => /\.html?$/.test(name) && fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8").includes("../vendor/ruffle/"))
+    // "Q1dT", "RldT" and "WldT" are base64 for CWS, FWS and ZWS: the Flash
+    // file itself is still in the page, whatever compression it uses.
+    .every((name) => /;base64,(?:Q1dT|RldT|WldT)/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8")))
+);
+check(
+  "saving one of those games offline brings the runtime with it",
+  (() => {
+    const worker = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");
+    return /assets\/vendor\//.test(worker) && /cache\.add\(/.test(worker);
+  })()
+);
+check(
+  "the pages no longer promise that every game is one file",
+  ![index, filesPage].some((html) => /single HTML file|is a single file/i.test(html))
+);
+
 check(
   "the local files stay small enough to ship",
   unique.reduce((sum, rel) => sum + fs.statSync(path.join(ROOT, rel)).size, 0) < 900 * 1024 * 1024

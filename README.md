@@ -1,6 +1,6 @@
 # Classroom
 
-**129 games that keep playing when the network does not.** They are single
+**129 games that keep playing when the network does not.** They are plain
 HTML files served from this repository, so there is no embed, no player to
 load and no third party that can refuse a frame — with the wi-fi off, they
 still open. Behind that is a wall of 17,572 streamed publisher titles for when
@@ -35,10 +35,23 @@ The heaviest titles have been removed to buy back hosting headroom: **Slope**
 (25 MB), **Plants vs Zombies** (21 MB), Minecraft (76 MB), and the latest cuts —
 **Vex 4, 5, 6 and X3M** (47.5 MB), **Angry Birds**, **Happy Wheels**, **Snail
 Bob**, **Basketball Stars** and **Time Shooter 3**. The folder is **129 local
-games** and Minecraft streams instead. The game files now total **706,727,076
-bytes**; the 900 MiB test budget leaves **236,991,324 bytes** — about **226
-MiB** for another title. The analytics beacons that shipped with some pack
-pages have been stripped; gameplay and assets remain intact.
+games** and Minecraft streams instead. The game pages total **541,796,666
+bytes**, the three runtimes they share add **14,281,181**, and the 900 MiB test
+budget leaves **387,640,553 bytes** — about **370 MiB** for another title. The
+analytics beacons that shipped with some pack pages have been stripped;
+gameplay and assets remain intact.
+
+### One runtime, not twenty-six
+
+The pack exports every Flash title as a self-contained page, so 26 of them each
+carried a copy of the same Ruffle distribution: **157 MB of base64 standing in
+for 13.6 MB of files**. `scripts/share-runtime.py` finds a payload that appears
+in more than one page, writes it once to `assets/vendor/ruffle/`, and repoints
+those pages at the shared copy. Each page still carries its own `.swf` and its
+own loader; only the bytes that were identical now come from one URL. Saving
+one of those games for offline play brings the shared file with it (see
+`sw.js`), and the checks in `tests/catalog.test.js` stop the duplication coming
+back. Net effect: the folder went from 674 MB to 530 MB.
 
 The latest batch is **6 more titles** from the same pack, at revision
 `5dbfcd7a6e788101a8acab50a6cf1af209938641`: **Parking Fury 2**
@@ -279,9 +292,9 @@ game.
   the page, browser and your words already in it. Nothing is sent from the
   site, and no address is published — a free GitHub account is all it needs
 - A static GitHub Pages PWA caches the site shell; on the local-files page,
-  **Save offline** downloads only the selected standalone HTML game to this
-  browser. Those files can be removed separately. Publisher-hosted games still
-  need the internet.
+  **Save offline** downloads only the selected HTML game — plus the shared
+  runtime, if that page uses one — to this browser. They can be removed
+  separately. Publisher-hosted games still need the internet.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
@@ -312,8 +325,9 @@ headroom from 46 MiB to 118 MiB.
 
 Two limits decide the list. GitHub Pages stops building past a **1 GB source
 tree**, so `tests/catalog.test.js` holds `assets/games/` to **900 MiB**. The
-folder is now within about **118 MiB** of that project-level ceiling; a new
-title has to be worth the megabytes it costs. The other limit is honesty: a
+folder and its shared runtimes now sit about **370 MiB** under that
+project-level ceiling; a new title still has to be worth the megabytes it
+costs. The other limit is honesty: a
 file that fetches its engine from a CDN is not an offline game, so it is not
 shipped no matter how good the title is.
 
@@ -352,7 +366,7 @@ thirteen more were checked the same way and booted but did not fit the
 remaining megabyte budget: `Slope 3`, `Vex 7`, `Vex 8`, `Awesome Tanks`,
 `Awesome Tanks 2`, `Vex X3M 2`, `Ice Dodo`, `Moto X3M`,
 `Moto X3M 2`, `Moto X3M 3`, `Polytrack`, `KittyToy` and `Funny Battle`. They
-are first in line when room appears. Room has since appeared — 226 MiB of it —
+are first in line when room appears. Room has since appeared — 370 MiB of it —
 but the newest cuts were made to keep the folder well clear of the ceiling
 rather than to swap one set of heavy titles for another. Beyond them are most
 of the Papa's restaurant series, the Snail Bob and Wheely sequels,
@@ -374,11 +388,13 @@ game shows a plain title card until `local-files.yml` has run once and
 committed its real screenshot.
 
 That is also why the folder is committed in the open rather than hidden behind
-a download: 129 files at 674 MB is the whole site, and cloning it once is the
-point. Because a `git clone` of the folder and a **Save linked file** produce
+a download: 129 pages and the three runtimes they share come to 530 MB, and
+cloning it once is the point. Because a `git clone` of the folder and a **Save linked file** produce
 the same thing, the pack is also usable offline straight from the repository:
-clone it, or copy `assets/games/` onto a memory stick, and every file in there
-opens on its own in a browser with the network off.
+clone it, or copy `assets/` onto a memory stick, and every page in there opens
+in a browser with the network off. (`assets/vendor/` is part of the folder for
+that reason: 26 Flash pages look for their runtime there, a couple of levels up
+from `assets/games/`.)
 
 `scripts/probe-files.mjs` serves the repo and opens every one of them in
 Chromium, checking each returns 200 and actually paints. It also takes the
@@ -399,8 +415,10 @@ assets/css/app.css       all styling
 assets/js/catalog.js     generated catalogue (17,573 rows)
 assets/js/app.js         search, sort, saves, recents, player
 assets/js/feedback.js    the footer feedback dialog (GitHub issues, no email)
+assets/vendor/ruffle/    the Flash runtime, kept once for the pages that share it
 scripts/build-catalog.py catalogue generator
 scripts/extras.py        titles added by hand (Minecraft and its spare route)
+scripts/share-runtime.py writes a duplicated runtime out once, repoints the pages
 .github/ISSUE_TEMPLATE  the bug and game-request forms the dialog mirrors
 tests/ui.test.js         DOM behaviour
 tests/catalog.test.js    data and repository checks
