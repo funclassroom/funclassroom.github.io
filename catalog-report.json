@@ -1,23 +1,26 @@
 {
   "fetched": {
+    "by hand": 2,
     "gamemonetize": 16000,
-    "htmlgames": 1245,
+    "htmlgames": 1247,
     "madkidgames": 508
   },
   "routes": {
     "1": 1696,
-    "2": 15820,
+    "2": 15882,
     "3": 56
   },
   "sources": {
-    "gamemonetize.com": 31752,
-    "htmlgames.com": 1244,
+    "eaglercraft.q13x.com": 1,
+    "gamemonetize.com": 31872,
+    "htmlgames.com": 1246,
+    "johntherriiiippper.github.io": 1,
     "madkidgames.com": 508
   },
-  "tiles": 17572,
+  "tiles": 17634,
   "verified": {
-    "alive": 17562,
-    "checked": 17574,
+    "alive": 17624,
+    "checked": 17636,
     "gone": 2,
     "unknown": 10
   }
