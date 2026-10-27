@@ -211,12 +211,14 @@ preview will 404.
 
 ### Telling the channels apart
 
-Clarity counts sessions; it does not say where they came from. Add `?ref=` to
-any link you post and `assets/js/attribution.js` reads it, hands it to Clarity
-as a custom tag called `channel`, and keeps it in `sessionStorage` so a visit
-that starts on the wall and moves on to `files.html` stays credited to the same
-channel. In the Clarity dashboard, break the recording list down by the
-`channel` tag.
+Analytics counts sessions; it does not say where they came from. Add `?ref=` to
+any link you post and `assets/js/attribution.js` reads it, hands it to PostHog
+as a super property called `channel`, and keeps it in `sessionStorage` so a
+visit that starts on the wall and moves on to `files.html` stays credited to
+the same channel. If PostHog has not loaded yet (or is not installed at all),
+the value is left on `window.CLASSROOM_CHANNEL` for the init config to pick up
+with `loaded: (ph) => ph.register({ channel: window.CLASSROOM_CHANNEL })`.
+Break the event list down by `channel` to see which link did the work.
 
 Post these, not the bare URL:
 
@@ -247,8 +249,8 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 - a "Pick up where you left off" card built from that history
 
 Saved picks, history and preferences are not uploaded and there is no account.
-The site pages load Microsoft Clarity for visit and session analytics; the
-bundled HTML game files carry no analytics tag. **Export my data** creates a
+The site pages carry no analytics at the moment — Microsoft Clarity was
+removed — and the bundled HTML game files never carry an analytics tag. **Export my data** creates a
 JSON file locally; **Import data** restores it in this browser. The footer has
 a two-step **Clear saved data** button. The separate **Clear offline
 downloads** action removes downloaded game files from Cache Storage.
@@ -298,10 +300,11 @@ game.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
-`localStorage` and Cache Storage remain in this browser; the only site-level
-analytics integration is the Microsoft Clarity tag in the head of the site
-pages. The optional Hanger 2 debug editor no longer injects its remote dat.GUI
-CDN script; normal game play is unaffected.
+`localStorage` and Cache Storage remain in this browser. Microsoft Clarity was
+removed and the space is deliberately empty until PostHog is installed; nothing
+in `assets/games/` carries a tag of its own either way. The optional Hanger 2
+debug editor no longer injects its remote dat.GUI CDN script; normal game play
+is unaffected.
 
 ## The files that cannot be blocked
 

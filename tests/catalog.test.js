@@ -418,16 +418,21 @@ check(
     .every((rel) => !/cloudflareinsights|cloudflare\.com|Cloudflare Web Analytics/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
 );
 check("Hanger 2 has no remote Cloudflare CDN dependency", !/cdnjs\.cloudflare\.com/.test(fs.readFileSync(path.join(ROOT, "assets/games/hanger-2.html"), "utf8")));
+// Microsoft Clarity was removed. The checks that used to prove it was in
+// every head now prove it is nowhere, and that no bundled game picks up an
+// analytics tag of its own.
+const siteFiles = ["index.html", "files.html", "404.html", "sw.js", "manifest.webmanifest"];
 check(
-  "Microsoft Clarity is installed in the head of every site page",
-  ["index.html", "files.html", "404.html"].every((rel) => {
-    const head = (fs.readFileSync(path.join(ROOT, rel), "utf8").match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
-    return /www\.clarity\.ms\/tag\//.test(head) && /"z0ayxg09fq"/.test(head);
-  })
+  "Microsoft Clarity is gone from every page",
+  siteFiles
+    .concat(fs.readdirSync(path.join(ROOT, "assets/js")).map((name) => "assets/js/" + name))
+    .every((rel) => !/clarity\.ms|z0ayxg09fq/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
 );
 check(
-  "the bundled game files carry no Clarity tag",
-  fs.readdirSync(path.join(ROOT, "assets/games")).every((name) => !/clarity\.ms|z0ayxg09fq/.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8")))
+  "the bundled game files never carry an analytics tag",
+  fs.readdirSync(path.join(ROOT, "assets/games")).every((name) =>
+    !/clarity\.ms|z0ayxg09fq|posthog/i.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))
+  )
 );
 // A pasted link is the only way anybody arrives on a noindex page, so the
 // preview tags are part of the product, not decoration.
@@ -467,10 +472,12 @@ check(
     /assets\/js\/attribution\.js/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8"))
 );
 check(
-  "the attribution helper tags Clarity with the channel and nothing else",
+  "the attribution helper hands the channel to PostHog and nothing else",
   (() => {
     const src = fs.readFileSync(path.join(ROOT, "assets/js/attribution.js"), "utf8");
-    return /clarity\("set", "channel"/.test(src) &&
+    return /posthog\.register\(\{ channel: source \}\)/.test(src) &&
+      /window\.CLASSROOM_CHANNEL = source/.test(src) &&
+      !/clarity/i.test(src) &&
       !/fetch\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(src) &&
       !/localStorage/.test(src);
   })()
