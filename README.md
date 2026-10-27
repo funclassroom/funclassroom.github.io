@@ -249,8 +249,11 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 - a "Pick up where you left off" card built from that history
 
 Saved picks, history and preferences are not uploaded and there is no account.
-The site pages carry no analytics at the moment — Microsoft Clarity was
-removed — and the bundled HTML game files never carry an analytics tag. **Export my data** creates a
+The site pages load PostHog (EU region) for page views and sessions; the
+bundled HTML game files never carry an analytics tag. The key lives in one
+`POSTHOG_KEY` constant in the head of each page, and the loader only calls
+`init` once that constant starts with `phc_` and looks like a key — an unset key means
+nothing is sent at all, not a half-configured beacon. **Export my data** creates a
 JSON file locally; **Import data** restores it in this browser. The footer has
 a two-step **Clear saved data** button. The separate **Clear offline
 downloads** action removes downloaded game files from Cache Storage.
@@ -300,11 +303,11 @@ game.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
-`localStorage` and Cache Storage remain in this browser. Microsoft Clarity was
-removed and the space is deliberately empty until PostHog is installed; nothing
-in `assets/games/` carries a tag of its own either way. The optional Hanger 2
-debug editor no longer injects its remote dat.GUI CDN script; normal game play
-is unaffected.
+`localStorage` and Cache Storage remain in this browser. The only site-level
+analytics is the PostHog snippet in the head of the three pages, set to
+`respect_dnt`, `mask_all_text` and `mask_all_element_attributes`; nothing in
+`assets/games/` carries a tag of its own. The optional Hanger 2 debug editor no
+longer injects its remote dat.GUI CDN script; normal game play is unaffected.
 
 ## The files that cannot be blocked
 

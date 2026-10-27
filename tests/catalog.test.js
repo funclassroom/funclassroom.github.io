@@ -434,6 +434,59 @@ check(
     !/clarity\.ms|z0ayxg09fq|posthog/i.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))
   )
 );
+// PostHog replaced Clarity. The snippet is inline so it runs before anything
+// else on the page, and it refuses to initialise until a key is set.
+const posthogBlocks = ["index.html", "files.html", "404.html"].map((rel) => {
+  const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
+  const head = (html.match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
+  const start = head.indexOf("<!-- PostHog.");
+  if (start === -1) return "";
+  const end = head.indexOf("</script>", head.indexOf("window.posthog.init", start));
+  return head.slice(start, end + "</script>".length);
+});
+check(
+  "the PostHog snippet sits in the head of every page",
+  posthogBlocks.every((block) => /e\.__SV\|\|/.test(block) && /window\.posthog\.init\(POSTHOG_KEY/.test(block))
+);
+check(
+  "all three copies are identical, so they cannot drift",
+  posthogBlocks.every((block) => block === posthogBlocks[0])
+);
+check(
+  "analytics stays off until the key is pasted in",
+  (() => {
+    const block = posthogBlocks[0];
+    const key = (block.match(/var POSTHOG_KEY = "([^"]*)";/) || [])[1];
+    const initsOnKey = /if \(\/\^phc_\[A-Za-z0-9\]\{40,60\}\$\/\.test\(POSTHOG_KEY\)\)/.test(block);
+    if (!initsOnKey) return false;
+    if (key === "") {
+      console.log("   note: POSTHOG_KEY is empty — analytics is disabled until it is pasted in");
+      return true;
+    }
+    return /^phc_[A-Za-z0-9]{40,60}$/.test(key);
+  })()
+);
+check(
+  "the snippet points at the EU project and masks what is on screen",
+  (() => {
+    const block = posthogBlocks[0];
+    return /POSTHOG_HOST = "https:\/\/eu\.i\.posthog\.com"/.test(block) &&
+      /defaults: "2026-05-30"/.test(block) &&
+      /person_profiles: "identified_only"/.test(block) &&
+      /respect_dnt: true/.test(block) &&
+      /mask_all_text: true/.test(block) &&
+      /mask_all_element_attributes: true/.test(block) &&
+      /session_recording: \{ maskAllInputs: true \}/.test(block) &&
+      /persistence: "localStorage"/.test(block) &&
+      /ph\.register\(\{ channel: window\.CLASSROOM_CHANNEL \}\)/.test(block);
+  })()
+);
+check(
+  "the snippet is the published loader, not a hand-rolled one",
+  /p\.src=s\.api_host\.replace\("\.i\.posthog\.com","-assets\.i\.posthog\.com"\)\+"\/static\/array\.js"/.test(posthogBlocks[0]) &&
+    /getFeatureFlagResult/.test(posthogBlocks[0])
+);
+
 // A pasted link is the only way anybody arrives on a noindex page, so the
 // preview tags are part of the product, not decoration.
 check(
@@ -468,7 +521,7 @@ check(
 );
 check(
   "both pages read the ?ref= channel tag",
-  /assets\/js\/attribution\.js/.test(index) && /assets\/js\/attribution\.js/.test(filesPage) &&
+  /assets\/js\/attribution\.js\?v=3/.test(index) && /assets\/js\/attribution\.js\?v=3/.test(filesPage) &&
     /assets\/js\/attribution\.js/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8"))
 );
 check(
@@ -476,6 +529,7 @@ check(
   (() => {
     const src = fs.readFileSync(path.join(ROOT, "assets/js/attribution.js"), "utf8");
     return /posthog\.register\(\{ channel: source \}\)/.test(src) &&
+      /window\.posthog\.__loaded/.test(src) &&
       /window\.CLASSROOM_CHANNEL = source/.test(src) &&
       !/clarity/i.test(src) &&
       !/fetch\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(src) &&
