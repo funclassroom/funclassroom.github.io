@@ -1,7 +1,24 @@
 {
-  "checkedAt": "2026-10-21T16:33:22.668Z",
+  "checkedAt": "2026-10-27T12:14:31.019Z",
   "checked": 1500,
-  "dead": 0,
-  "urls": [],
-  "detail": []
+  "dead": 1,
+  "urls": [
+    "https://html5.gamemonetize.co/jp112o3o4hzgrnc7zaewjkrfk282pul8/"
+  ],
+  "detail": [
+    {
+      "id": "44366",
+      "title": "Spirall Rool",
+      "portal": "gamemonetize.com",
+      "url": "https://html5.gamemonetize.co/jp112o3o4hzgrnc7zaewjkrfk282pul8/",
+      "status": 200,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": ""
+      },
+      "dead": true
+    }
+  ]
 }
