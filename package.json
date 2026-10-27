@@ -5,7 +5,8 @@
   "description": "G@M\u00a3$ \u2014 129 local HTML games that keep playing with the network off, plus 17,572 streamable titles.",
   "scripts": {
     "start": "python3 -m http.server 8000 --bind 0.0.0.0",
-    "test": "node tests/ui.test.js && node tests/catalog.test.js"
+    "test": "node tests/ui.test.js && node tests/catalog.test.js",
+    "posthog": "npx -y @posthog/wizard@latest"
   },
   "devDependencies": {
     "jsdom": "^30.1.3"
