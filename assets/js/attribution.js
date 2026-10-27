@@ -24,10 +24,7 @@
 
     if (!source) return;
 
-    // The inline snippet installs a stub before this file runs, so "posthog
-    // exists" proves nothing — only a library that has actually loaded can
-    // take the call. Until then the value waits on window for init.
-    if (window.posthog && window.posthog.__loaded && typeof window.posthog.register === "function") {
+    if (window.posthog && typeof window.posthog.register === "function") {
       window.posthog.register({ channel: source });
     } else {
       window.CLASSROOM_CHANNEL = source;
