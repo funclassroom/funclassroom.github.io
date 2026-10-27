@@ -267,6 +267,33 @@ device or another browser, and a private window throws them away when it closes.
 If a title only keeps state in memory, nothing can save it — that is down to the
 game.
 
+### Installing PostHog
+
+Clarity is gone and nothing replaced it yet. To put PostHog in, run the wizard
+from a real terminal — it draws a full-screen interface, signs you in through
+the browser and cannot run inside CI, a container or the agent sandbox:
+
+```bash
+npm run posthog          # npx -y @posthog/wizard@latest
+```
+
+It detects this as **JavaScript (Web)**, then asks about region — pick **EU** —
+and installs its own snippet with a real project key. Let it edit the files but
+read the diff before accepting the commit: it writes into `index.html`,
+`files.html` and `404.html`, and the checks in `tests/catalog.test.js` pin the
+loader, the masking settings and the identical copy in all three heads.
+
+Two things to keep from the old block, because the wizard does not know them:
+`respect_dnt`, `mask_all_text` and `mask_all_element_attributes` (children
+search this page; their words should not turn up in a replay), and
+`loaded: (ph) => ph.register({ channel: window.CLASSROOM_CHANNEL })`, which is
+what `assets/js/attribution.js` fills in for the `?ref=` links above.
+
+The wizard sends source files to an AI model to do the work, keeps `.env*` and
+secrets on your machine, and reports its own run metadata unless you pass
+`--no-telemetry`. If the result is not what you want, `git checkout -- .` puts
+the files back.
+
 ## The page
 
 - Search titles and descriptions (multi-word: "car park" finds "Car Parking"), plus Popular / Top rated / A–Z / Least played
@@ -432,6 +459,7 @@ tests/catalog.test.js    data and repository checks
 ```bash
 npm start     # python3 -m http.server 8000 --bind 0.0.0.0
 npm test      # jsdom, no network
+npm run posthog   # the PostHog wizard; needs a real terminal, see above
 ```
 
 ## Deployment

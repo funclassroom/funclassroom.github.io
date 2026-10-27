@@ -429,6 +429,14 @@ check(
     .every((rel) => !/clarity\.ms|z0ayxg09fq/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
 );
 check(
+  "the PostHog wizard is one command away",
+  (() => {
+    const scripts = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")).scripts || {};
+    return /@posthog\/wizard@latest/.test(scripts.posthog || "") &&
+      /npm run posthog/.test(fs.readFileSync(path.join(ROOT, "README.md"), "utf8"));
+  })()
+);
+check(
   "the bundled game files never carry an analytics tag",
   fs.readdirSync(path.join(ROOT, "assets/games")).every((name) =>
     !/clarity\.ms|z0ayxg09fq|posthog/i.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))
