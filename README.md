@@ -214,14 +214,12 @@ preview will 404.
 
 ### Telling the channels apart
 
-Analytics counts sessions; it does not say where they came from. Add `?ref=` to
-any link you post and `assets/js/attribution.js` reads it, hands it to PostHog
-as a super property called `channel`, and keeps it in `sessionStorage` so a
-visit that starts on the wall and moves on to `files.html` stays credited to
-the same channel. If PostHog has not loaded yet (or is not installed at all),
-the value is left on `window.CLASSROOM_CHANNEL` for the init config to pick up
-with `loaded: (ph) => ph.register({ channel: window.CLASSROOM_CHANNEL })`.
-Break the event list down by `channel` to see which link did the work.
+Clarity counts sessions; it does not say where they came from. Add `?ref=` to
+any link you post and `assets/js/attribution.js` reads it, hands it to Clarity
+as a custom tag called `channel`, and keeps it in `sessionStorage` so a visit
+that starts on the wall and moves on to `files.html` stays credited to the same
+channel. In the Clarity dashboard, break the recording list down by the
+`channel` tag.
 
 Post these, not the bare URL:
 
@@ -252,8 +250,8 @@ Two different kinds of progress exist, and it is worth knowing which is which.
 - a "Pick up where you left off" card built from that history
 
 Saved picks, history and preferences are not uploaded and there is no account.
-The site pages carry no analytics at the moment, and the bundled HTML game
-files never carry an analytics tag. **Export my data** creates a
+The site pages load Microsoft Clarity for visit and session analytics; the
+bundled HTML game files carry no analytics tag. **Export my data** creates a
 JSON file locally; **Import data** restores it in this browser. The footer has
 a two-step **Clear saved data** button. The separate **Clear offline
 downloads** action removes downloaded game files from Cache Storage.
@@ -272,9 +270,10 @@ game.
 
 ### Installing PostHog
 
-Clarity is gone and nothing replaced it yet. To put PostHog in, run the wizard
-from a real terminal — it draws a full-screen interface, signs you in through
-the browser and cannot run inside CI, a container or the agent sandbox:
+Microsoft Clarity is the site's analytics again. Adding PostHog alongside it is
+a separate job: run the wizard from a real terminal — it draws a full-screen
+interface, signs you in through the browser and cannot run inside CI, a
+container or the agent sandbox:
 
 ```bash
 npm run posthog          # npx -y @posthog/wizard@latest
@@ -286,11 +285,11 @@ read the diff before accepting the commit: it writes into `index.html`,
 `files.html` and `404.html`, and the checks in `tests/catalog.test.js` pin the
 loader, the masking settings and the identical copy in all three heads.
 
-Two things to keep from the old block, because the wizard does not know them:
-`respect_dnt`, `mask_all_text` and `mask_all_element_attributes` (children
-search this page; their words should not turn up in a replay), and
-`loaded: (ph) => ph.register({ channel: window.CLASSROOM_CHANNEL })`, which is
-what `assets/js/attribution.js` fills in for the `?ref=` links above.
+Two things to decide before it runs: whether to keep `respect_dnt` and the
+masking (`mask_all_text`, `mask_all_element_attributes` — children search this
+page, and their words should not turn up in a replay), and who owns the
+`channel` tag. Clarity reads it today through `attribution.js`; if both tools
+are in, decide whether `?ref=` should feed both or only one.
 
 The wizard sends source files to an AI model to do the work, keeps `.env*` and
 secrets on your machine, and reports its own run metadata unless you pass
@@ -330,9 +329,9 @@ the files back.
 
 No frameworks, no build step, no server-side backend. The site is static on
 GitHub Pages, with a same-origin service worker for optional offline caching.
-`localStorage` and Cache Storage remain in this browser. Microsoft Clarity was
-removed and the space is deliberately empty until PostHog is installed; nothing
-in `assets/games/` carries a tag of its own either way. The optional Hanger 2
+`localStorage` and Cache Storage remain in this browser; the only site-level
+analytics integration is the Microsoft Clarity tag in the head of the site
+pages. Nothing in `assets/games/` carries a tag of its own. The optional Hanger 2
 debug editor no longer injects its remote dat.GUI CDN script; normal game play
 is unaffected.
 
