@@ -1,5 +1,5 @@
 /* GitHub Pages-only offline shell and explicitly saved local games. */
-const VERSION = "classroom-shell-v11";
+const VERSION = "classroom-shell-v12";
 const GAME_CACHE = "classroom-offline-games-v1";
 /* Ad and auction networks that came bundled inside some of the game files
    (doubleclick, googlesyndication and adnxs are all present today). Blocking
@@ -12,9 +12,15 @@ const GAME_CACHE = "classroom-offline-games-v1";
    would stop games loading rather than stop ads. Anything in an iframe from
    another origin is invisible to this file anyway — the browser keeps that
    document out of our reach — so ads inside a streamed publisher game are not
-   something the site can block. */
+   something the site can block.
+
+   The empty 204 is deliberate: a game that watches for a blocked request (ovo
+   does, through adinplay) only raises its "adblock detected" flag when the
+   status is 0. A 204 looks like a real answer, so the game carries on instead
+   of putting up a disable-your-blocker wall. */
 const BLOCKED_HOSTS = [
   "2mdn.net",
+  "adinplay.com",
   "adnxs.com",
   "adsafeprotected.com",
   "adsrvr.org",
@@ -25,6 +31,8 @@ const BLOCKED_HOSTS = [
   "doubleclick.net",
   "googleadservices.com",
   "googlesyndication.com",
+  "googletagservices.com",
+  "gamepix.com",
   "imasdk.googleapis.com",
   "moatads.com",
   "outbrain.com",
