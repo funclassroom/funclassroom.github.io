@@ -195,16 +195,19 @@ games are no longer excluded — an earlier rule did that, and it has been remov
 
 ## Getting the link out
 
-The pages carry `noindex,nofollow`, so search engines will not send anybody.
-Every visit starts with a link somebody pasted, which means two things: the
+Most visits start with a link somebody pasted, which means two things: the
 link needs a preview worth clicking, and it needs to say where it came from.
+`index.html` and `files.html` are indexable (`index,follow`) and named in
+`sitemap.xml`, so a search can also send people here; the error page keeps
+`noindex,nofollow`, because a 404 has nothing worth ranking.
 
 ### Link previews
 
 Both `index.html` and `files.html` carry `og:title`, `og:description`,
 `og:image`, `og:url` and a `twitter:card`, so a pasted link renders as a card
-with the 1200×630 `assets/img/share/og-cover.png` instead of a bare URL. The pages
-stay `noindex`; these tags only shape the preview. The image URLs are absolute
+with the 1200×630 `assets/img/share/og-cover.png` instead of a bare URL. Each page
+also carries a `rel="canonical"` matching its `og:url`, so the `?ref=` variants
+below are folded into one address. The image URLs are absolute
 and point at `https://funclassroom.github.io/`, so **if the site is served from
 another domain, change those three `og:image` / `og:url` values** or the
 preview will 404.
@@ -474,8 +477,28 @@ folder `/`. Push, and Pages rebuilds.
 contract — BWT fetches `https://funclassroom.github.io/BingSiteAuth.xml` — so the
 file is committed as-is rather than generated, and it is deliberately left out of
 `.assetsignore` so a Workers deploy serves it too. It changes nothing about how
-the site behaves: the pages keep `noindex,nofollow`, which means Bing will verify
-the site but will not list it in results until that meta tag is dropped.
+the site behaves: verification only proves ownership, and listing is controlled
+by `robots.txt` and the pages' own `index,follow` below.
+
+### Being found
+
+- `robots.txt` allows everything and names the sitemap.
+- `sitemap.xml` lists the wall, the files page and every game file that does not
+  mention `noindex` — 110 addresses today. Regenerate it with
+  `python3 scripts/build-sitemap.py` after adding or removing a game; the
+  catalogue refresh workflow runs the same script, and `tests/catalog.test.js`
+  fails if the committed file drifts from the folder.
+- The 16 game files that carry another author's `noindex` are left out on
+  purpose, as are the five that only mention it inside a bundled payload. A page
+  that refuses indexing in a sitemap is a warning in every webmaster tool.
+- The 17,763 catalogue entries are not separate URLs; they live in
+  `assets/js/catalog.js` and render into one page, so a sitemap cannot list them.
+  Only the two pages that show them can rank.
+
+Being listed cuts against the "keeps working when a filter blocks it" idea: the
+same index that lets a search find the site lets a school's blocklist find it.
+The pages stay public and the games still play from the folder, but a site that
+ranks is a site a filter can recognise.
 
 ### Cloudflare Workers
 

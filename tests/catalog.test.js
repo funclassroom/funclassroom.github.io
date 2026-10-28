@@ -442,8 +442,8 @@ check(
     !/clarity\.ms|z0ayxg09fq|posthog/i.test(fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8"))
   )
 );
-// A pasted link is the only way anybody arrives on a noindex page, so the
-// preview tags are part of the product, not decoration.
+// A pasted link is how most people arrive, so the preview tags are part of the
+// product, not decoration.
 check(
   "both shareable pages carry a large link preview",
   [index, filesPage].every((html) => {
@@ -463,6 +463,62 @@ check(
     const buf = fs.readFileSync(file);
     return buf.slice(1, 4).toString() === "PNG" && buf.readUInt32BE(16) === 1200 && buf.readUInt32BE(20) === 630;
   })()
+);
+// Being findable. The pages opt in, the error page stays out, and the two
+// files a crawler reads first point at each other.
+check(
+  "the wall and the files page ask to be indexed",
+  [index, filesPage].every((html) => {
+    const head = (html.match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
+    return /<meta name="robots" content="index,follow">/.test(head) && !/noindex/i.test(head);
+  })
+);
+check(
+  "the error page stays out of the index",
+  /<meta name="robots" content="noindex,nofollow">/.test(fs.readFileSync(path.join(ROOT, "404.html"), "utf8"))
+);
+check(
+  "each shareable page names itself as the canonical address",
+  (() => {
+    const pairs = [[index, "https://funclassroom.github.io/"], [filesPage, "https://funclassroom.github.io/files.html"]];
+    return pairs.every(([html, url]) =>
+      new RegExp('<link rel="canonical" href="' + url.replace(/[.]/g, "\\.") + '">').test(html) &&
+      new RegExp('<meta property="og:url" content="' + url.replace(/[.]/g, "\\.") + '">').test(html));
+  })()
+);
+check(
+  "robots.txt invites crawlers and names the sitemap",
+  (() => {
+    const file = path.join(ROOT, "robots.txt");
+    if (!fs.existsSync(file)) return false;
+    const text = fs.readFileSync(file, "utf8");
+    return /^User-agent: \*$/m.test(text) && /^Allow: \/$/m.test(text) &&
+      /^Sitemap: https:\/\/funclassroom\.github\.io\/sitemap\.xml$/m.test(text) &&
+      !/BingSiteAuth\.xml|robots\.txt|sitemap\.xml/.test(fs.readFileSync(path.join(ROOT, ".assetsignore"), "utf8"));
+  })()
+);
+check(
+  "the sitemap lists exactly the pages that can be indexed",
+  (() => {
+    const file = path.join(ROOT, "sitemap.xml");
+    if (!fs.existsSync(file)) return false;
+    const xml = fs.readFileSync(file, "utf8");
+    const listed = (xml.match(/<loc>([^<]+)<\/loc>/g) || []).map((tag) => tag.slice(5, -6));
+    const expected = ["https://funclassroom.github.io/", "https://funclassroom.github.io/files.html"];
+    for (const name of fs.readdirSync(path.join(ROOT, "assets/games")).sort()) {
+      if (!/\.html?$/i.test(name)) continue;
+      const body = fs.readFileSync(path.join(ROOT, "assets/games", name), "utf8");
+      if (/noindex/i.test(body)) continue;
+      expected.push("https://funclassroom.github.io/assets/games/" + name);
+    }
+    return listed.length === expected.length && listed.every((url, i) => url === expected[i]) &&
+      listed.every((url) => /^https:\/\/funclassroom\.github\.io\//.test(url)) &&
+      /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/.test(xml);
+  })()
+);
+check(
+  "the sitemap can be regenerated from the files",
+  /noindex/.test(fs.readFileSync(path.join(ROOT, "scripts/build-sitemap.py"), "utf8"))
 );
 check(
   "the offline pitch leads both pages",

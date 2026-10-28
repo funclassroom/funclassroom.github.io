@@ -34,6 +34,12 @@ jobs:
           python3 scripts/build-catalog.py --verify 2>&1 | tee build.log
           exit ${PIPESTATUS[0]}
 
+      # The games folder is the same on every run, but a refresh is also when
+      # somebody notices a file was added, so keep the search engine's list of
+      # addresses in step with it here rather than by hand.
+      - name: Rebuild the sitemap
+        run: python3 scripts/build-sitemap.py
+
       - name: Report
         if: always()
         run: |
@@ -61,7 +67,7 @@ jobs:
         run: |
           git config user.name "catalog-bot"
           git config user.email "catalog-bot@users.noreply.github.com"
-          git add assets/js/catalog.js catalog-report.json
+          git add assets/js/catalog.js catalog-report.json sitemap.xml
           if git diff --cached --quiet; then
             echo "No change."
             exit 0
