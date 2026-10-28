@@ -496,6 +496,21 @@ check(
     /https:\/\/funclassroom\.github\.io\/\?ref=tiktok/.test(readme) &&
     /https:\/\/funclassroom\.github\.io\/files\.html\?ref=/.test(readme)
 );
+// Bing Webmaster Tools proves ownership by fetching this exact file from the
+// site root. It is committed, not generated, and it has to survive the Cloudflare
+// asset filter as well as Pages, or verification works on one deploy target and
+// fails on the other.
+check(
+  "Bing can verify the site from a file at the root",
+  (() => {
+    const file = path.join(ROOT, "BingSiteAuth.xml");
+    if (!fs.existsSync(file)) return false;
+    const xml = fs.readFileSync(file, "utf8");
+    return /^<\?xml version="1\.0"\?>/.test(xml) &&
+      /<users>\s*<user>[A-F0-9]{32}<\/user>\s*<\/users>/.test(xml) &&
+      !/BingSiteAuth\.xml/.test(fs.readFileSync(path.join(ROOT, ".assetsignore"), "utf8"));
+  })()
+);
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
 check("offline copies are user-selected, not bulk downloaded", /CACHE_GAME/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")) && /Save offline/.test(filesPage));

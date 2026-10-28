@@ -467,6 +467,16 @@ npm run posthog   # the PostHog wizard; needs a real terminal, see above
 The live site is static files on GitHub Pages, branch `arena/22c34602-classroom`,
 folder `/`. Push, and Pages rebuilds.
 
+### Bing ownership
+
+`BingSiteAuth.xml` in the repo root is Bing Webmaster Tools' ownership proof for
+`https://funclassroom.github.io/`. The name and the folder are the whole
+contract — BWT fetches `https://funclassroom.github.io/BingSiteAuth.xml` — so the
+file is committed as-is rather than generated, and it is deliberately left out of
+`.assetsignore` so a Workers deploy serves it too. It changes nothing about how
+the site behaves: the pages keep `noindex,nofollow`, which means Bing will verify
+the site but will not list it in results until that meta tag is dropped.
+
 ### Cloudflare Workers
 
 The same folder can be deployed as Workers static assets (`npx wrangler deploy`
