@@ -418,15 +418,36 @@ check(
     .every((rel) => !/cloudflareinsights|cloudflare\.com|Cloudflare Web Analytics/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
 );
 check("Hanger 2 has no remote Cloudflare CDN dependency", !/cdnjs\.cloudflare\.com/.test(fs.readFileSync(path.join(ROOT, "assets/games/hanger-2.html"), "utf8")));
-// Microsoft Clarity was removed. The checks that used to prove it was in
-// every head now prove it is nowhere, and that no bundled game picks up an
-// analytics tag of its own.
-const siteFiles = ["index.html", "files.html", "404.html", "sw.js", "manifest.webmanifest"];
+// Microsoft Clarity is the one analytics tag the site carries. It belongs in
+// the head of the three pages and nowhere else, so the checks prove it is there
+// and prove no bundled game picks up a tag of its own.
+const clarityPages = ["index.html", "files.html", "404.html"].map((rel) => {
+  const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
+  const head = (html.match(/<head>[\s\S]*?<\/head>/i) || [""])[0];
+  return head;
+});
 check(
-  "Microsoft Clarity is gone from every page",
-  siteFiles
-    .concat(fs.readdirSync(path.join(ROOT, "assets/js")).map((name) => "assets/js/" + name))
-    .every((rel) => !/clarity\.ms|z0ayxg09fq/i.test(fs.readFileSync(path.join(ROOT, rel), "utf8")))
+  "Microsoft Clarity is in the head of every page",
+  clarityPages.every((head) => /<!-- Microsoft Clarity -->/.test(head) &&
+    /https:\/\/www\.clarity\.ms\/tag\/"\+i/.test(head) &&
+    /\(window, document, "clarity", "script", "z0ayxg09fq"\);/.test(head))
+);
+check(
+  "all three Clarity copies are identical, so they cannot drift",
+  (() => {
+    const blocks = clarityPages.map((head) => {
+      const start = head.indexOf("<!-- Microsoft Clarity -->");
+      const end = head.indexOf("</script>", start);
+      return start === -1 ? "" : head.slice(start, end + 9);
+    });
+    return blocks[0] !== "" && blocks.every((block) => block === blocks[0]);
+  })()
+);
+check(
+  "Clarity is the published snippet, not a hand-rolled one",
+  /c\[a\]=c\[a\]\|\|function\(\)\{\(c\[a\]\.q=c\[a\]\.q\|\|\[\]\)\.push\(arguments\)\}/.test(clarityPages[0]) &&
+    /t\.async=1;t\.src="https:\/\/www\.clarity\.ms\/tag\/"\+i/.test(clarityPages[0]) &&
+    /y\.parentNode\.insertBefore\(t,y\)/.test(clarityPages[0])
 );
 check(
   "the PostHog wizard is one command away",
@@ -536,13 +557,13 @@ check(
     /assets\/js\/attribution\.js/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8"))
 );
 check(
-  "the attribution helper hands the channel to PostHog and nothing else",
+  "the attribution helper hands the channel to Clarity and nothing else",
   (() => {
     const src = fs.readFileSync(path.join(ROOT, "assets/js/attribution.js"), "utf8");
-    return /posthog\.register\(\{ channel: source \}\)/.test(src) &&
-      /window\.CLASSROOM_CHANNEL = source/.test(src) &&
-      !/clarity/i.test(src) &&
+    return /window\.clarity\("set", "channel", source\)/.test(src) &&
+      /typeof window\.clarity !== "function"/.test(src) &&
       !/fetch\(|XMLHttpRequest|sendBeacon|navigator\.send/.test(src) &&
+      !/posthog/i.test(src) &&
       !/localStorage/.test(src);
   })()
 );
