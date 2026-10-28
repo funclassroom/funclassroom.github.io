@@ -1,11 +1,56 @@
 {
-  "checkedAt": "2026-10-28T10:22:05.422Z",
+  "checkedAt": "2026-10-28T12:10:47.391Z",
   "checked": 1500,
-  "dead": 1,
+  "dead": 4,
   "urls": [
+    "https://html5.gamemonetize.co/fejueuy2h3gmif9ry9i3poha3il16o8q/",
+    "https://html5.gamemonetize.co/9ymbe8zpsqhxfhfp3d4nqcohrorgcr9g/",
+    "https://gamemonetize.com/gameshtml5.php?gmdidco=y291x1f70esg0fikq3jy4lrjyp5ihk9s/",
     "https://html5.gamemonetize.co/jp112o3o4hzgrnc7zaewjkrfk282pul8/"
   ],
   "detail": [
+    {
+      "id": "39803",
+      "title": "Mahjong Dogs",
+      "portal": "gamemonetize.com",
+      "url": "https://html5.gamemonetize.co/fejueuy2h3gmif9ry9i3poha3il16o8q/",
+      "status": 200,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": ""
+      },
+      "dead": true
+    },
+    {
+      "id": "83391",
+      "title": "Mischievous Pairs",
+      "portal": "gamemonetize.com",
+      "url": "https://html5.gamemonetize.co/9ymbe8zpsqhxfhfp3d4nqcohrorgcr9g/",
+      "status": 200,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": ""
+      },
+      "dead": true
+    },
+    {
+      "id": "44928",
+      "title": "Parking Mania 3D",
+      "portal": "gamemonetize.com",
+      "url": "https://gamemonetize.com/gameshtml5.php?gmdidco=y291x1f70esg0fikq3jy4lrjyp5ihk9s/",
+      "status": 302,
+      "failed": null,
+      "sub": {
+        "frames": 1,
+        "canvas": 0,
+        "text": "LOADING"
+      },
+      "dead": true
+    },
     {
       "id": "44366",
       "title": "Spirall Rool",
