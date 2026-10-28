@@ -598,7 +598,7 @@ check(
     const src = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");
     const list = (src.match(/const BLOCKED_HOSTS = \[([\s\S]*?)\];/) || [])[1] || "";
     const hosts = (list.match(/"[^"]+"/g) || []).map((h) => h.slice(1, -1));
-    const mustBlock = ["doubleclick.net", "googlesyndication.com", "adnxs.com"];
+    const mustBlock = ["doubleclick.net", "googlesyndication.com", "adnxs.com", "adinplay.com", "gamepix.com", "googletagservices.com"];
     const mustNot = ["clarity.ms", "jsdelivr.net", "madkidgames.com", "github.io"];
     const blockedAt = src.indexOf("if (isBlocked(url.hostname))");
     const sameOrigin = src.indexOf("if (url.origin !== self.location.origin) return;");
@@ -617,8 +617,10 @@ check(
     const rule = src.match(/const isBlocked = .*/)[0];
     const fn = new Function(list + rule + " return isBlocked;")();
     return fn("doubleclick.net") && fn("pubads.g.doubleclick.net") &&
+      fn("api.adinplay.com") && fn("cdn.gamepix.com") && fn("securepubads.g.doubleclick.net") &&
       !fn("notdoubleclick.net") && !fn("clarity.ms") && !fn("t.clarity.ms") &&
-      !fn("googleadservices.com.evil.example") && !fn("jsdelivr.net");
+      !fn("googleadservices.com.evil.example") && !fn("jsdelivr.net") &&
+      !fn("gamemonetize.com") && !fn("htmlgames.com") && !fn("madkidgames.com");
   })()
 );
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));

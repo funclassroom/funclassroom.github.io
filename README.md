@@ -339,19 +339,33 @@ is unaffected.
 
 Some of the bundled game files arrived with advertising code still inside them
 — `dadish-3` carries a live Google Ad Manager tag and a Prebid auction,
-`zombie-rush`, `ovo` and `wheelie-bike` carry related fragments. `sw.js` keeps a
-`BLOCKED_HOSTS` list and answers those hosts with an empty `204` before anything
-leaves the browser. Because it lives in the service worker it applies to every
-visitor with nothing installed, and it only ever runs on this origin.
+`zombie-rush`, `ovo`, `wheelie-bike` and `8-ball-classic` carry related
+fragments, and `ovo` calls adinplay. `sw.js` keeps a `BLOCKED_HOSTS` list —
+doubleclick, googlesyndication, googletagservices, adinplay, gamepix, criteo,
+taboola, pubmatic, rubicon, amazon-adsystem and peers — and answers those hosts
+with an empty `204` before anything leaves the browser. Because it lives in the
+service worker it applies to every visitor with nothing installed, and it only
+ever runs on this origin.
+
+The `204` is chosen, not incidental: `ovo` watches for a blocked ad request and
+only raises its "adblock detected" flag when the status is `0`. A `204` looks
+like a real answer, so the game plays instead of showing a disable-your-blocker
+wall.
 
 What it can and cannot do:
 
 - **It covers** the wall, the files page and all 129 bundled games, because the
   service worker controls every page in its scope and sees their subresource
   requests, including the cross-origin ones.
-- **It cannot cover** a streamed publisher game in an iframe. That document
-  belongs to another origin and the browser keeps it out of reach, so ads inside
-  `madkidgames.com` embeds are not something this site can remove.
+- **It cannot cover a streamed publisher game.** 15,972 of the 17,763 titles
+  come from `gamemonetize.com`, 1,297 from `htmlgames.com` and 1,018 from
+  `madkidgames.com`; the wall loads each of those pages in an iframe. A frame
+  from another origin is a separate document that this site cannot script,
+  filter or inspect — the same browser rule protects any site from being
+  tampered with by whoever frames it. **Ads inside a streamed title cannot be
+  removed by any code on this site**, only by the visitor's own browser
+  extension or by the publisher. The 129 bundled games under `assets/games/`
+  are the part this list fully covers.
 - **Clarity is deliberately not on the list.** Neither is `jsdelivr.net` (26 game
   files load their runtime from it) nor any publisher domain. Tests fail if any
   of those creep in, and fail if a lookalike domain such as `notdoubleclick.net`
