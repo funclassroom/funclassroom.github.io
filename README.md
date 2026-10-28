@@ -335,6 +335,31 @@ pages. Nothing in `assets/games/` carries a tag of its own. The optional Hanger 
 debug editor no longer injects its remote dat.GUI CDN script; normal game play
 is unaffected.
 
+### Blocking ads on the site itself
+
+Some of the bundled game files arrived with advertising code still inside them
+— `dadish-3` carries a live Google Ad Manager tag and a Prebid auction,
+`zombie-rush`, `ovo` and `wheelie-bike` carry related fragments. `sw.js` keeps a
+`BLOCKED_HOSTS` list and answers those hosts with an empty `204` before anything
+leaves the browser. Because it lives in the service worker it applies to every
+visitor with nothing installed, and it only ever runs on this origin.
+
+What it can and cannot do:
+
+- **It covers** the wall, the files page and all 129 bundled games, because the
+  service worker controls every page in its scope and sees their subresource
+  requests, including the cross-origin ones.
+- **It cannot cover** a streamed publisher game in an iframe. That document
+  belongs to another origin and the browser keeps it out of reach, so ads inside
+  `madkidgames.com` embeds are not something this site can remove.
+- **Clarity is deliberately not on the list.** Neither is `jsdelivr.net` (26 game
+  files load their runtime from it) nor any publisher domain. Tests fail if any
+  of those creep in, and fail if a lookalike domain such as `notdoubleclick.net`
+  matches the suffix rule.
+- First page view of a new visitor is not controlled until the worker installs,
+  so an ad request in that first instant can slip through; every later request
+  is covered.
+
 ## The files that cannot be blocked
 
 `files.html`, reached from **100% Unblocked** in the header, lists 129 titles

@@ -1,6 +1,42 @@
 /* GitHub Pages-only offline shell and explicitly saved local games. */
-const VERSION = "classroom-shell-v10";
+const VERSION = "classroom-shell-v11";
 const GAME_CACHE = "classroom-offline-games-v1";
+/* Ad and auction networks that came bundled inside some of the game files
+   (doubleclick, googlesyndication and adnxs are all present today). Blocking
+   happens here rather than in an extension, so it applies to every visitor,
+   needs nothing installed, and only touches requests made by this site.
+
+   Deliberately absent: clarity.ms and everything under it, because Clarity is
+   the site's analytics and must keep working; jsdelivr, which 26 game files
+   load their runtime from; and the publisher domains the wall iframes, which
+   would stop games loading rather than stop ads. Anything in an iframe from
+   another origin is invisible to this file anyway — the browser keeps that
+   document out of our reach — so ads inside a streamed publisher game are not
+   something the site can block. */
+const BLOCKED_HOSTS = [
+  "2mdn.net",
+  "adnxs.com",
+  "adsafeprotected.com",
+  "adsrvr.org",
+  "advertising.com",
+  "amazon-adsystem.com",
+  "criteo.com",
+  "criteo.net",
+  "doubleclick.net",
+  "googleadservices.com",
+  "googlesyndication.com",
+  "imasdk.googleapis.com",
+  "moatads.com",
+  "outbrain.com",
+  "pubmatic.com",
+  "quantserve.com",
+  "rubiconproject.com",
+  "scorecardresearch.com",
+  "taboola.com",
+  "zedo.com"
+];
+const isBlocked = (host) => BLOCKED_HOSTS.some((blocked) => host === blocked || host.slice(-blocked.length - 1) === "." + blocked);
+
 const SHELL = ["./", "index.html", "files.html", "manifest.webmanifest", "assets/css/app.css", "assets/js/catalog.js", "assets/js/local-games.js", "assets/js/app.js", "assets/js/feedback.js", "assets/js/pwa.js", "assets/js/attribution.js", "assets/img/app-icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -15,6 +51,14 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+  // Cross-origin requests from a controlled page pass through here too, which
+  // is what lets one file cover the wall, the files page and every bundled
+  // game. A blocked host gets an empty answer, so the page carries on without
+  // the ad instead of hanging on a failed request.
+  if (isBlocked(url.hostname)) {
+    event.respondWith(new Response(null, { status: 204, statusText: "Blocked" }));
+    return;
+  }
   if (url.origin !== self.location.origin) return;
   const scope = new URL(self.registration.scope);
   if (!url.pathname.startsWith(scope.pathname)) return;
