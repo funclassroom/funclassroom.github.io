@@ -311,6 +311,7 @@ the files back.
 - Tab cloaks (Classroom, Google, Docs), a blank-tab launcher and a quick exit
 - **100% Unblocked** in the header: 129 titles that are plain files,
   on their own page, with no embed to load — plus filter and Surprise me
+- The player header sizes to its own text (title, stats, source, description, report link) instead of a fixed bar that clipped the title off the top of the screen; the description wraps to three lines and disappears on a window under 520px tall, so the game keeps the height
 - Fullscreen, and an "open in a new tab" fallback if a title refuses to frame
 - If a route fails, **Try another source** walks to the next one; if every one
   fails, the player says so, apologises, and offers the portal in a new tab

@@ -588,6 +588,75 @@ check(
       !/BingSiteAuth\.xml/.test(fs.readFileSync(path.join(ROOT, ".assetsignore"), "utf8"));
   })()
 );
+// The player header used to be a fixed 52px bar holding five stacked lines.
+// Centred content overflowed it in both directions, so the title was pushed off
+// the top of the screen and the description sat over the game. These checks
+// keep the bar sized to its content, and keep the description readable, so the
+// same clipping cannot come back.
+const css = fs.readFileSync(path.join(ROOT, "assets/css/app.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+const cssRules = (() => {
+  const rules = [];
+  const walk = (text, media) => {
+    let i = 0;
+    while (i < text.length) {
+      const brace = text.indexOf("{", i);
+      if (brace === -1) break;
+      const semi = text.indexOf(";", i);
+      if (semi !== -1 && semi < brace) { i = semi + 1; continue; }
+      const prelude = text.slice(i, brace).trim();
+      let depth = 1;
+      let j = brace + 1;
+      while (j < text.length && depth > 0) {
+        if (text[j] === "{") depth += 1;
+        else if (text[j] === "}") depth -= 1;
+        j += 1;
+      }
+      const body = text.slice(brace + 1, j - 1);
+      if (prelude.startsWith("@")) walk(body, media.concat(prelude));
+      else rules.push({ selectors: prelude.split(",").map((part) => part.trim()), body, media });
+      i = j;
+    }
+  };
+  walk(css, []);
+  return rules;
+})();
+const styleOf = (selector, { topLevel = true } = {}) =>
+  cssRules.filter((rule) => rule.selectors.includes(selector) && (!topLevel || rule.media.length === 0));
+
+check(
+  "the player header grows with its text instead of clipping it",
+  (() => {
+    const bars = styleOf(".player-top");
+    return bars.length > 0 &&
+      bars.every((rule) => !/(?<![\w-])height\s*:/.test(rule.body)) &&
+      bars.some((rule) => /min-height\s*:/.test(rule.body)) &&
+      bars.some((rule) => /max-height\s*:/.test(rule.body));
+  })()
+);
+check(
+  "the player fills the visible screen, not the layout one",
+  (() => {
+    const players = styleOf(".player");
+    return players.some((rule) => /height\s*:\s*100dvh/.test(rule.body)) &&
+      players.some((rule) => /height\s*:\s*100vh/.test(rule.body));
+  })()
+);
+check(
+  "the game description wraps and is bounded, never one clipped line",
+  (() => {
+    const rules = styleOf(".player-description");
+    return rules.length > 0 &&
+      rules.every((rule) => !/white-space\s*:\s*nowrap/.test(rule.body)) &&
+      rules.some((rule) => /-webkit-line-clamp\s*:\s*[23]/.test(rule.body)) &&
+      rules.every((rule) => /max-width\s*:/.test(rule.body));
+  })()
+);
+check(
+  "a short window drops the prose so the game keeps the screen",
+  cssRules.some((rule) => rule.selectors.includes(".player-description") &&
+    rule.media.some((query) => /max-height/.test(query)) &&
+    /display\s*:\s*none/.test(rule.body))
+);
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
 // The site blocks ad networks itself, in the service worker, so every visitor
 // gets it without an extension and no other site is affected. The blocklist
