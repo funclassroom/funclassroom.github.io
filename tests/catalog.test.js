@@ -589,6 +589,38 @@ check(
   })()
 );
 check("the offline web app manifest exists", fs.existsSync(path.join(ROOT, "manifest.webmanifest")) && /"display"\s*:\s*"standalone"/.test(fs.readFileSync(path.join(ROOT, "manifest.webmanifest"), "utf8")));
+// The site blocks ad networks itself, in the service worker, so every visitor
+// gets it without an extension and no other site is affected. The blocklist
+// must never grow to cover Clarity, the games' own runtime, or a publisher.
+check(
+  "the service worker blocks ad networks for this site only",
+  (() => {
+    const src = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");
+    const list = (src.match(/const BLOCKED_HOSTS = \[([\s\S]*?)\];/) || [])[1] || "";
+    const hosts = (list.match(/"[^"]+"/g) || []).map((h) => h.slice(1, -1));
+    const mustBlock = ["doubleclick.net", "googlesyndication.com", "adnxs.com"];
+    const mustNot = ["clarity.ms", "jsdelivr.net", "madkidgames.com", "github.io"];
+    const blockedAt = src.indexOf("if (isBlocked(url.hostname))");
+    const sameOrigin = src.indexOf("if (url.origin !== self.location.origin) return;");
+    return hosts.length >= 15 &&
+      mustBlock.every((h) => hosts.includes(h)) &&
+      mustNot.every((h) => !hosts.includes(h) && !hosts.some((x) => x.endsWith("." + h))) &&
+      blockedAt !== -1 && sameOrigin !== -1 && blockedAt < sameOrigin;
+  })()
+);
+check(
+  "the blocked hosts really only answer to this site's rules",
+  (() => {
+    const src = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");
+    // A suffix match must not swallow a lookalike domain.
+    const list = src.match(/const BLOCKED_HOSTS = \[[\s\S]*?\];/)[0];
+    const rule = src.match(/const isBlocked = .*/)[0];
+    const fn = new Function(list + rule + " return isBlocked;")();
+    return fn("doubleclick.net") && fn("pubads.g.doubleclick.net") &&
+      !fn("notdoubleclick.net") && !fn("clarity.ms") && !fn("t.clarity.ms") &&
+      !fn("googleadservices.com.evil.example") && !fn("jsdelivr.net");
+  })()
+);
 check("offline support is implemented as a static service worker", fs.existsSync(path.join(ROOT, "sw.js")) && /addEventListener\("fetch"/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")));
 check("offline copies are user-selected, not bulk downloaded", /CACHE_GAME/.test(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")) && /Save offline/.test(filesPage));
 check("problem reports go to GitHub issues", /github\.com\/funclassroom\/funclassroom\.github\.io\/issues/.test(index) && fs.existsSync(path.join(ROOT, ".github/ISSUE_TEMPLATE/bug_report.md")));
